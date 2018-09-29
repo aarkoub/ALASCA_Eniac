@@ -1,5 +1,6 @@
 package etape1.cvm;
 
+import etape1.RequeteServiceConnector;
 import etape1.components.GenerateurRequete;
 import etape1.components.Repartiteur;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
@@ -48,7 +49,7 @@ public class CVM extends AbstractCVM {
 		this.rep.doPortConnection(
 				RepartiteurOutboundPortURI,
 				GenerateurInboundPortURI,
-				URIServiceConnector.class.getCanonicalName()) ;
+				RequeteServiceConnector.class.getCanonicalName()) ;
 		
 		
 		super.deploy();
