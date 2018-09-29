@@ -7,10 +7,10 @@ import fr.sorbonne_u.components.examples.basic_cs.connectors.URIServiceConnector
 
 public class CVM extends AbstractCVM {
 	
-	/** URI of the generator outbound port (simplifies the connection).	*/
-	protected static final String	URIRepartiteurOutboundPortURI = "oport" ;
-	/** URI of the repartiteur inbound port (simplifies the connection).		*/
-	protected static final String	URIGenerateurInboundPortURI = "iport" ;
+	/** URI of the repartiteur outbound port (simplifies the connection).	*/
+	protected static final String	RepartiteurOutboundPortURI = "oport" ;
+	/** URI of the generateur inbound port (simplifies the connection).		*/
+	protected static final String	GenerateurInboundPortURI = "iport" ;
 	
 	protected static final String URIRepartiteur = "uri-repartiteur";
 	protected static final String URIGenerateur = "uri-generateur";
@@ -32,8 +32,8 @@ public class CVM extends AbstractCVM {
 		
 		assert	!this.deploymentDone() ;
 		
-		rep = new Repartiteur(URIRepartiteur, URIRepartiteurOutboundPortURI);
-		genReq = new GenerateurRequete(URIGenerateur, URIGenerateurInboundPortURI);
+		rep = new Repartiteur(URIRepartiteur, RepartiteurOutboundPortURI);
+		genReq = new GenerateurRequete(URIGenerateur, GenerateurInboundPortURI);
 		
 		rep.toggleTracing();
 		rep.toggleLogging();
@@ -46,8 +46,8 @@ public class CVM extends AbstractCVM {
 		deployedComponents.add(genReq);
 		
 		this.rep.doPortConnection(
-				URIRepartiteurOutboundPortURI,
-				URIGenerateurInboundPortURI,
+				RepartiteurOutboundPortURI,
+				GenerateurInboundPortURI,
 				URIServiceConnector.class.getCanonicalName()) ;
 		
 		

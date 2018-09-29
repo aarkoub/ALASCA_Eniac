@@ -3,12 +3,13 @@ package components;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
-import ports.URIRepartiteurOutboundPort;
+import fr.sorbonne_u.components.exceptions.PreconditionException;
+import ports.RepartiteurOutboundPort;
 
 public class Repartiteur extends AbstractComponent {
 	
 	
-	protected URIRepartiteurOutboundPort uriOutboundPort;
+	protected RepartiteurOutboundPort uriOutboundPort;
 
 	public Repartiteur(int nbThreads, int nbSchedulableThreads) {
 		super(nbThreads, nbSchedulableThreads);
@@ -22,7 +23,13 @@ public class Repartiteur extends AbstractComponent {
 	public Repartiteur(String uri, String outboundPort) throws Exception {
 		super(uri, 0,1);
 		
-		uriOutboundPort = new URIRepartiteurOutboundPort(uri, this);
+		assert	uri != null :
+			new PreconditionException("uri can't be null!") ;
+		
+		assert	outboundPort != null :
+			new PreconditionException("port can't be null!") ;
+		
+		uriOutboundPort = new RepartiteurOutboundPort(uri, this);
 		
 		addPort(uriOutboundPort);
 		
