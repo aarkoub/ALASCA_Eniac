@@ -1,8 +1,8 @@
-package ports;
+package etape1.ports;
 
+import etape1.interfaces.RepartiteurI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
-import interfaces.RepartiteurI;
 
 public class RepartiteurOutboundPort extends AbstractOutboundPort implements RepartiteurI {
 

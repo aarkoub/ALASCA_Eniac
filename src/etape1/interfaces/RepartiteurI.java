@@ -1,4 +1,4 @@
-package interfaces;
+package etape1.interfaces;
 
 import fr.sorbonne_u.components.interfaces.RequiredI;
 

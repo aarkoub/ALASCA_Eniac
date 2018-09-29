@@ -1,12 +1,12 @@
-package components;
+package etape1.components;
 
 import java.util.Random;
 
+import etape1.ports.GenerateurInboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.PreconditionException;
 import fr.sorbonne_u.components.ports.PortI;
-import ports.GenerateurInboundPort;
 
 public class GenerateurRequete extends AbstractComponent {
 	
@@ -46,7 +46,10 @@ public class GenerateurRequete extends AbstractComponent {
 
 	public String genererRequeteService() {
 		
-		return requetes[r.nextInt(3)];
+		String s = requetes[r.nextInt(3)];
+		
+		this.logMessage("Genère la requete "+ s) ;
+		return s;
 	}
 
 }

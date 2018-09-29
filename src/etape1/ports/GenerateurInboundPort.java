@@ -1,11 +1,11 @@
-package ports;
+package etape1.ports;
 
-import components.GenerateurRequete;
+import etape1.components.GenerateurRequete;
+import etape1.interfaces.GenerateurI;
+import etape1.interfaces.RepartiteurI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
-import interfaces.GenerateurI;
-import interfaces.RepartiteurI;
 
 public class GenerateurInboundPort extends AbstractInboundPort implements GenerateurI {
 

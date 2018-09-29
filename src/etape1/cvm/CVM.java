@@ -1,7 +1,7 @@
-package cvm;
+package etape1.cvm;
 
-import components.GenerateurRequete;
-import components.Repartiteur;
+import etape1.components.GenerateurRequete;
+import etape1.components.Repartiteur;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.examples.basic_cs.connectors.URIServiceConnector;
 

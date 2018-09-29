@@ -1,10 +1,10 @@
-package components;
+package etape1.components;
 
+import etape1.ports.RepartiteurOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.PreconditionException;
-import ports.RepartiteurOutboundPort;
 
 public class Repartiteur extends AbstractComponent {
 	
