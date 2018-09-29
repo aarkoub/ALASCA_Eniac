@@ -29,7 +29,7 @@ public class Repartiteur extends AbstractComponent {
 		assert	outboundPort != null :
 			new PreconditionException("port can't be null!") ;
 		
-		uriOutboundPort = new RepartiteurOutboundPort(uri, this);
+		uriOutboundPort = new RepartiteurOutboundPort(outboundPort, this);
 		
 		addPort(uriOutboundPort);
 		

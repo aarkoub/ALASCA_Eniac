@@ -4,7 +4,6 @@ import etape1.RequeteServiceConnector;
 import etape1.components.GenerateurRequete;
 import etape1.components.Repartiteur;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
-import fr.sorbonne_u.components.examples.basic_cs.connectors.URIServiceConnector;
 
 public class CVM extends AbstractCVM {
 	
