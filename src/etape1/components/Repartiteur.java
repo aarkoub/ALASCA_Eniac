@@ -1,5 +1,7 @@
 package etape1.components;
 
+import java.util.concurrent.TimeUnit;
+
 import etape1.ports.RepartiteurOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
@@ -10,6 +12,7 @@ public class Repartiteur extends AbstractComponent {
 	
 	
 	protected RepartiteurOutboundPort uriOutboundPort;
+	protected int counter = 0;
 
 	public Repartiteur(int nbThreads, int nbSchedulableThreads) {
 		super(nbThreads, nbSchedulableThreads);
@@ -49,6 +52,48 @@ public class Repartiteur extends AbstractComponent {
 	@Override
 	public void start() throws ComponentStartException{
 		super.start();
+		
+		
+		scheduleTask(new AbstractComponent.AbstractTask() {
+			
+			@Override
+			public void run() {
+				try {
+					((Repartiteur) this.getOwner()).getRequeteAndPrint();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+		}, 1000, TimeUnit.MILLISECONDS);
+		
+	}
+
+	public void getRequeteAndPrint() throws Exception {
+		
+		if(counter++<10){
+		
+			String requete = uriOutboundPort.getRequete();
+			
+			logMessage("Requete recue : "+requete);
+			
+			scheduleTask(new AbstractComponent.AbstractTask() {
+				
+				@Override
+				public void run() {
+					try {
+						((Repartiteur) this.getOwner()).getRequeteAndPrint();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
+			}, 1000, TimeUnit.MILLISECONDS);
+			
+		}
+		
 	}
 
 }

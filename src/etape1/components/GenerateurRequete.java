@@ -2,9 +2,11 @@ package etape1.components;
 
 import java.util.Random;
 
+import etape1.interfaces.GenerateurI;
 import etape1.ports.GenerateurInboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.PreconditionException;
 import fr.sorbonne_u.components.ports.PortI;
 
@@ -50,6 +52,18 @@ public class GenerateurRequete extends AbstractComponent {
 		
 		this.logMessage("Genère la requete "+ s) ;
 		return s;
+	}
+	
+	@Override
+	public void			shutdownNow() throws ComponentShutdownException
+	{
+		try {
+			PortI[] p = this.findPortsFromInterface(GenerateurI.class) ;
+			p[0].unpublishPort() ;
+		} catch (Exception e) {
+			throw new ComponentShutdownException(e);
+		}
+		super.shutdownNow();
 	}
 
 }
