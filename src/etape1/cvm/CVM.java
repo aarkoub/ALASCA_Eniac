@@ -1,9 +1,12 @@
 package etape1.cvm;
 
-import etape1.RequeteServiceConnector;
-import etape1.components.GenerateurRequete;
-import etape1.components.Repartiteur;
+import etape1.components.RequestGenerator;
+import etape1.components.ApplicationVM;
+import etape1.components.Distributor;
+import etape1.connector.RequestServiceConnector;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.datacenter.software.connectors.RequestSubmissionConnector;
+import fr.sorbonne_u.datacenterclient.requestgenerator.connectors.RequestGeneratorManagementConnector;
 
 public class CVM extends AbstractCVM {
 	
@@ -12,11 +15,25 @@ public class CVM extends AbstractCVM {
 	/** URI of the generateur inbound port (simplifies the connection).		*/
 	protected static final String	GenerateurInboundPortURI = "iport" ;
 	
+	protected static final String ApplicationOutboundPortURI = "appli_oport";
+	
+	protected static final String RepartiteurInboundPortURI = "rep_iport";
+	
+	
 	protected static final String URIRepartiteur = "uri-repartiteur";
 	protected static final String URIGenerateur = "uri-generateur";
+	protected static final String URIApplicationVM = "uri-applicationvm";
 	
-	protected Repartiteur rep ;
-	protected GenerateurRequete genReq ;
+	protected static final String URIInboundPortConnectRequestProcess = "uri-connection";
+	protected static final String URIInboundPortReceiveRequestNotification = "uri-notification";
+	
+	protected static final String applicationVMManagementInboundPortURI = "iport_application";
+	protected static final String requestSubmissionInboundPortURI = "iport_submission_request";
+	protected static final String requestNotificationInboundPortURI = "iport_notification_requset";
+	
+	protected Distributor rep ;
+	protected RequestGenerator genReq ;
+	protected ApplicationVM appliVM ;
 	
 	public CVM(boolean isDistributed) throws Exception {
 		super(isDistributed);
@@ -32,8 +49,9 @@ public class CVM extends AbstractCVM {
 		
 		assert	!this.deploymentDone() ;
 		
-		rep = new Repartiteur(URIRepartiteur, RepartiteurOutboundPortURI);
-		genReq = new GenerateurRequete(URIGenerateur, GenerateurInboundPortURI);
+		rep = new Distributor(URIRepartiteur, RepartiteurOutboundPortURI);
+		genReq = new RequestGenerator(URIGenerateur, 500, 10, GenerateurInboundPortURI, URIInboundPortConnectRequestProcess, URIInboundPortReceiveRequestNotification);
+		appliVM = new ApplicationVM(URIApplicationVM, applicationVMManagementInboundPortURI, requestSubmissionInboundPortURI, requestNotificationInboundPortURI);
 		
 		rep.toggleTracing();
 		rep.toggleLogging();
@@ -45,11 +63,17 @@ public class CVM extends AbstractCVM {
 		
 		deployedComponents.add(genReq);
 		
+		appliVM.toggleTracing();
+		appliVM.toggleLogging();
+		
+		deployedComponents.add(appliVM);
+		
 		this.rep.doPortConnection(
 				RepartiteurOutboundPortURI,
 				GenerateurInboundPortURI,
-				RequeteServiceConnector.class.getCanonicalName()) ;
+				RequestGeneratorManagementConnector.class.getCanonicalName()) ;
 		
+		this.appliVM.doPortConnection(ApplicationOutboundPortURI, RepartiteurInboundPortURI, RequestSubmissionConnector.class.getCanonicalName());
 		
 		super.deploy();
 		

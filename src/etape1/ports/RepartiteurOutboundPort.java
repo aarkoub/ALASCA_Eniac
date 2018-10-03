@@ -1,19 +1,19 @@
 package etape1.ports;
 
-import etape1.interfaces.RepartiteurI;
+import etape1.interfaces.DistributorI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 
-public class RepartiteurOutboundPort extends AbstractOutboundPort implements RepartiteurI {
+public class RepartiteurOutboundPort extends AbstractOutboundPort implements DistributorI {
 
 	
 	public RepartiteurOutboundPort(String uri, ComponentI owner ) throws Exception{
-		super(uri, RepartiteurI.class, owner);
+		super(uri, DistributorI.class, owner);
 		assert	uri != null && owner != null ;
 	}
 	
 	public RepartiteurOutboundPort(ComponentI owner) throws Exception {
-		super(RepartiteurI.class, owner);
+		super(DistributorI.class, owner);
 		assert owner!=null;
 	}
 	
@@ -24,7 +24,7 @@ public class RepartiteurOutboundPort extends AbstractOutboundPort implements Rep
 
 	@Override
 	public String getRequete() throws Exception {
-		return ((RepartiteurI)this.connector).getRequete();
+		return ((DistributorI)this.connector).getRequete();
 	}
 
 }
