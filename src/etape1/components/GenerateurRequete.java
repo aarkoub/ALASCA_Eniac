@@ -45,7 +45,7 @@ public class GenerateurRequete extends AbstractComponent {
 	}
 
 	public String genererRequeteService() {
-		
+
 		String s = requetes[r.nextInt(3)];
 		
 		this.logMessage("Genère la requete "+ s) ;

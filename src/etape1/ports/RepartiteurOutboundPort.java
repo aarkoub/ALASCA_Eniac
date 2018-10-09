@@ -24,6 +24,7 @@ public class RepartiteurOutboundPort extends AbstractOutboundPort implements Rep
 
 	@Override
 	public String getRequete() throws Exception {
+		
 		return ((RepartiteurI)this.connector).getRequete();
 	}
 

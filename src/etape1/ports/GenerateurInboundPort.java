@@ -15,8 +15,10 @@ public class GenerateurInboundPort extends AbstractInboundPort implements Genera
 	private static final long serialVersionUID = 1L;
 
 	public GenerateurInboundPort(String uri, ComponentI owner ) throws Exception{
+		
 		super(uri, GenerateurI.class, owner);
 		assert	uri != null && owner != null ;
+		
 	}
 	
 	public GenerateurInboundPort(ComponentI owner) throws Exception {
@@ -26,6 +28,7 @@ public class GenerateurInboundPort extends AbstractInboundPort implements Genera
 
 	@Override
 	public String genererRequest() throws Exception {
+
 		return this.getOwner().handleRequestSync(
 				new AbstractComponent.AbstractService<String>() {
 					@Override
