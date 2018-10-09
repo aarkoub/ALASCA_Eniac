@@ -1,9 +1,10 @@
 package etape1.interfaces;
 
 import fr.sorbonne_u.components.interfaces.OfferedI;
+import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 
 public interface GeneratorI extends OfferedI {
 
-	String genererRequest() throws Exception;
+	Request generateRequest() throws Exception;
 	
 }
