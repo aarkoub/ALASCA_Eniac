@@ -15,12 +15,8 @@ public class GenerateurInboundPort extends AbstractInboundPort implements Genera
 	private static final long serialVersionUID = 1L;
 
 	public GenerateurInboundPort(String uri, ComponentI owner ) throws Exception{
-<<<<<<< HEAD
-		
-		super(uri, GenerateurI.class, owner);
-=======
+
 		super(uri, GeneratorI.class, owner);
->>>>>>> branch 'master' of https://github.com/aarkoub/ALASCA_Eniac
 		assert	uri != null && owner != null ;
 		
 	}

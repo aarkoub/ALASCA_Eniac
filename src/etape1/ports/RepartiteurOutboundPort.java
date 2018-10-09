@@ -24,12 +24,9 @@ public class RepartiteurOutboundPort extends AbstractOutboundPort implements Dis
 
 	@Override
 	public String getRequete() throws Exception {
-<<<<<<< HEAD
-		
-		return ((RepartiteurI)this.connector).getRequete();
-=======
+
 		return ((DistributorI)this.connector).getRequete();
->>>>>>> branch 'master' of https://github.com/aarkoub/ALASCA_Eniac
+
 	}
 
 }
