@@ -1,11 +1,10 @@
 package etape1.cvm;
 
-import etape1.components.RequestGenerator;
-import etape1.components.ApplicationVM;
 import etape1.components.Distributor;
-import etape1.connector.RequestServiceConnector;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
 import fr.sorbonne_u.datacenter.software.connectors.RequestSubmissionConnector;
+import fr.sorbonne_u.datacenterclient.requestgenerator.RequestGenerator;
 import fr.sorbonne_u.datacenterclient.requestgenerator.connectors.RequestGeneratorManagementConnector;
 
 public class CVM extends AbstractCVM {

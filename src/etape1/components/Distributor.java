@@ -7,6 +7,7 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.PreconditionException;
+import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 
 public class Distributor extends AbstractComponent {
 	
@@ -59,7 +60,7 @@ public class Distributor extends AbstractComponent {
 			@Override
 			public void run() {
 				try {
-					((Distributor) this.getOwner()).getRequeteAndPrint();
+					((Distributor) this.getOwner()).getRequestAndPrint();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -70,20 +71,20 @@ public class Distributor extends AbstractComponent {
 		
 	}
 
-	public void getRequeteAndPrint() throws Exception {
+	public void getRequestAndPrint() throws Exception {
 		
 		if(counter++<10){
 		
-			String requete = uriOutboundPort.getRequete();
+			Request request = uriOutboundPort.getRequest();
 			
-			logMessage("Requete recue : "+requete);
+			logMessage("Requete recue : "+request.getRequestURI());
 			
 			scheduleTask(new AbstractComponent.AbstractTask() {
 				
 				@Override
 				public void run() {
 					try {
-						((Distributor) this.getOwner()).getRequeteAndPrint();
+						((Distributor) this.getOwner()).getRequestAndPrint();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

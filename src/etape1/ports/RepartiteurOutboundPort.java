@@ -3,6 +3,7 @@ package etape1.ports;
 import etape1.interfaces.DistributorI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
+import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 
 public class RepartiteurOutboundPort extends AbstractOutboundPort implements DistributorI {
 
@@ -23,9 +24,9 @@ public class RepartiteurOutboundPort extends AbstractOutboundPort implements Dis
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public String getRequete() throws Exception {
+	public Request getRequest() throws Exception {
 
-		return ((DistributorI)this.connector).getRequete();
+		return ((DistributorI)this.connector).getRequest();
 
 	}
 
