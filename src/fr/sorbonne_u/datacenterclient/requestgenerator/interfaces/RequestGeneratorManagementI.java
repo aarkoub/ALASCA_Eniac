@@ -36,7 +36,6 @@ package fr.sorbonne_u.datacenterclient.requestgenerator.interfaces;
 
 import fr.sorbonne_u.components.interfaces.OfferedI;
 import fr.sorbonne_u.components.interfaces.RequiredI;
-import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 
 /**
  * The interface <code>RequestGeneratorManagementI</code> defines the management
@@ -116,7 +115,4 @@ extends		OfferedI,
 	 * @throws Exception		<i>todo.</i>
 	 */
 	public void			setMeanInterArrivalTime(double miat) throws Exception ;
-	
-	public Request getRequest() throws Exception;
-
 }

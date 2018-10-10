@@ -382,8 +382,6 @@ implements	ProcessorStateDataConsumerI,
 							  numberOfCores,
 							  psibpURI, piibpURI, pmibpURI,
 							  pssdibpURI, pdsdibpURI) ;
-			this.processors[i].toggleTracing() ;
-			this.processors[i].toggleLogging() ;
 			// add it to the deployed components in the CVM
 			AbstractCVM.getCVM().addDeployedComponent(this.processors[i]) ;
 

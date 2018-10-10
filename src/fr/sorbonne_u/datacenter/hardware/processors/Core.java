@@ -206,8 +206,9 @@ public class				Core
 
 		// Debugging mode information
 		if (Processor.DEBUG) {
-			System.out.println("core " + coreNo + "/" +
-									(owner.cores.length - 1) + " created.") ;
+			System.out.println(
+						"core " + coreNo + "/" +
+						(owner.cores.length - 1) + " created.") ;
 		}
 	}
 

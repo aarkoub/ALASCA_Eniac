@@ -2,19 +2,34 @@ package etape1.requestdistributor;
 
 import java.util.concurrent.TimeUnit;
 
+import etape1.requestdistributor.interfaces.RequestDistributorManagementI;
+import etape1.requestdistributor.ports.RequestDistributorManagementInboundPort;
 import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.PreconditionException;
+import fr.sorbonne_u.datacenter.software.connectors.RequestNotificationConnector;
+import fr.sorbonne_u.datacenter.software.connectors.RequestSubmissionConnector;
+import fr.sorbonne_u.datacenter.software.interfaces.RequestI;
+import fr.sorbonne_u.datacenter.software.interfaces.RequestNotificationI;
+import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionHandlerI;
+import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionI;
+import fr.sorbonne_u.datacenter.software.ports.RequestNotificationInboundPort;
+import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
 import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
+import fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI;
+import fr.sorbonne_u.datacenterclient.requestgenerator.ports.RequestGeneratorManagementInboundPort;
 
-public class RequestDistributor extends AbstractComponent {
+public class RequestDistributor extends AbstractComponent implements RequestSubmissionHandlerI {
 	
 	
 	protected RequestDistributorManagementOutboundPort uriOutboundPort;
 	protected int counter = 0;
-	protected Request request;
+	private String requestSubmissionInboundPortURI;
+	private RequestDistributorManagementInboundPort rgmip;
+	private RequestSubmissionOutboundPort rsop;
+	private RequestNotificationInboundPort rnip;
 
 	public RequestDistributor(int nbThreads, int nbSchedulableThreads) {
 		super(nbThreads, nbSchedulableThreads);
@@ -25,16 +40,42 @@ public class RequestDistributor extends AbstractComponent {
 		super(reflectionInboundPortURI, nbThreads, nbSchedulableThreads);
 	}
 	
-	public RequestDistributor(String uri, String outboundPort) throws Exception {
+	public RequestDistributor(String uri,
+			String managementInboundPortURI,
+			String requestSubmissionInboundPortURI,
+			String requestNotificationInboundPortURI)
+					throws Exception {
 		super(uri, 0,1);
 		
 		assert	uri != null :
 			new PreconditionException("uri can't be null!") ;
 		
-		assert	outboundPort != null :
-			new PreconditionException("port can't be null!") ;
+		assert	managementInboundPortURI != null ;
+		assert	requestSubmissionInboundPortURI != null ;
+		assert	requestNotificationInboundPortURI != null ;
 		
-		uriOutboundPort = new RequestDistributorManagementOutboundPort(outboundPort, this);
+		this.requestSubmissionInboundPortURI =
+				requestSubmissionInboundPortURI ;
+
+		this.addOfferedInterface(RequestDistributorManagementI.class) ;
+		this.rgmip = new RequestDistributorManagementInboundPort(
+						managementInboundPortURI, this) ;
+		this.addPort(this.rgmip) ;
+		this.rgmip.publishPort() ;
+		
+		this.addRequiredInterface(RequestSubmissionI.class) ;
+		this.rsop = new RequestSubmissionOutboundPort(this) ;
+		this.addPort(this.rsop) ;
+		this.rsop.publishPort() ;
+		
+		this.addOfferedInterface(RequestNotificationI.class) ;
+		this.rnip =
+		new RequestNotificationInboundPort(
+		requestNotificationInboundPortURI, this) ;
+		this.addPort(this.rnip) ;
+		this.rnip.publishPort() ;
+		
+		
 		
 		addPort(uriOutboundPort);
 		
@@ -53,53 +94,32 @@ public class RequestDistributor extends AbstractComponent {
 	
 	@Override
 	public void start() throws ComponentStartException{
-		super.start();
-		System.out.println("ICI");
-		
-		scheduleTask(new AbstractComponent.AbstractTask() {
-			
-			@Override
-			public void run() {
-				try {
-					((RequestDistributor) this.getOwner()).getRequestAndPrint();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-			}
-		}, 1000, TimeUnit.MILLISECONDS);
-		
-	}
+		super.start() ;
 
-	public void getRequestAndPrint() throws Exception {
-		
-		if(counter++<10){
-			
-			request = uriOutboundPort.getRequest();
-			if(request==null) return;
-			logMessage("Requete recue : "+request.getRequestURI());
-			
-			scheduleTask(new AbstractComponent.AbstractTask() {
-				
-				@Override
-				public void run() {
-					try {
-						((RequestDistributor) this.getOwner()).getRequestAndPrint();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-				}
-			}, 1000, TimeUnit.MILLISECONDS);
-			
+		try {
+			this.doPortConnection(
+					this.rsop.getPortURI(),
+					requestSubmissionInboundPortURI,
+					RequestSubmissionConnector.class.getCanonicalName()) ;
+		} catch (Exception e) {
+			throw new ComponentStartException(e) ;
 		}
 		
 	}
+
+	@Override
+	public void acceptRequestSubmission(RequestI r) throws Exception {
+
+			r = uriOutboundPort.getRequest();
 	
-	public Request getRequest(){
-		return request;
+			logMessage("Requete recue : "+r.getRequestURI());
+		
+	}
+
+	@Override
+	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

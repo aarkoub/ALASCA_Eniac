@@ -156,6 +156,8 @@ extends		AbstractCVM
 							ComputerStaticStateDataInboundPortURI,
 							ComputerDynamicStateDataInboundPortURI) ;
 		this.addDeployedComponent(c) ;
+		c.toggleLogging() ;
+		c.toggleTracing() ;
 		// --------------------------------------------------------------------
 
 		// --------------------------------------------------------------------
@@ -232,8 +234,10 @@ extends		AbstractCVM
 		try {
 			final TestRequestGenerator trg = new TestRequestGenerator() ;
 			trg.startStandardLifeCycle(10000L) ;
-			Thread.sleep(5000L) ;
-			// Exit from Java.
+			// Augment the time if you want to examine the traces after
+			// the exeuction of the program.
+			Thread.sleep(10000L) ;
+			// Exit from Java (closes all trace windows...).
 			System.exit(0) ;
 		} catch (Exception e) {
 			throw new RuntimeException(e) ;

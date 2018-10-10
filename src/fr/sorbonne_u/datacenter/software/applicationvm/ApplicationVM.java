@@ -125,7 +125,7 @@ implements	ProcessorServicesNotificationConsumerI,
 			ApplicationVMManagementI,
 			PushModeControllingI
 {
-	public static boolean	DEBUG = true ;
+	public static boolean	DEBUG = false ;
 
 	public static enum	ApplicationVMPortTypes {
 		REQUEST_SUBMISSION, MANAGEMENT, INTROSPECTION, STATIC_STATE,
@@ -136,28 +136,30 @@ implements	ProcessorServicesNotificationConsumerI,
 	// Component internal state
 	// ------------------------------------------------------------------------
 
-	/** URI of this application VM.											*/
+	/** URI of this application VM.										*/
 	protected String							vmURI ;
-	/** Status, idle or in use, of each core allocated to this VM.			*/
-	protected Map<AllocatedCore,Boolean>	allocatedCoresIdleStatus ;
-	/** Map between processor URIs and the outbound ports to call them.		*/
+	/** Status, idle or in use, of each core allocated to this VM.		*/
+	protected Map<AllocatedCore,Boolean>		allocatedCoresIdleStatus ;
+	/** Map between processor URIs and the outbound ports to call them.	*/
 	protected Map<String,ProcessorServicesOutboundPort>
 											processorServicesPorts ;
 	/** Map between processor URIs and the inbound ports through which task
-	 *  termination notifications are received from each processor.			*/
+	 *  termination notifications are received from each processor.		*/
 	protected Map<String,ProcessorServicesNotificationInboundPort>
 											processorNotificationInboundPorts ;
-	/** Map between running task URIs and the processor cores running them.	*/
+	/** Map between running task URIs and the processor cores
+	 *  running them.													*/
 	protected Map<String,AllocatedCore>		runningTasks ;
-	/** Queue of tasks waiting to be started.								*/
+	/** Queue of tasks waiting to be started.							*/
 	protected Queue<TaskI>					taskQueue ;
-	/* Set of task URIs	which termination will need to be notified.			*/
+	/* Set of task URIs	which termination will need to be notified.		*/
 	protected HashSet<String>				tasksToNotify ;
-	/** Inbound port offering the management interface.						*/
-	protected ApplicationVMManagementInboundPort applicationVMManagementInboundPort ;
-	/** Inbound port offering the request submission service of the VM.		*/
+	/** Inbound port offering the management interface.					*/
+	protected ApplicationVMManagementInboundPort
+											applicationVMManagementInboundPort ;
+	/** Inbound port offering the request submission service of the VM.	*/
 	protected RequestSubmissionInboundPort	requestSubmissionInboundPort ;
-	/** Outbound port used by the VM to notify tasks' termination.			*/
+	/** Outbound port used by the VM to notify tasks' termination.		*/
 	protected RequestNotificationOutboundPort
 											requestNotificationOutboundPort ;
 	protected String							requestNotificationInboundPortURI ;
@@ -284,6 +286,10 @@ implements	ProcessorServicesNotificationConsumerI,
 	{
 		this.doPortDisconnection(
 							this.requestNotificationOutboundPort.getPortURI()) ;
+		for (ProcessorServicesOutboundPort p :
+										this.processorServicesPorts.values()) {
+			p.doDisconnection() ;
+		}
 		super.finalise() ;
 	}
 
@@ -296,22 +302,22 @@ implements	ProcessorServicesNotificationConsumerI,
 		// Disconnect ports to the request emitter and to the processors owning
 		// the allocated cores.
 		try {
-			if (this.requestNotificationOutboundPort.connected()) {
-				this.requestNotificationOutboundPort.doDisconnection() ;
-			}
-		} catch (Exception e) {
-			throw new ComponentShutdownException(e) ;
-		}
-
-		for (ProcessorServicesOutboundPort p :
+			this.requestNotificationOutboundPort.unpublishPort() ;
+			for (ProcessorServicesOutboundPort p :
 									this.processorServicesPorts.values()) {
-			try {
-				p.doDisconnection() ;
-			} catch (Exception e) {
-				throw new ComponentShutdownException(
-							"processor services outbound port disconnection"
-							+ " error", e) ;
+				p.unpublishPort() ;
 			}
+			this.requestSubmissionInboundPort.unpublishPort() ;
+			for (String uri :
+						this.processorNotificationInboundPorts.keySet()) {
+				this.processorNotificationInboundPorts.get(uri).
+														unpublishPort() ;
+			}
+			this.applicationVMManagementInboundPort.unpublishPort() ;
+		} catch (Exception e) {
+			throw new ComponentShutdownException(
+					"processor services outbound port disconnection"
+					+ " error", e) ;
 		}
 
 		super.shutdown();
@@ -341,7 +347,7 @@ implements	ProcessorServicesNotificationConsumerI,
 		) throws Exception
 	{
 		if (ApplicationVM.DEBUG) {
-			System.out.println(
+			this.logMessage(
 							"ApplicationVM>>acceptRequestSubmissionAndNotify") ;
 		}
 		this.logMessage(this.vmURI + " queues request " + r.getRequestURI());

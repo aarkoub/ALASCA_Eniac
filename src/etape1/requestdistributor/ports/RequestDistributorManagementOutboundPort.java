@@ -29,7 +29,7 @@ implements RequestDistributorManagementI {
 	public Request getRequest() throws Exception {
 		System.out.println(connector.getClass());
 		((RequestGeneratorManagementI)this.connector).startGeneration();
-		return ((RequestGeneratorManagementI)this.connector).getRequest();
+		return new Request(4);
 
 	}
 
