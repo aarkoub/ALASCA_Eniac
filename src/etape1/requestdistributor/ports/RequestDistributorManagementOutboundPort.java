@@ -25,12 +25,6 @@ implements RequestDistributorManagementI {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@Override
-	public Request getRequest() throws Exception {
-		System.out.println(connector.getClass());
-		((RequestGeneratorManagementI)this.connector).startGeneration();
-		return new Request(4);
-
-	}
+	
 
 }

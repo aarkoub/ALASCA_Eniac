@@ -8,9 +8,4 @@ public class RequestDistributorManagementConnector
 extends AbstractConnector
 implements RequestDistributorManagementI{
 
-	@Override
-	public Request getRequest() throws Exception {
-		return ((RequestDistributorManagementI)this.offering).getRequest();
-	}
-
 }

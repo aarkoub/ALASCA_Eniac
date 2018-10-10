@@ -2,10 +2,7 @@ package etape1.cvm;
 
 import etape1.requestdistributor.RequestDistributor;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
-import fr.sorbonne_u.components.cvm.AbstractDistributedCVM;
-import fr.sorbonne_u.components.cvm.AbstractDistributedCVM;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
-import fr.sorbonne_u.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.sorbonne_u.datacenterclient.requestgenerator.RequestGenerator;
 import fr.sorbonne_u.datacenterclient.requestgenerator.connectors.RequestGeneratorManagementConnector;
 
@@ -30,11 +27,14 @@ public class CVM extends AbstractCVM {
 	
 	protected static final String ApplicationVMManagementInboundPortURI = "applicationVM_in_port";
 	protected static final String RequestSubmissionInboundPortURI = "iport_submission_request";
-	protected static final String RequestNotificationInboundPortURI = "iport_notification_requset";
+	protected static final String RequestNotificationInboundPortURI = "iport_notification_request";
 	
 	protected RequestDistributor requestDisbributor ;
 	protected RequestGenerator requestGenerator ;
 	protected ApplicationVM applicationVM ;
+	
+	protected static final String requestSubmissionInboundPortURI = "request_sub_inbound_port";
+	protected static final String requestNotificationInboundPortURI = "request_notification_inbound_port";
 	
 	public CVM(boolean isDistributed) throws Exception {
 		super(isDistributed);
@@ -50,7 +50,7 @@ public class CVM extends AbstractCVM {
 		
 		assert	!this.deploymentDone() ;
 		
-		requestDisbributor = new RequestDistributor(URI_RequestDistributor, RequestDistributorManagementOutboundPortURI);
+		requestDisbributor = new RequestDistributor(URI_RequestDistributor, RequestGeneratorManagementInboundPortURI, requestSubmissionInboundPortURI, requestNotificationInboundPortURI);
 		requestGenerator = new RequestGenerator(URI_RequestGenerator, 500, 10, RequestGeneratorManagementInboundPortURI, URIInboundPortConnectRequestProcess, URIInboundPortReceiveRequestNotification);
 		applicationVM = new ApplicationVM(URI_ApplicationVM, ApplicationVMManagementInboundPortURI, RequestSubmissionInboundPortURI, RequestNotificationInboundPortURI);
 		

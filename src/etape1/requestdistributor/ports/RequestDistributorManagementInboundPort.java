@@ -36,7 +36,7 @@ implements	RequestDistributorManagementI {
 		assert	owner != null && owner instanceof RequestDistributor ;
 	}
 
-	@Override
+	/*@Override
 	public Request getRequest() throws Exception {
 		this.getOwner().handleRequestAsync(
 				new AbstractComponent.AbstractService<Request>() {
@@ -48,6 +48,6 @@ implements	RequestDistributorManagementI {
 					}
 				}) ;
 		return null;
-	}
+	}*/
 	
 }

@@ -113,7 +113,7 @@ implements	RequestNotificationHandlerI
 	/** the inbound port provided to manage the component.					*/
 	protected RequestGeneratorManagementInboundPort	rgmip ;
 	/** the output port used to send requests to the service provider.		*/
-	protected RequestSubmissionOutboundPort	rsop ;
+	public RequestSubmissionOutboundPort	rsop ;
 	protected String							requestSubmissionInboundPortURI ;
 	/** the inbound port receiving end of execution notifications.			*/
 	protected RequestNotificationInboundPort	rnip ;
