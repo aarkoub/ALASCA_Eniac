@@ -1,30 +1,31 @@
-package etape1.components;
+package etape1.requestdistributor;
 
 import java.util.concurrent.TimeUnit;
 
-import etape1.ports.RepartiteurOutboundPort;
+import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.PreconditionException;
 import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 
-public class Distributor extends AbstractComponent {
+public class RequestDistributor extends AbstractComponent {
 	
 	
-	protected RepartiteurOutboundPort uriOutboundPort;
+	protected RequestDistributorManagementOutboundPort uriOutboundPort;
 	protected int counter = 0;
+	protected Request request;
 
-	public Distributor(int nbThreads, int nbSchedulableThreads) {
+	public RequestDistributor(int nbThreads, int nbSchedulableThreads) {
 		super(nbThreads, nbSchedulableThreads);
 		// TODO Auto-generated constructor stub
 	}
 	
-	public Distributor(String reflectionInboundPortURI,int nbThreads,int nbSchedulableThreads){
+	public RequestDistributor(String reflectionInboundPortURI,int nbThreads,int nbSchedulableThreads){
 		super(reflectionInboundPortURI, nbThreads, nbSchedulableThreads);
 	}
 	
-	public Distributor(String uri, String outboundPort) throws Exception {
+	public RequestDistributor(String uri, String outboundPort) throws Exception {
 		super(uri, 0,1);
 		
 		assert	uri != null :
@@ -33,7 +34,7 @@ public class Distributor extends AbstractComponent {
 		assert	outboundPort != null :
 			new PreconditionException("port can't be null!") ;
 		
-		uriOutboundPort = new RepartiteurOutboundPort(outboundPort, this);
+		uriOutboundPort = new RequestDistributorManagementOutboundPort(outboundPort, this);
 		
 		addPort(uriOutboundPort);
 		
@@ -60,7 +61,7 @@ public class Distributor extends AbstractComponent {
 			@Override
 			public void run() {
 				try {
-					((Distributor) this.getOwner()).getRequestAndPrint();
+					((RequestDistributor) this.getOwner()).getRequestAndPrint();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -75,7 +76,7 @@ public class Distributor extends AbstractComponent {
 		
 		if(counter++<10){
 		
-			Request request = uriOutboundPort.getRequest();
+			request = uriOutboundPort.getRequest();
 			
 			logMessage("Requete recue : "+request.getRequestURI());
 			
@@ -84,7 +85,7 @@ public class Distributor extends AbstractComponent {
 				@Override
 				public void run() {
 					try {
-						((Distributor) this.getOwner()).getRequestAndPrint();
+						((RequestDistributor) this.getOwner()).getRequestAndPrint();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -95,6 +96,10 @@ public class Distributor extends AbstractComponent {
 			
 		}
 		
+	}
+	
+	public Request getRequest(){
+		return request;
 	}
 
 }

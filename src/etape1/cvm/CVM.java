@@ -1,6 +1,6 @@
 package etape1.cvm;
 
-import etape1.components.Distributor;
+import etape1.requestdistributor.RequestDistributor;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
 import fr.sorbonne_u.datacenter.software.connectors.RequestSubmissionConnector;
@@ -30,7 +30,7 @@ public class CVM extends AbstractCVM {
 	protected static final String requestSubmissionInboundPortURI = "iport_submission_request";
 	protected static final String requestNotificationInboundPortURI = "iport_notification_requset";
 	
-	protected Distributor rep ;
+	protected RequestDistributor rep ;
 	protected RequestGenerator genReq ;
 	protected ApplicationVM appliVM ;
 	
@@ -48,7 +48,7 @@ public class CVM extends AbstractCVM {
 		
 		assert	!this.deploymentDone() ;
 		
-		rep = new Distributor(URIRepartiteur, RepartiteurOutboundPortURI);
+		rep = new RequestDistributor(URIRepartiteur, RepartiteurOutboundPortURI);
 		genReq = new RequestGenerator(URIGenerateur, 500, 10, GenerateurInboundPortURI, URIInboundPortConnectRequestProcess, URIInboundPortReceiveRequestNotification);
 		appliVM = new ApplicationVM(URIApplicationVM, applicationVMManagementInboundPortURI, requestSubmissionInboundPortURI, requestNotificationInboundPortURI);
 		
