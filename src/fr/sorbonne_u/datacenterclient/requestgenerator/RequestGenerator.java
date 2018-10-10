@@ -119,6 +119,7 @@ implements	RequestNotificationHandlerI
 	protected RequestNotificationInboundPort	rnip ;
 	/** a future pointing to the next request generation task.				*/
 	protected Future<?>						nextRequestTaskFuture ;
+	protected Request r;
 
 	// -------------------------------------------------------------------------
 	// Constructors
@@ -364,7 +365,7 @@ implements	RequestNotificationHandlerI
 		// generate a random number of instructions for the request.
 		long noi =
 			(long) this.rng.nextExponential(this.meanNumberOfInstructions) ;
-		Request r = new Request(this.rgURI + "-" + this.counter++, noi) ;
+		r = new Request(this.rgURI + "-" + this.counter++, noi) ;
 		// generate a random delay until the next request generation.
 		long interArrivalDelay =
 				(long) this.rng.nextExponential(this.meanInterArrivalTime) ;
@@ -423,5 +424,9 @@ implements	RequestNotificationHandlerI
 							" is notified that request "+ r.getRequestURI() +
 							" has ended.") ;
 		}
+	}
+	
+	public Request getRequest(){
+		return r;
 	}
 }

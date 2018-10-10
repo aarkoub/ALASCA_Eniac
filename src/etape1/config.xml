@@ -7,13 +7,13 @@
   <globalRegistry  hostname="localhost" port="55252"/>
   <rmiRegistryPort no="55999"/>
   <jvms2hostnames>
-    <jvm2hostname jvmuri="provider"
+    <jvm2hostname jvmuri="requestGenerator"
         rmiRegistryCreator="true"
         hostname="localhost"
-        mainclass="fr.sorbonne_u.components.examples.basic_cs.DistributedCVM"/>
-    <jvm2hostname jvmuri="consumer"
+        mainclass="etape1.cvm.CVM"/>
+    <jvm2hostname jvmuri="requestDistributor"
         rmiRegistryCreator="false"
         	hostname="localhost"
-        mainclass="fr.sorbonne_u.components.examples.basic_cs.DistributedCVM"/>
+        mainclass="etape1.cvm.CVM"/>
   </jvms2hostnames>
 </deployment>

@@ -36,6 +36,7 @@ package fr.sorbonne_u.datacenterclient.requestgenerator.ports;
 
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
+import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 import fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI;
 
 /**
@@ -125,5 +126,10 @@ implements	RequestGeneratorManagementI
 	{
 		((RequestGeneratorManagementI)this.connector).
 												setMeanInterArrivalTime(miat) ;
+	}
+
+	@Override
+	public Request getRequest() throws Exception {
+		return ((RequestGeneratorManagementI)this.connector).getRequest();
 	}
 }

@@ -117,5 +117,6 @@ extends		OfferedI,
 	 */
 	public void			setMeanInterArrivalTime(double miat) throws Exception ;
 	
+	public Request getRequest() throws Exception;
 
 }

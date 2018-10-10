@@ -35,6 +35,7 @@ package fr.sorbonne_u.datacenterclient.requestgenerator.connectors;
 //knowledge of the CeCILL-C license and that you accept its terms.
 
 import fr.sorbonne_u.components.connectors.AbstractConnector;
+import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 import fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI;
 
 /**
@@ -95,5 +96,11 @@ implements	RequestGeneratorManagementI
 	{
 		((RequestGeneratorManagementI)this.offering).
 											setMeanInterArrivalTime(miat) ;
+	}
+
+	@Override
+	public Request getRequest() throws Exception {
+		// TODO Auto-generated method stub
+		return ((RequestGeneratorManagementI)this.offering).getRequest();
 	}
 }

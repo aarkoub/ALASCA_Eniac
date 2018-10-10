@@ -37,6 +37,7 @@ package fr.sorbonne_u.datacenterclient.requestgenerator.ports;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
+import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 import fr.sorbonne_u.datacenterclient.requestgenerator.RequestGenerator;
 import fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI;
 
@@ -155,5 +156,18 @@ implements	RequestGeneratorManagementI
 							return null;
 						}
 					}) ;
+	}
+
+	@Override
+	public Request getRequest() throws Exception {
+		this.getOwner().handleRequestAsync(
+				new AbstractComponent.AbstractService<Request>() {
+					@Override
+					public Request call() throws Exception {
+						return ((RequestGenerator)this.getOwner()).getRequest() ;
+						
+					}
+				}) ;
+		return null;
 	}
 }

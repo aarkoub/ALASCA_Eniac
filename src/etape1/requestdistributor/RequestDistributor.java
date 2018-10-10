@@ -45,7 +45,7 @@ public class RequestDistributor extends AbstractComponent {
 		} else {
 			this.executionLog.setDirectory(System.getProperty("user.home")) ;
 		}
-		this.tracer.setTitle("repartiteur") ;
+		this.tracer.setTitle("Request distributor") ;
 		this.tracer.setRelativePosition(1, 1) ;
 		
 	}
@@ -54,7 +54,7 @@ public class RequestDistributor extends AbstractComponent {
 	@Override
 	public void start() throws ComponentStartException{
 		super.start();
-		
+		System.out.println("ICI");
 		
 		scheduleTask(new AbstractComponent.AbstractTask() {
 			
@@ -75,9 +75,9 @@ public class RequestDistributor extends AbstractComponent {
 	public void getRequestAndPrint() throws Exception {
 		
 		if(counter++<10){
-		
-			request = uriOutboundPort.getRequest();
 			
+			request = uriOutboundPort.getRequest();
+			if(request==null) return;
 			logMessage("Requete recue : "+request.getRequestURI());
 			
 			scheduleTask(new AbstractComponent.AbstractTask() {

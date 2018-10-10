@@ -2,6 +2,8 @@ package etape1.cvm;
 
 import etape1.requestdistributor.RequestDistributor;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.components.cvm.AbstractDistributedCVM;
+import fr.sorbonne_u.components.cvm.AbstractDistributedCVM;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
 import fr.sorbonne_u.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.sorbonne_u.datacenterclient.requestgenerator.RequestGenerator;
@@ -10,29 +12,29 @@ import fr.sorbonne_u.datacenterclient.requestgenerator.connectors.RequestGenerat
 public class CVM extends AbstractCVM {
 	
 	/** URI of the repartiteur outbound port (simplifies the connection).	*/
-	protected static final String	RepartiteurOutboundPortURI = "oport" ;
+	protected static final String	RequestDistributorManagementOutboundPortURI = "requestDistributor_out_port" ;
 	/** URI of the generateur inbound port (simplifies the connection).		*/
-	protected static final String	GenerateurInboundPortURI = "iport" ;
+	protected static final String	RequestGeneratorManagementInboundPortURI = "requestGenerator_in_port" ;
 	
-	protected static final String ApplicationOutboundPortURI = "appli_oport";
+	protected static final String ApplicationVMManagementOutboundPortURI = "applicationVM_out_port";
 	
-	protected static final String RepartiteurInboundPortURI = "rep_iport";
+	protected static final String RequestDistributorManagementInboundPortURI = "requestDistributor_in_port";
 	
 	
-	protected static final String URIRepartiteur = "uri-repartiteur";
-	protected static final String URIGenerateur = "uri-generateur";
-	protected static final String URIApplicationVM = "uri-applicationvm";
+	protected static final String URI_RequestDistributor = "uri_requestDistributor";
+	protected static final String URI_RequestGenerator = "uri_requestGenerator";
+	protected static final String URI_ApplicationVM = "uri_applicationVM";
 	
 	protected static final String URIInboundPortConnectRequestProcess = "uri-connection";
 	protected static final String URIInboundPortReceiveRequestNotification = "uri-notification";
 	
-	protected static final String applicationVMManagementInboundPortURI = "iport_application";
-	protected static final String requestSubmissionInboundPortURI = "iport_submission_request";
-	protected static final String requestNotificationInboundPortURI = "iport_notification_requset";
+	protected static final String ApplicationVMManagementInboundPortURI = "applicationVM_in_port";
+	protected static final String RequestSubmissionInboundPortURI = "iport_submission_request";
+	protected static final String RequestNotificationInboundPortURI = "iport_notification_requset";
 	
-	protected RequestDistributor rep ;
-	protected RequestGenerator genReq ;
-	protected ApplicationVM appliVM ;
+	protected RequestDistributor requestDisbributor ;
+	protected RequestGenerator requestGenerator ;
+	protected ApplicationVM applicationVM ;
 	
 	public CVM(boolean isDistributed) throws Exception {
 		super(isDistributed);
@@ -48,31 +50,33 @@ public class CVM extends AbstractCVM {
 		
 		assert	!this.deploymentDone() ;
 		
-		rep = new RequestDistributor(URIRepartiteur, RepartiteurOutboundPortURI);
-		genReq = new RequestGenerator(URIGenerateur, 500, 10, GenerateurInboundPortURI, URIInboundPortConnectRequestProcess, URIInboundPortReceiveRequestNotification);
-		appliVM = new ApplicationVM(URIApplicationVM, applicationVMManagementInboundPortURI, requestSubmissionInboundPortURI, requestNotificationInboundPortURI);
+		requestDisbributor = new RequestDistributor(URI_RequestDistributor, RequestDistributorManagementOutboundPortURI);
+		requestGenerator = new RequestGenerator(URI_RequestGenerator, 500, 10, RequestGeneratorManagementInboundPortURI, URIInboundPortConnectRequestProcess, URIInboundPortReceiveRequestNotification);
+		applicationVM = new ApplicationVM(URI_ApplicationVM, ApplicationVMManagementInboundPortURI, RequestSubmissionInboundPortURI, RequestNotificationInboundPortURI);
 		
-		rep.toggleTracing();
-		rep.toggleLogging();
+		requestDisbributor.toggleTracing();
+		requestDisbributor.toggleLogging();
 		
-		deployedComponents.add(rep);
+		deployedComponents.add(requestDisbributor);
 		
-		genReq.toggleTracing();
-		genReq.toggleLogging();
+		requestGenerator.toggleTracing();
+		requestGenerator.toggleLogging();
 		
-		deployedComponents.add(genReq);
+		deployedComponents.add(requestGenerator);
 		
-		appliVM.toggleTracing();
-		appliVM.toggleLogging();
+		/*applicationVM.toggleTracing();
+		applicationVM.toggleLogging();
 		
-		deployedComponents.add(appliVM);
+		deployedComponents.add(applicationVM);*/
 		
-		this.rep.doPortConnection(
-				RepartiteurOutboundPortURI,
-				GenerateurInboundPortURI,
+		this.requestDisbributor.doPortConnection(
+				RequestDistributorManagementOutboundPortURI,
+				RequestGeneratorManagementInboundPortURI,
 				RequestGeneratorManagementConnector.class.getCanonicalName()) ;
 		
-		this.appliVM.doPortConnection(ApplicationOutboundPortURI, RepartiteurInboundPortURI, RequestSubmissionConnector.class.getCanonicalName());
+		/*this.applicationVM.doPortConnection(ApplicationVMManagementOutboundPortURI,
+				RequestDistributorManagementInboundPortURI,
+				RequestSubmissionConnector.class.getCanonicalName());*/
 		
 		super.deploy();
 		

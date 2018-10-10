@@ -4,6 +4,7 @@ import etape1.requestdistributor.interfaces.RequestDistributorManagementI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
+import fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI;
 
 public class RequestDistributorManagementOutboundPort extends AbstractOutboundPort
 implements RequestDistributorManagementI {
@@ -26,8 +27,9 @@ implements RequestDistributorManagementI {
 
 	@Override
 	public Request getRequest() throws Exception {
-
-		return ((RequestDistributorManagementI)this.connector).getRequest();
+		System.out.println(connector.getClass());
+		((RequestGeneratorManagementI)this.connector).startGeneration();
+		return ((RequestGeneratorManagementI)this.connector).getRequest();
 
 	}
 
