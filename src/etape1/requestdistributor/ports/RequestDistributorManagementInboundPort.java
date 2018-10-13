@@ -36,6 +36,8 @@ implements	RequestDistributorManagementI {
 		assert	owner != null && owner instanceof RequestDistributor ;
 	}
 
+
+
 	/*@Override
 	public Request getRequest() throws Exception {
 		this.getOwner().handleRequestAsync(

@@ -4,123 +4,118 @@ import etape1.requestdistributor.interfaces.RequestDistributorManagementI;
 import etape1.requestdistributor.ports.RequestDistributorManagementInboundPort;
 import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
-import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
-import fr.sorbonne_u.components.exceptions.PreconditionException;
-import fr.sorbonne_u.datacenter.software.connectors.RequestSubmissionConnector;
+import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorServicesOutboundPort;
+import fr.sorbonne_u.datacenter.software.connectors.RequestNotificationConnector;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestI;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestNotificationI;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionHandlerI;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionI;
-import fr.sorbonne_u.datacenter.software.ports.RequestNotificationInboundPort;
-import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
+import fr.sorbonne_u.datacenter.software.ports.RequestNotificationOutboundPort;
+import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionInboundPort;
 
-public class RequestDistributor extends AbstractComponent implements RequestSubmissionHandlerI {
-	
-	
-	protected RequestDistributorManagementOutboundPort uriOutboundPort;
-	protected int counter = 0;
-	private String requestSubmissionInboundPortURI;
-	private RequestDistributorManagementInboundPort rgmip;
-	private RequestSubmissionOutboundPort rsop;
-	private RequestNotificationInboundPort rnip;
-	private String uri;
 
-	public RequestDistributor(int nbThreads, int nbSchedulableThreads) {
-		super(nbThreads, nbSchedulableThreads);
-		// TODO Auto-generated constructor stub
-	}
+
+
+public class RequestDistributor extends AbstractComponent implements RequestDistributorManagementI, RequestSubmissionHandlerI {
+
+	private String rd_uri;
+	private RequestDistributorManagementInboundPort managementInboundPort;
+	private String requestNotificationInboundPortURI;
+	private RequestSubmissionInboundPort requestSubmissionInboundPort;
+	private RequestNotificationOutboundPort requestNotificationOutboundPort;
 	
-	public RequestDistributor(String reflectionInboundPortURI,int nbThreads,int nbSchedulableThreads){
-		super(reflectionInboundPortURI, nbThreads, nbSchedulableThreads);
-	}
 	
-	public RequestDistributor(String uri,
-			String managementInboundPortURI,
+	
+	public RequestDistributor(String rd_uri, String managementInboundPortURI,
 			String requestSubmissionInboundPortURI,
-			String requestNotificationInboundPortURI)
-					throws Exception {
-		super(uri, 0,1);
+			String requestNotificationInboundPortURI) throws Exception {
 		
-		assert	uri != null :
-			new PreconditionException("uri can't be null!") ;
+
+		super(1,1);
 		
+		assert rd_uri != null;
 		assert	managementInboundPortURI != null ;
 		assert	requestSubmissionInboundPortURI != null ;
 		assert	requestNotificationInboundPortURI != null ;
-		
-		this.uri = uri;
-		
-		
-		this.requestSubmissionInboundPortURI =
-				requestSubmissionInboundPortURI ;
 
-		this.addOfferedInterface(RequestDistributorManagementI.class) ;
-		this.rgmip = new RequestDistributorManagementInboundPort(
-						managementInboundPortURI, this) ;
-		this.addPort(this.rgmip) ;
-		this.rgmip.publishPort() ;
 		
-		this.addRequiredInterface(RequestSubmissionI.class) ;
-		this.rsop = new RequestSubmissionOutboundPort(this) ;
-		this.addPort(this.rsop) ;
-		this.rsop.publishPort() ;
+		this.rd_uri = rd_uri;
 		
-		this.addOfferedInterface(RequestNotificationI.class) ;
-		this.rnip =
-		new RequestNotificationInboundPort(
-		requestNotificationInboundPortURI, this) ;
-		this.addPort(this.rnip) ;
-		this.rnip.publishPort() ;
+		this.requestNotificationInboundPortURI =
+				requestNotificationInboundPortURI ;
+		
+		addOfferedInterface(RequestDistributorManagementI.class);
 		
 		
-		if (AbstractCVM.isDistributed) {
-			this.executionLog.setDirectory(System.getProperty("user.dir")) ;
-		} else {
-			this.executionLog.setDirectory(System.getProperty("user.home")) ;
-		}
-		this.tracer.setTitle("Request distributor") ;
-		this.tracer.setRelativePosition(1, 1) ;
+		managementInboundPort = new RequestDistributorManagementInboundPort(managementInboundPortURI, this);
+		addPort(managementInboundPort);
+		managementInboundPort.publishPort();
 		
+		addOfferedInterface(RequestSubmissionI.class);
+		requestSubmissionInboundPort = new RequestSubmissionInboundPort(requestSubmissionInboundPortURI, this);
+		addPort(requestSubmissionInboundPort);
+		requestSubmissionInboundPort.publishPort();
+		
+		addRequiredInterface(RequestNotificationI.class);
+		requestNotificationOutboundPort = new RequestNotificationOutboundPort(this);
+		addPort(requestNotificationOutboundPort);
+		requestNotificationOutboundPort.publishPort();
+		
+
+		
+		
+		 
 	}
-
 	
 	@Override
-	public void start() throws ComponentStartException{
-		super.start() ;
-
+	public void start() throws ComponentStartException {
+		
+		super.start();
+		
 		try {
-			this.doPortConnection(
-					this.rsop.getPortURI(),
-					requestSubmissionInboundPortURI,
-					RequestSubmissionConnector.class.getCanonicalName()) ;
+			doPortConnection(requestNotificationOutboundPort.getPortURI(), requestNotificationInboundPortURI,
+					RequestNotificationConnector.class.getCanonicalName());
 		} catch (Exception e) {
 			throw new ComponentStartException(e) ;
 		}
+	}
+	
+	
+	@Override
+	public void			finalise() throws Exception
+	{
+		this.doPortDisconnection(
+							this.requestNotificationOutboundPort.getPortURI()) ;
 		
+		super.finalise() ;
 	}
 	
 	@Override
-	public void			shutdown() throws ComponentShutdownException
-	{
-
+	public void shutdown() throws ComponentShutdownException {
+	
 		try {
-			this.rsop.unpublishPort() ;
-			this.rnip.unpublishPort() ;
-			this.rgmip.unpublishPort() ;
+			requestSubmissionInboundPort.unpublishPort();
+			managementInboundPort.unpublishPort();
+			requestNotificationOutboundPort.unpublishPort();
 		} catch (Exception e) {
-			throw new ComponentShutdownException(e) ;
+			throw new ComponentShutdownException(
+					"processor services outbound port disconnection"
+					+ " error", e) ;
 		}
-
+		
+		
 		super.shutdown();
+		
+		
+		
 	}
+
 
 	@Override
 	public void acceptRequestSubmission(RequestI r) throws Exception {
-
-				
-			logMessage("Requete recue : "+r.getRequestURI());
+		System.out.println("Requete recue : "+r.getRequestURI());
 		
 	}
 
@@ -129,5 +124,6 @@ public class RequestDistributor extends AbstractComponent implements RequestSubm
 		// TODO Auto-generated method stub
 		
 	}
+	
 
 }
