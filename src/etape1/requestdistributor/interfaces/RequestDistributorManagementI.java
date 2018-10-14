@@ -6,6 +6,4 @@ import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 
 public interface RequestDistributorManagementI extends OfferedI, RequiredI {
 	
-
-	
 }

@@ -426,10 +426,12 @@ implements	ProcessorServicesNotificationConsumerI,
 		AllocatedCore ac = this.runningTasks.remove(t.getTaskURI()) ;
 		this.allocatedCoresIdleStatus.remove(ac) ;
 		this.allocatedCoresIdleStatus.put(ac, true) ;
+		
 		if (this.tasksToNotify.contains(t.getTaskURI())) {
 			this.tasksToNotify.remove(t.getTaskURI()) ;
 			this.requestNotificationOutboundPort.
 									notifyRequestTermination(t.getRequest()) ;
+			
 		}
 		if (!this.taskQueue.isEmpty()) {
 			this.startTask() ;
