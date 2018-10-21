@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import etape1.requestdistributor.RequestDistributor;
+import etape1.requestdispatcher.RequestDispatcher;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.processors.Processor;
@@ -38,7 +38,7 @@ public class CVM extends AbstractCVM {
 	protected static final String RequestSubmissionInboundPortURI = "iport_submission_request";
 	protected static final String RequestNotificationInboundPortURI = "iport_notification_request";
 	
-	protected RequestDistributor requestDisbributor ;
+	protected RequestDispatcher requestDisbributor ;
 	protected RequestGenerator requestGenerator ;
 	protected ApplicationVM applicationVM ;
 	protected Integrator integrator;
@@ -113,7 +113,7 @@ public class CVM extends AbstractCVM {
 
 		
 		requestGenerator = new RequestGenerator(URI_RequestGenerator, 500, 10, RequestGeneratorManagementInboundPortURI, requestSubmissionInboundPortURI, requestNotificationInboundPortURI);
-		requestDisbributor = new RequestDistributor(URI_RequestDistributor, RequestDistributorManagementInboundPortURI, requestSubmissionInboundPortURI,
+		requestDisbributor = new RequestDispatcher(URI_RequestDistributor, RequestDistributorManagementInboundPortURI, requestSubmissionInboundPortURI,
 								requestNotificationInboundPortURI,
 								RequestSubmissionInboundPortURI_2, RequestNotificationInboundPortURI_2);
 		

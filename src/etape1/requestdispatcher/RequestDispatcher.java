@@ -1,12 +1,10 @@
-package etape1.requestdistributor;
+package etape1.requestdispatcher;
 
 import etape1.requestdistributor.interfaces.RequestDistributorManagementI;
 import etape1.requestdistributor.ports.RequestDistributorManagementInboundPort;
-import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
-import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorServicesOutboundPort;
 import fr.sorbonne_u.datacenter.software.connectors.RequestNotificationConnector;
 import fr.sorbonne_u.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestI;
@@ -22,7 +20,7 @@ import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
 
 
 
-public class RequestDistributor extends AbstractComponent implements RequestDistributorManagementI,
+public class RequestDispatcher extends AbstractComponent implements RequestDistributorManagementI,
 RequestSubmissionHandlerI,
 RequestNotificationHandlerI{
 
@@ -30,21 +28,22 @@ RequestNotificationHandlerI{
 	private RequestDistributorManagementInboundPort managementInboundPort;
 	private String requestNotificationInboundPortURI;
 	
-	
+	//connecteur pour le generateur
 	private RequestSubmissionInboundPort requestSubmissionInboundPort;
 	private RequestNotificationOutboundPort requestNotificationOutboundPort;
 	
-	private RequestSubmissionOutboundPort requestSubmissionOutboundPort;
-	private RequestNotificationInboundPort requestNotificationInboundPort;
-	private String requestSubmissionInboundPortURI_2;
+	//connecteur pour la VM
+	private RequestSubmissionOutboundPort requestSubmissionOutboundPortVM;
+	private RequestNotificationInboundPort requestNotificationInboundPortVM;
+	private String requestSubmissionInboundPortURIVM;
 	
 	
 	
-	public RequestDistributor(String rd_uri, String managementInboundPortURI,
+	public RequestDispatcher(String rd_uri, String managementInboundPortURI,
 			String requestSubmissionInboundPortURI,
 			String requestNotificationInboundPortURI,
-			String requestSubmissionInboundPortURI_2,
-			String requestNotificationInboundPortURI_2) throws Exception {
+			String requestSubmissionInboundPortURIVM,
+			String requestNotificationInboundPortURIVM) throws Exception {
 		
 
 		super(1,1);
@@ -53,8 +52,8 @@ RequestNotificationHandlerI{
 		assert	managementInboundPortURI != null ;
 		assert	requestSubmissionInboundPortURI != null ;
 		assert	requestNotificationInboundPortURI != null ;
-		assert requestSubmissionInboundPortURI_2 != null;
-		assert requestNotificationInboundPortURI_2 != null;
+		assert requestSubmissionInboundPortURIVM != null;
+		assert requestNotificationInboundPortURIVM != null;
 
 		
 		this.rd_uri = rd_uri;
@@ -62,7 +61,7 @@ RequestNotificationHandlerI{
 		this.requestNotificationInboundPortURI =
 				requestNotificationInboundPortURI ;
 		
-		this.requestSubmissionInboundPortURI_2 = requestSubmissionInboundPortURI_2;
+		this.requestSubmissionInboundPortURIVM = requestSubmissionInboundPortURIVM;
 		
 		addOfferedInterface(RequestDistributorManagementI.class);
 		
@@ -82,14 +81,14 @@ RequestNotificationHandlerI{
 		
 
 		addOfferedInterface(RequestNotificationI.class);
-		requestNotificationInboundPort = new RequestNotificationInboundPort(requestNotificationInboundPortURI_2, this);
-		addPort(requestNotificationInboundPort);
-		requestNotificationInboundPort.publishPort();
+		requestNotificationInboundPortVM = new RequestNotificationInboundPort(requestNotificationInboundPortURIVM, this);
+		addPort(requestNotificationInboundPortVM);
+		requestNotificationInboundPortVM.publishPort();
 		
 		addRequiredInterface(RequestSubmissionI.class);
-		requestSubmissionOutboundPort = new RequestSubmissionOutboundPort(this);
-		addPort(requestSubmissionOutboundPort);
-		requestSubmissionOutboundPort.publishPort();
+		requestSubmissionOutboundPortVM = new RequestSubmissionOutboundPort(this);
+		addPort(requestSubmissionOutboundPortVM);
+		requestSubmissionOutboundPortVM.publishPort();
 		
 		 
 	}
@@ -103,8 +102,8 @@ RequestNotificationHandlerI{
 			doPortConnection(requestNotificationOutboundPort.getPortURI(), requestNotificationInboundPortURI,
 					RequestNotificationConnector.class.getCanonicalName());
 			
-			doPortConnection(requestSubmissionOutboundPort.getPortURI(),
-					requestSubmissionInboundPortURI_2,
+			doPortConnection(requestSubmissionOutboundPortVM.getPortURI(),
+					requestSubmissionInboundPortURIVM,
 					RequestSubmissionConnector.class.getCanonicalName());
 			
 		} catch (Exception e) {
@@ -119,7 +118,7 @@ RequestNotificationHandlerI{
 		this.doPortDisconnection(
 							this.requestNotificationOutboundPort.getPortURI()) ;
 		
-		doPortDisconnection(requestSubmissionOutboundPort.getPortURI());
+		doPortDisconnection(requestSubmissionOutboundPortVM.getPortURI());
 		
 		super.finalise() ;
 	}
@@ -131,8 +130,8 @@ RequestNotificationHandlerI{
 			requestSubmissionInboundPort.unpublishPort();
 			managementInboundPort.unpublishPort();
 			requestNotificationOutboundPort.unpublishPort();
-			requestSubmissionOutboundPort.unpublishPort();
-			requestNotificationInboundPort.unpublishPort();
+			requestSubmissionOutboundPortVM.unpublishPort();
+			requestNotificationInboundPortVM.unpublishPort();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(
 					"processor services outbound port disconnection"
@@ -156,8 +155,8 @@ RequestNotificationHandlerI{
 
 	@Override
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
-		logMessage("Requete recue : "+r.getRequestURI());
-		requestSubmissionOutboundPort.submitRequestAndNotify(r);
+		logMessage("RequestDispatcher "+rd_uri+" Requete recue et notification: "+r.getRequestURI());
+		requestSubmissionOutboundPortVM.submitRequestAndNotify(r);
 		
 	}
 

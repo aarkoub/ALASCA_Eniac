@@ -1,6 +1,6 @@
 package etape1.requestdistributor.ports;
 
-import etape1.requestdistributor.RequestDistributor;
+import etape1.requestdispatcher.RequestDispatcher;
 import etape1.requestdistributor.interfaces.RequestDistributorManagementI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
@@ -23,7 +23,7 @@ implements	RequestDistributorManagementI {
 	{
 		super(RequestDistributorManagementI.class, owner) ;
 
-		assert	owner != null && owner instanceof RequestDistributor ;
+		assert	owner != null && owner instanceof RequestDispatcher ;
 	}
 
 	public	RequestDistributorManagementInboundPort(
@@ -33,7 +33,7 @@ implements	RequestDistributorManagementI {
 	{
 		super(uri, RequestDistributorManagementI.class, owner);
 
-		assert	owner != null && owner instanceof RequestDistributor ;
+		assert	owner != null && owner instanceof RequestDispatcher ;
 	}
 
 
