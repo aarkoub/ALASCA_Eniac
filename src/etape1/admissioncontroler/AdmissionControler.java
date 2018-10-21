@@ -1,14 +1,15 @@
 package etape1.admissioncontroler;
 
 import etape1.admissioncontroler.interfaces.AdmissionControlerManagementI;
+import etape1.admissioncontroler.interfaces.RequestAdmissionI;
+import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestNotificationI;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionI;
 import fr.sorbonne_u.datacenter.software.ports.RequestNotificationOutboundPort;
 import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionInboundPort;
-import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 
-public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI  {
+public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI, RequestAdmissionSubmissionHandlerI{
 	
 	String uri;
 	String RequestNotificationInboundPortURI;
@@ -49,10 +50,24 @@ public class AdmissionControler extends AbstractComponent implements AdmissionCo
 	
 	
 
+
+
+
 	@Override
-	public boolean acceptRequest(Request r) {
+	public void acceptRequestAdmissionSubmission(RequestAdmissionI requestai) throws Exception {
 		// TODO Auto-generated method stub
-		return false;
+		
 	}
+
+
+
+	@Override
+	public void acceptRequestAdmissionSubmissionAndNotify(RequestAdmissionI requestai) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
 	
 }
