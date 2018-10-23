@@ -2,11 +2,8 @@ package etape1.requestdistributor.ports;
 
 import etape1.requestdispatcher.RequestDispatcher;
 import etape1.requestdistributor.interfaces.RequestDistributorManagementI;
-import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
-import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
-import fr.sorbonne_u.datacenterclient.requestgenerator.RequestGenerator;
 
 public class RequestDistributorManagementInboundPort extends		AbstractInboundPort
 implements	RequestDistributorManagementI {

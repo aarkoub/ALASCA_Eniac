@@ -7,6 +7,11 @@ import fr.sorbonne_u.components.connectors.AbstractConnector;
 public class RequestAdmissionSubmissionConnector extends AbstractConnector implements RequestAdmissionSubmissionI {
 
 	@Override
+	public String getSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
+		return ((RequestAdmissionSubmissionI)this.offering).getSubmissionInboundPortURI(requestAdmission);
+	}
+
+	/*@Override
 	public void acceptRequestAdmissionSubmission(RequestAdmissionI requestai) throws Exception {
 		((RequestAdmissionSubmissionI)this.offering).acceptRequestAdmissionSubmission(requestai);
 
@@ -16,6 +21,6 @@ public class RequestAdmissionSubmissionConnector extends AbstractConnector imple
 	public void acceptRequestAdmissionSubmissionAndNotify(RequestAdmissionI requestai) throws Exception {
 		((RequestAdmissionSubmissionI)this.offering).acceptRequestAdmissionSubmissionAndNotify(requestai);
 
-	}
+	}*/
 
 }

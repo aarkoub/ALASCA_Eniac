@@ -24,6 +24,12 @@ public class RequestAdmissionSubmissionOutboundPort extends AbstractOutboundPort
 	}
 
 	@Override
+	public String getSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
+		
+		return ((RequestAdmissionSubmissionI)this.connector).getSubmissionInboundPortURI(requestAdmission);
+	}
+
+	/*@Override
 	public void acceptRequestAdmissionSubmission(RequestAdmissionI requestai) throws Exception {
 		((RequestAdmissionSubmissionI)this.connector).acceptRequestAdmissionSubmission(requestai);
 
@@ -33,6 +39,6 @@ public class RequestAdmissionSubmissionOutboundPort extends AbstractOutboundPort
 	public void acceptRequestAdmissionSubmissionAndNotify(RequestAdmissionI requestai) throws Exception {
 		((RequestAdmissionSubmissionI)this.connector).acceptRequestAdmissionSubmissionAndNotify(requestai);
 
-	}
+	}*/
 
 }
