@@ -135,7 +135,7 @@ public class CVM2 extends AbstractCVM {
 			
 			computers.add(c);
 			computerMonitors.add(computerMonitor);
-			computersURI.add(computerURI);
+			computersURI.add(ComputerServicesInboundPortURI);
 			
 			
 		}

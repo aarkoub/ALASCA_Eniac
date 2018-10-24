@@ -146,19 +146,21 @@ RequestAdmissionSubmissionHandlerI{
 			
 			requestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
 			
-			//String ComputerServicesInboundPortURI = "computer_services_outbound_"+ressources_libres;
+			String ComputerServicesInboundPortURI = "computer_services_outbound_"+ressources_libres;
 			
-			/*CVM4DynamicPurpose cvm = new CVM4DynamicPurpose(dispatcher, 
+			CVM4DynamicPurpose cvm = new CVM4DynamicPurpose(dispatcher, 
 					appliVM, computers.get(ressources_libres), computerMonitors.get(ressources_libres),
-					distribOutPortURI, appliOutPortURI, ComputerServicesInboundPortURI);*/
+					distribInPortURI, appliInPortURI, computersURI.get(ressources_libres));
 			
+			cvm.deploy();
+			cvm.getIntegrator().start();
+			cvm.getIntegrator().execute();
 			
-			/*computers.get(ressources_libres).start();
+			computers.get(ressources_libres).start();
 			computerMonitors.get(ressources_libres).start();
 			appliVM.start();
 			dispatcher.start();
 			
-			Thread.sleep(15000L);*/
 
 			return requestSubmissionInboundPortURI;
 		}

@@ -2,11 +2,12 @@ package etape1.cvm;
 
 import etape1.admissioncontroler.connectors.AdmissionControlerManagementConnector;
 import etape1.admissioncontroler.ports.AdmissionControlerManagementOutboundPort;
+import etape1.requestGeneratorForAdmissionControler.RequestGeneratorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.datacenterclient.requestgenerator.connectors.RequestGeneratorManagementConnector;
-import fr.sorbonne_u.datacenterclient.requestgenerator.ports.RequestGeneratorManagementOutboundPort;
+
 
 public class Integrator2 extends AbstractComponent {
 	
@@ -64,9 +65,9 @@ public class Integrator2 extends AbstractComponent {
 	{
 		super.execute() ;
 	
-		System.out.println("ICI");
-		this.generatorOutboundPort.startGeneration() ;
 		
+		this.generatorOutboundPort.startGeneration() ;
+		System.out.println("ICI");
 		// wait 20 seconds
 		Thread.sleep(2000L) ;
 		// then stop the generation.
