@@ -19,7 +19,7 @@ implements	AdmissionControlerManagementI {
 		ComponentI owner
 		) throws Exception
 	{
-		super(AdmissionControlerManagementInboundPort.class, owner) ;
+		super(AdmissionControlerManagementI.class, owner) ;
 
 		assert	owner != null && owner instanceof AdmissionControler ;
 	}
@@ -29,7 +29,7 @@ implements	AdmissionControlerManagementI {
 		ComponentI owner
 		) throws Exception
 	{
-		super(uri, AdmissionControlerManagementInboundPort.class, owner);
+		super(uri, AdmissionControlerManagementI.class, owner);
 
 		assert	owner != null && owner instanceof AdmissionControler ;
 	}

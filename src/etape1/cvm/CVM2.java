@@ -1,10 +1,18 @@
 package etape1.cvm;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import etape1.admissioncontroler.AdmissionControler;
 import etape1.requestGeneratorForAdmissionControler.RequestGenerator;
 import etape1.requestdispatcher.RequestDispatcher;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.processors.Processor;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
@@ -36,7 +44,7 @@ public class CVM2 extends AbstractCVM {
 	protected RequestDispatcher requestDisbributor ;
 	protected RequestGenerator requestGenerator ;
 	protected ApplicationVM applicationVM ;
-	protected Integrator integrator;
+	protected Integrator2 integrator;
 	protected ComputerMonitor computerMonitor;
 	protected AdmissionControler admissionControler;
 	
@@ -57,6 +65,12 @@ public class CVM2 extends AbstractCVM {
 	protected static final String admissionControlerManagementInboundURI = "admission_controler_management_inbound_uri";
 	protected static final String requestAdmissionSubmissionInboundPortURI = "request_admission_submission_inbound_port_uri";
 	
+	
+	protected List<Computer> computers = new ArrayList<>();
+	protected List<ComputerMonitor> computerMonitors = new ArrayList<>();
+	protected List<String> computerMonitorsURI = new ArrayList<>();
+	protected List<String> computersURI = new ArrayList<>();
+		
 	public CVM2(boolean isDistributed) throws Exception {
 		super(isDistributed);
 		// TODO Auto-generated constructor stub
@@ -73,11 +87,68 @@ public class CVM2 extends AbstractCVM {
 		
 		assert	!this.deploymentDone() ;
 		
+		int max_ressources = 2;
+		
+		
+			for(int i=0; i<max_ressources; i++) {
+			
+			String ComputerDynamicStateDataInboundPortURI = "computerDynamic_inport_uri_"+i;
+			String ComputerStaticStateDataInboundPortURI = "computerStatic_inport_uri_"+i;
+			String ComputerServicesInboundPortURI = "computer_in_port_"+i;
+			
+			
+			String computerURI = "computer_"+i ;
+			int numberOfProcessors = 2 ;
+			int numberOfCores = 2 ;
+			Set<Integer> admissibleFrequencies = new HashSet<Integer>() ;
+			admissibleFrequencies.add(1500) ;	// Cores can run at 1,5 GHz
+			admissibleFrequencies.add(3000) ;	// and at 3 GHz
+			Map<Integer,Integer> processingPower = new HashMap<Integer,Integer>() ;
+			processingPower.put(1500, 1500000) ;	// 1,5 GHz executes 1,5 Mips
+			processingPower.put(3000, 3000000) ;	// 3 GHz executes 3 Mips
+			Computer c = new Computer(
+								computerURI,
+								admissibleFrequencies,
+								processingPower,  
+								1500,		// Test scenario 1, frequency = 1,5 GHz
+								// 3000,	// Test scenario 2, frequency = 3 GHz
+								1500,		// max frequency gap within a processor
+								numberOfProcessors,
+								numberOfCores,
+								ComputerServicesInboundPortURI,
+								ComputerStaticStateDataInboundPortURI,
+								ComputerDynamicStateDataInboundPortURI) ;
+			/*this.addDeployedComponent(c) ;
+			c.toggleLogging() ;
+			c.toggleTracing() ;*/
+			// --------------------------------------------------------------------
+
+			// --------------------------------------------------------------------
+			// Create the computer monitor component and connect its to ports
+			// with the computer component.
+			// --------------------------------------------------------------------
+			this.computerMonitor = new ComputerMonitor(computerURI,
+										 true,
+										 ComputerStaticStateDataInboundPortURI,
+										 ComputerDynamicStateDataInboundPortURI) ;
+			//this.addDeployedComponent(this.computerMonitor) ;
+			
+			computers.add(c);
+			computerMonitors.add(computerMonitor);
+			computersURI.add(computerURI);
+			
+			
+		}
+		
+		
 		
 		admissionControler = new AdmissionControler(admissionControlerURI,
-				2, 
+				max_ressources, 
 				admissionControlerManagementInboundURI, 
-				requestAdmissionSubmissionInboundPortURI, this);
+				requestAdmissionSubmissionInboundPortURI,
+				computers,
+				computerMonitors,
+				computersURI);
 		
 		
 		requestGenerator = new RequestGenerator(URI_RequestGenerator, 500, 10, 
@@ -94,10 +165,10 @@ public class CVM2 extends AbstractCVM {
 		
 		addDeployedComponent(admissionControler);
 		
-		Integrator2 integrator = new Integrator2(RequestGeneratorManagementInboundPortURI,
+		integrator = new Integrator2(RequestGeneratorManagementInboundPortURI,
 				admissionControlerManagementInboundURI);
 		
-		addDeployedComponent(this.integrator) ;
+		addDeployedComponent(integrator) ;
 		
 		
 		

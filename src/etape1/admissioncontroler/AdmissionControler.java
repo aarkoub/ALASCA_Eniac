@@ -10,10 +10,13 @@ import java.util.Set;
 import etape1.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
+import etape1.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
 import etape1.admissioncontroler.ports.RequestAdmissionSubmissionInboundPort;
 import etape1.cvm.CVM2;
+import etape1.cvm.CVM4DynamicPurpose;
 import etape1.requestdispatcher.RequestDispatcher;
 import etape1.requestdistributor.connectors.RequestDistributorManagementConnector;
+import etape1.requestdistributor.ports.RequestDistributorManagementInboundPort;
 import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
@@ -35,20 +38,25 @@ RequestAdmissionSubmissionHandlerI{
 	
 	List<RequestDispatcher> available = new ArrayList<>();
 	List<RequestDispatcher> used = new ArrayList<>();
-	List<String> computersURI = new ArrayList<>();
-	List<Computer> computers = new ArrayList<>();
-	CVM2 cvm ;
+	List<ApplicationVM> usedVM = new ArrayList<>();
+	List<String> computersURI;
+	List<Computer> computers ;
+	List<ComputerMonitor> computerMonitors ;
+
 	
 	RequestAdmissionSubmissionInboundPort reqSubInPort;
 	
 	private int id=0;
+	private AdmissionControlerManagementInboundPort managementInboundPort;
 	
 	
 	public AdmissionControler(String uri, 
 			int nbComputers,
 			String AdmissionControlerManagementInboundURI,
 			String RequestAdmissionSubmissionInboundPortURI,
-			CVM2 cvm) throws Exception{
+			List<Computer> computers,
+			List<ComputerMonitor> computerMonitors,
+			List<String> computersURI) throws Exception{
 		
 		super(1,1);
 		
@@ -56,12 +64,17 @@ RequestAdmissionSubmissionHandlerI{
 		assert uri != null;
 		assert AdmissionControlerManagementInboundURI != null;
 		assert RequestAdmissionSubmissionInboundPortURI != null;
-		assert cvm != null;
 		
-		this.cvm = cvm;
+		this.computers = computers;
+		this.computerMonitors = computerMonitors ;
+		this.computersURI = computersURI;
 		
 		max_ressources = nbComputers;
 		this.uri = uri;
+		
+		managementInboundPort = new AdmissionControlerManagementInboundPort(AdmissionControlerManagementInboundURI, this);
+		addPort(managementInboundPort);
+		managementInboundPort.publishPort();
 		
 		addOfferedInterface(RequestSubmissionI.class);
 		reqSubInPort = new RequestAdmissionSubmissionInboundPort(RequestAdmissionSubmissionInboundPortURI, this);
@@ -71,7 +84,10 @@ RequestAdmissionSubmissionHandlerI{
 		
 	}
 	
-
+	@Override
+	public void start(){
+		
+	}
 
 
 	/*@Override
@@ -88,70 +104,6 @@ RequestAdmissionSubmissionHandlerI{
 		
 	}*/
 	
-	@Override
-	public void start(){
-		initiateComputer();
-	}
-
-
-	private void initiateComputer() {
-		
-		
-		for(int i=0; i<max_ressources; i++) {
-			
-			String ComputerDynamicStateDataInboundPortURI = "computerDynamic_inport_uri_"+i;
-			String ComputerStaticStateDataInboundPortURI = "computerStatic_inport_uri_"+i;
-			String ComputerServicesInboundPortURI = "computer_in_port_"+i;
-			
-			
-			String computerURI = "computer_"+i ;
-			int numberOfProcessors = 2 ;
-			int numberOfCores = 2 ;
-			Set<Integer> admissibleFrequencies = new HashSet<Integer>() ;
-			admissibleFrequencies.add(1500) ;	// Cores can run at 1,5 GHz
-			admissibleFrequencies.add(3000) ;	// and at 3 GHz
-			Map<Integer,Integer> processingPower = new HashMap<Integer,Integer>() ;
-			processingPower.put(1500, 1500000) ;	// 1,5 GHz executes 1,5 Mips
-			processingPower.put(3000, 3000000) ;	// 3 GHz executes 3 Mips
-			
-			
-			try {
-				Computer c = new Computer(
-									computerURI,
-									admissibleFrequencies,
-									processingPower,  
-									1500,		// Test scenario 1, frequency = 1,5 GHz
-									// 3000,	// Test scenario 2, frequency = 3 GHz
-									1500,		// max frequency gap within a processor
-									numberOfProcessors,
-									numberOfCores,
-									ComputerServicesInboundPortURI,
-									ComputerStaticStateDataInboundPortURI,
-									ComputerDynamicStateDataInboundPortURI);
-				ComputerMonitor computerMonitor = new ComputerMonitor(computerURI,
-						 true,
-						 ComputerStaticStateDataInboundPortURI,
-						 ComputerDynamicStateDataInboundPortURI) ;
-				
-				cvm.addDeployedComponent(computerMonitor);
-				/*c.toggleLogging() ;
-				c.toggleTracing() ;*/
-
-				computersURI.add(ComputerServicesInboundPortURI);
-				
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-		
-		
-		
-		
-	}
-
-
 
 	@Override
 	public String getSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
@@ -166,38 +118,20 @@ RequestAdmissionSubmissionHandlerI{
 			String distribInPortURI = "dispatcher_management_inbound_port_URI_"+id;
 			String requestSubmissionInboundPortURI = "dispatcher_submission_inboud_port_URI_"+id;
 			String requestNotificationInboundPortURI = requestAdmission.getRequestNotificationPortURI();
+			String distribOutPortURI = "dispatcher_management_outbound_port_URI_"+id;
 			
 			String vmURI = "appli_vm_"+id;
 			String appliInPortURI = "appli_vm_management_inbound_port_URI_"+id;
 			String requestSubmissionInboundPortURIVM = "request_sub_inbound_port_uri_"+id;
 			String requestNotificationInboundPortURIVM = "request_notif_inbound_port_uri_"+id;
-			
-			
-
-			distribOutboundPort = new RequestDistributorManagementOutboundPort(this);
-			addPort(distribOutboundPort);
-			distribOutboundPort.publishPort();
-			
-			/*appliOutboundPort = new ApplicationVMManagementOutboundPort(this);
-			addPort(appliOutboundPort);
-			appliOutboundPort.publishPort();
-			
-			computerOutboundPort = new ComputerServicesOutboundPort(this);
-			addPort(computerOutboundPort);
-			computerOutboundPort.publishPort();
-			
-			String computerInPort = computersURI.get(ressources_libres);
-			
-			
-			
-			AllocatedCore[] ac = computerOutboundPort.allocateCores(4) ;
-			appliOutboundPort.allocateCores(ac) ;
+			String appliOutPortURI = "appli_vm_management_outbound_port_URI_"+id;
+	
 			
 			
 			ApplicationVM appliVM = new ApplicationVM(vmURI, 
 					appliInPortURI,
 					requestSubmissionInboundPortURIVM, 
-					requestNotificationInboundPortURIVM);*/
+					requestNotificationInboundPortURIVM);
 			
 			RequestDispatcher dispatcher = new RequestDispatcher(rd_uri,
 					distribInPortURI, 
@@ -206,18 +140,25 @@ RequestAdmissionSubmissionHandlerI{
 					requestSubmissionInboundPortURIVM,
 					requestNotificationInboundPortURIVM);
 			
-			//cvm.addDeployedComponent(appliVM);
-			cvm.addDeployedComponent(dispatcher);
-			
-			doPortConnection(distribOutboundPort.getPortURI(), distribInPortURI, RequestDistributorManagementConnector.class.getCanonicalName()) ;
-			//doPortConnection(computerOutboundPort.getPortURI(), computerInPort, ComputerServicesConnector.class.getCanonicalName());
-			//doPortConnection(appliOutboundPort.getPortURI(), appliInPortURI, ApplicationVMManagementConnector.class.getCanonicalName());
 			
 			used.add(dispatcher);
+			usedVM.add(appliVM);
 			
 			requestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
 			
-			System.out.println(requestAdmission.getRequestSubmissionPortURI());
+			//String ComputerServicesInboundPortURI = "computer_services_outbound_"+ressources_libres;
+			
+			/*CVM4DynamicPurpose cvm = new CVM4DynamicPurpose(dispatcher, 
+					appliVM, computers.get(ressources_libres), computerMonitors.get(ressources_libres),
+					distribOutPortURI, appliOutPortURI, ComputerServicesInboundPortURI);*/
+			
+			
+			/*computers.get(ressources_libres).start();
+			computerMonitors.get(ressources_libres).start();
+			appliVM.start();
+			dispatcher.start();
+			
+			Thread.sleep(15000L);*/
 
 			return requestSubmissionInboundPortURI;
 		}

@@ -9,12 +9,12 @@ implements AdmissionControlerManagementI {
 
 	
 	public AdmissionControlerManagementOutboundPort(String uri, ComponentI owner ) throws Exception{
-		super(uri, AdmissionControlerManagementOutboundPort.class, owner);
+		super(uri, AdmissionControlerManagementI.class, owner);
 		assert	uri != null && owner != null ;
 	}
 	
 	public AdmissionControlerManagementOutboundPort(ComponentI owner) throws Exception {
-		super(AdmissionControlerManagementOutboundPort.class, owner);
+		super(AdmissionControlerManagementI.class, owner);
 		assert owner!=null;
 	}
 	
