@@ -12,6 +12,7 @@ import etape1.cvm.CVM4DynamicPurpose;
 import etape1.requestdispatcher.RequestDispatcher;
 import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
+import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
@@ -129,6 +130,13 @@ RequestAdmissionSubmissionHandlerI{
 			cvm.deploy();
 			cvm.getIntegrator().start();
 			cvm.getIntegrator().execute();
+			
+			AbstractCVM currentCVM = AbstractCVM.getCVM();
+			
+			currentCVM.addDeployedComponent(computers.get(ressources_libres));
+			currentCVM.addDeployedComponent(computerMonitors.get(ressources_libres));
+			currentCVM.addDeployedComponent(appliVM);
+			currentCVM.addDeployedComponent(dispatcher);
 			
 			computers.get(ressources_libres).start();
 			computerMonitors.get(ressources_libres).start();
