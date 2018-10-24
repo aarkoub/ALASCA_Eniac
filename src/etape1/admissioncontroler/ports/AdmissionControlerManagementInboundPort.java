@@ -1,5 +1,6 @@
 package etape1.admissioncontroler.ports;
 
+import etape1.admissioncontroler.AdmissionControler;
 import etape1.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import etape1.requestdispatcher.RequestDispatcher;
 import fr.sorbonne_u.components.ComponentI;
@@ -20,7 +21,7 @@ implements	AdmissionControlerManagementI {
 	{
 		super(AdmissionControlerManagementInboundPort.class, owner) ;
 
-		assert	owner != null && owner instanceof RequestDispatcher ;
+		assert	owner != null && owner instanceof AdmissionControler ;
 	}
 
 	public	AdmissionControlerManagementInboundPort(
@@ -30,7 +31,7 @@ implements	AdmissionControlerManagementI {
 	{
 		super(uri, AdmissionControlerManagementInboundPort.class, owner);
 
-		assert	owner != null && owner instanceof RequestDispatcher ;
+		assert	owner != null && owner instanceof AdmissionControler ;
 	}
 
 
