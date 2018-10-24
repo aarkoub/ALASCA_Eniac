@@ -1,31 +1,21 @@
 package etape1.admissioncontroler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import etape1.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import etape1.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
 import etape1.admissioncontroler.ports.RequestAdmissionSubmissionInboundPort;
-import etape1.cvm.CVM2;
 import etape1.cvm.CVM4DynamicPurpose;
 import etape1.requestdispatcher.RequestDispatcher;
-import etape1.requestdistributor.connectors.RequestDistributorManagementConnector;
-import etape1.requestdistributor.ports.RequestDistributorManagementInboundPort;
 import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
-import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
-import fr.sorbonne_u.datacenter.hardware.computers.connectors.ComputerServicesConnector;
 import fr.sorbonne_u.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
-import fr.sorbonne_u.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionI;
 
@@ -89,22 +79,6 @@ RequestAdmissionSubmissionHandlerI{
 		
 	}
 
-
-	/*@Override
-	public void acceptRequestAdmissionSubmission(RequestAdmissionI requestai) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-
-	@Override
-	public void acceptRequestAdmissionSubmissionAndNotify(RequestAdmissionI requestai) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}*/
-	
-
 	@Override
 	public String getSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
 		
@@ -167,7 +141,19 @@ RequestAdmissionSubmissionHandlerI{
 		return null;
 	}
 
+	/*@Override
+	public void acceptRequestAdmissionSubmission(RequestAdmissionI requestai) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
 
+
+
+	@Override
+	public void acceptRequestAdmissionSubmissionAndNotify(RequestAdmissionI requestai) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}*/
 
 	
 }

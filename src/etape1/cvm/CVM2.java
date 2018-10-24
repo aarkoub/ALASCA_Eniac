@@ -73,7 +73,6 @@ public class CVM2 extends AbstractCVM {
 		
 	public CVM2(boolean isDistributed) throws Exception {
 		super(isDistributed);
-		// TODO Auto-generated constructor stub
 	}
 	
 	public CVM2() throws Exception {
@@ -88,15 +87,11 @@ public class CVM2 extends AbstractCVM {
 		assert	!this.deploymentDone() ;
 		
 		int max_ressources = 2;
+		for(int i=0; i<max_ressources; i++) {
 		
-		
-			for(int i=0; i<max_ressources; i++) {
-			
 			String ComputerDynamicStateDataInboundPortURI = "computerDynamic_inport_uri_"+i;
 			String ComputerStaticStateDataInboundPortURI = "computerStatic_inport_uri_"+i;
 			String ComputerServicesInboundPortURI = "computer_in_port_"+i;
-			
-			
 			String computerURI = "computer_"+i ;
 			int numberOfProcessors = 2 ;
 			int numberOfCores = 2 ;
@@ -118,11 +113,11 @@ public class CVM2 extends AbstractCVM {
 								ComputerServicesInboundPortURI,
 								ComputerStaticStateDataInboundPortURI,
 								ComputerDynamicStateDataInboundPortURI) ;
-			/*this.addDeployedComponent(c) ;
+			this.addDeployedComponent(c) ;
 			c.toggleLogging() ;
-			c.toggleTracing() ;*/
+			c.toggleTracing() ;
 			// --------------------------------------------------------------------
-
+	
 			// --------------------------------------------------------------------
 			// Create the computer monitor component and connect its to ports
 			// with the computer component.
@@ -131,7 +126,7 @@ public class CVM2 extends AbstractCVM {
 										 true,
 										 ComputerStaticStateDataInboundPortURI,
 										 ComputerDynamicStateDataInboundPortURI) ;
-			//this.addDeployedComponent(this.computerMonitor) ;
+			this.addDeployedComponent(this.computerMonitor) ;
 			
 			computers.add(c);
 			computerMonitors.add(computerMonitor);

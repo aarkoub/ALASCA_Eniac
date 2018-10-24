@@ -67,7 +67,6 @@ public class Integrator2 extends AbstractComponent {
 	
 		
 		this.generatorOutboundPort.startGeneration() ;
-		System.out.println("ICI");
 		// wait 20 seconds
 		Thread.sleep(2000L) ;
 		// then stop the generation.

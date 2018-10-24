@@ -148,22 +148,21 @@ RequestNotificationHandlerI{
 
 	@Override
 	public void acceptRequestSubmission(RequestI r) throws Exception {
-		//logMessage("Requete recue : "+r.getRequestURI());
-		//requestSubmissionOutboundPort.submitRequest(r);
+		logMessage("RequestDispatcher "+rd_uri+" requete reçue "+r.getRequestURI());
+		requestSubmissionOutboundPortVM.submitRequest(r);
 		
 	}
 
 	@Override
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
-		logMessage("RequestDispatcher "+rd_uri+" Requete recue et notification: "+r.getRequestURI());
+		logMessage("RequestDispatcher "+rd_uri+" requete reçue avec notification: "+r.getRequestURI());
 		requestSubmissionOutboundPortVM.submitRequestAndNotify(r);
 		
 	}
 
 	@Override
 	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
-
-		logMessage("Requete finie : "+r.getRequestURI());
+		logMessage("Requete terminé : "+r.getRequestURI());
 		requestNotificationOutboundPort.notifyRequestTermination(r);
 	}
 	

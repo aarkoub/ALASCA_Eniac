@@ -125,6 +125,9 @@ implements	RequestNotificationHandlerI
 	/** a future pointing to the next request generation task.				*/
 	protected Future<?>						nextRequestTaskFuture ;
 	
+	
+	
+	
 	protected RequestAdmissionSubmissionOutboundPort requestAdmissionOutport;
 	
 	protected String requestAdmissionInboundPortURI;
@@ -207,13 +210,19 @@ implements	RequestNotificationHandlerI
 		this.addPort(this.rnip) ;
 		this.rnip.publishPort() ;
 		
+		
+		
+		
+		// Creation de l'objet contenant l'URI de notification du RequestGenerator
+		requestAdmission = new RequestAdmission(requestNotificationInboundPortURI);
+		
+		// Ajout du port pour soumettre la demande d'hebergement au Controleur d'Admission
 		addRequiredInterface(RequestAdmissionI.class);
 		requestAdmissionOutport = new RequestAdmissionSubmissionOutboundPort(this);
 		addPort(requestAdmissionOutport);
 		requestAdmissionOutport.publishPort();
+
 		
-		
-		requestAdmission = new RequestAdmission(requestNotificationInboundPortURI);
 
 		// post-conditions check
 		assert	this.rng != null && this.counter >= 0 ;
@@ -234,34 +243,33 @@ implements	RequestNotificationHandlerI
 	{
 		super.start() ;
 		
-		try {
 		
-		doPortConnection(requestAdmissionOutport.getPortURI(), 
-				requestAdmissionInboundPortURI,
-				RequestAdmissionSubmissionConnector.class.getCanonicalName());
-		}
-		catch(Exception e) {
+		// Connexion du port pour demander au controleur d'admission
+		try {
+			doPortConnection(requestAdmissionOutport.getPortURI(), 
+					requestAdmissionInboundPortURI,
+					RequestAdmissionSubmissionConnector.class.getCanonicalName());
+		}catch(Exception e) {
 			throw new ComponentStartException(e) ;
 		}
 		
+		
+		// Soumission de la demande d'hebergement (recupere le port de soumission de Request Dispatcher)
 		String reqSubInboundPortURI = null;
 		try {
-			
-			reqSubInboundPortURI = requestAdmissionOutport.getSubmissionInboundPortURI(requestAdmission);
-			
+			reqSubInboundPortURI = requestAdmissionOutport.getSubmissionInboundPortURI(requestAdmission);	
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-		try {
-			requestAdmissionOutport.unpublishPort();
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
-		System.out.println(reqSubInboundPortURI);
+		
+		// Desinscription du port de soumission du Controleur d'Admission
+		try {
+			requestAdmissionOutport.unpublishPort();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
 		
 		if(requestAdmission.getRequestSubmissionPortURI()==null) {
 			throw new ComponentStartException("Refus du controleur d'admission");
@@ -269,6 +277,7 @@ implements	RequestNotificationHandlerI
 		}
 		
 		
+		// Connexion du port de soumission vers le Request Dispatcher
 		try {
 			this.doPortConnection(
 					this.rsop.getPortURI(),
