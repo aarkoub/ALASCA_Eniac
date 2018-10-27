@@ -54,7 +54,6 @@ import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionI;
 import fr.sorbonne_u.datacenter.software.ports.RequestNotificationInboundPort;
 import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
 import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
-import fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI;
 import fr.sorbonne_u.datacenterclient.utils.TimeProcessing;
 
 /**
@@ -135,6 +134,8 @@ implements	RequestNotificationHandlerI
 	protected String requestNotificationInboundPortURI;
 	
 	protected RequestAdmissionI requestAdmission;
+	
+	private boolean executionDone = false;
 
 	// -------------------------------------------------------------------------
 	// Constructors
@@ -241,51 +242,63 @@ implements	RequestNotificationHandlerI
 	@Override
 	public void			start() throws ComponentStartException
 	{
-		super.start() ;
-		
+		super.start();
 		
 		// Connexion du port pour demander au controleur d'admission
 		try {
 			doPortConnection(requestAdmissionOutport.getPortURI(), 
-					requestAdmissionInboundPortURI,
+				requestAdmissionInboundPortURI,
 					RequestAdmissionSubmissionConnector.class.getCanonicalName());
 		}catch(Exception e) {
 			throw new ComponentStartException(e) ;
 		}
-		
-		
-		// Soumission de la demande d'hebergement (recupere le port de soumission de Request Dispatcher)
-		String reqSubInboundPortURI = null;
-		try {
-			reqSubInboundPortURI = requestAdmissionOutport.getSubmissionInboundPortURI(requestAdmission);	
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
-		
-		// Desinscription du port de soumission du Controleur d'Admission
-		try {
-			requestAdmissionOutport.unpublishPort();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
-		
-		if(requestAdmission.getRequestSubmissionPortURI()==null) {
-			throw new ComponentStartException("Refus du controleur d'admission");
 			
+	}
+	
+	@Override
+	public void execute() throws Exception{
+		
+		if(!executionDone){
+			super.execute() ;
+	
+			requestAdmission.setRequestGeneratorManagementInboundPortURI(rgmip.getPortURI());
+			
+			// Soumission de la demande d'hebergement (recupere le port de soumission de Request Dispatcher)
+			String reqSubInboundPortURI = null;
+			try {
+				reqSubInboundPortURI = requestAdmissionOutport.getSubmissionInboundPortURI(requestAdmission);	
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			
+			
+			// Desinscription du port de soumission du Controleur d'Admission
+			try {
+				requestAdmissionOutport.unpublishPort();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			
+			
+			
+			if(requestAdmission.getRequestSubmissionPortURI()==null) {
+				throw new ComponentStartException("Refus du controleur d'admission");
+				
+			}
+			
+			
+			// Connexion du port de soumission vers le Request Dispatcher
+			try {
+				this.doPortConnection(
+						this.rsop.getPortURI(),
+						reqSubInboundPortURI,
+						RequestSubmissionConnector.class.getCanonicalName()) ;
+			} catch (Exception e) {
+				throw new ComponentStartException(e) ;
+			}
+			executionDone = true;
 		}
 		
-		
-		// Connexion du port de soumission vers le Request Dispatcher
-		try {
-			this.doPortConnection(
-					this.rsop.getPortURI(),
-					reqSubInboundPortURI,
-					RequestSubmissionConnector.class.getCanonicalName()) ;
-		} catch (Exception e) {
-			throw new ComponentStartException(e) ;
-		}
 	}
 
 	/**
@@ -353,6 +366,7 @@ implements	RequestNotificationHandlerI
 		if (RequestGenerator.DEBUG_LEVEL == 1) {
 			this.logMessage("Request generator " + this.rgURI + " starting.") ;
 		}
+		
 		this.generateNextRequest() ;
 	}
 
@@ -452,12 +466,14 @@ implements	RequestNotificationHandlerI
 		// submit the current request.
 		this.rsop.submitRequestAndNotify(r) ;
 		// schedule the next request generation.
+		System.out.println("ICI");
 		this.nextRequestTaskFuture =
 			this.scheduleTask(
 				new AbstractComponent.AbstractTask() {
 					@Override
 					public void run() {
 						try {
+							
 							((RequestGenerator)this.getOwner()).
 								generateNextRequest() ;
 						} catch (Exception e) {

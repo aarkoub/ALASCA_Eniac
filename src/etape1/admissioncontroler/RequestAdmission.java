@@ -9,6 +9,8 @@ public class RequestAdmission implements RequestAdmissionI {
 	private int nbResources = 1;
 	private double freq;
 	private String requestSubmissionPortURI;
+
+	private String requestGeneratorManagementInboundPortURI;
 	
 	
 	public RequestAdmission(String RequestNotificationPortURI) {
@@ -28,6 +30,16 @@ public class RequestAdmission implements RequestAdmissionI {
 	@Override
 	public String getRequestSubmissionPortURI() {
 		return requestSubmissionPortURI;
+	}
+
+	@Override
+	public String getRequestGeneratorManagementInboundPortURI() {
+		return requestGeneratorManagementInboundPortURI;
+	}
+
+	@Override
+	public void setRequestGeneratorManagementInboundPortURI(String uri) {
+		requestGeneratorManagementInboundPortURI = uri;
 	}
 	
 

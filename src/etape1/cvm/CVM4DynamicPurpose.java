@@ -80,11 +80,11 @@ public class CVM4DynamicPurpose extends AbstractCVM {
 		addDeployedComponent(applicationVM);
 
 		
-		integrator = new Integrator3(RequestDistributorManagementInboundPortURI,
+		/*integrator = new Integrator3(RequestDistributorManagementInboundPortURI,
 				
 				ApplicationVMManagementInboundPortURI,
 				ComputerServicesInboundPortURI ) ;
-		addDeployedComponent(integrator) ;
+		addDeployedComponent(integrator) ;*/
 		
 		
 		super.deploy();

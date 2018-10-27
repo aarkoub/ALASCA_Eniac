@@ -36,7 +36,6 @@ package etape1.requestGeneratorForAdmissionControler;
 
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
-import fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI;
 
 /**
  * The class <code>RequestGeneratorManagementOutboundPort</code> implements the

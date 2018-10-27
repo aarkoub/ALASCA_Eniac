@@ -9,52 +9,31 @@ import java.util.Map;
 import java.util.Set;
 
 import etape1.admissioncontroler.AdmissionControler;
+import etape1.dynamiccomponentcreator.DynamicComponentCreator;
 import etape1.requestGeneratorForAdmissionControler.RequestGenerator;
-import etape1.requestdispatcher.RequestDispatcher;
+
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.processors.Processor;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
-import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
 
 
 public class CVM2 extends AbstractCVM {
 	
-	/** URI of the repartiteur outbound port (simplifies the connection).	*/
-	protected static final String	RequestDistributorManagementOutboundPortURI = "requestDistributor_out_port" ;
-	/** URI of the generateur inbound port (simplifies the connection).		*/
+
 	protected static final String	RequestGeneratorManagementInboundPortURI = "requestGenerator_in_port" ;
-	
-	protected static final String ApplicationVMManagementOutboundPortURI = "applicationVM_out_port";
-	
-	protected static final String RequestDistributorManagementInboundPortURI = "requestDistributor_in_port";
-	
-	
-	protected static final String URI_RequestDistributor = "uri_requestDistributor";
+		
+
 	protected static final String URI_RequestGenerator = "uri_requestGenerator";
-	protected static final String URI_ApplicationVM = "uri_applicationVM";
 	
-	protected static final String URIInboundPortConnectRequestProcess = "uri-connection";
-	protected static final String URIInboundPortReceiveRequestNotification = "uri-notification";
 	
-	protected static final String ApplicationVMManagementInboundPortURI = "applicationVM_in_port";
-	protected static final String RequestSubmissionInboundPortURI = "iport_submission_request";
-	protected static final String RequestNotificationInboundPortURI = "iport_notification_request";
 	
-	protected RequestDispatcher requestDisbributor ;
 	protected RequestGenerator requestGenerator ;
-	protected ApplicationVM applicationVM ;
 	protected Integrator2 integrator;
 	protected ComputerMonitor computerMonitor;
 	protected AdmissionControler admissionControler;
+	protected DynamicComponentCreator dynamicComponentCreator;
 	
-	protected static final String RequestNotificationInboundPortURI_2 = "req_not_2";
-	protected static final String RequestSubmissionInboundPortURI_2 = "req_sub_2";
-	
-	protected static final  String ComputerDynamicStateDataInboundPortURI = "computerDynamic_inport_uri";
-	protected static final  String ComputerStaticStateDataInboundPortURI = "computerStatic_inport_uri";
-	
-	protected static final  String ComputerServicesInboundPortURI = "computer_in_port";
 	
 	protected static final String requestSubmissionInboundPortURI = "request_sub_inbound_port";
 	protected static final String requestNotificationInboundPortURI = "request_notification_inbound_port";
@@ -70,6 +49,9 @@ public class CVM2 extends AbstractCVM {
 	protected List<ComputerMonitor> computerMonitors = new ArrayList<>();
 	protected List<String> computerMonitorsURI = new ArrayList<>();
 	protected List<String> computersURI = new ArrayList<>();
+
+
+	private static final String dynamicComponentCreationInboundPortURI = "dynamicComponentCreationInboundPortURI";
 		
 	public CVM2(boolean isDistributed) throws Exception {
 		super(isDistributed);
@@ -135,30 +117,33 @@ public class CVM2 extends AbstractCVM {
 			
 		}
 		
-		
+		dynamicComponentCreator = new DynamicComponentCreator(dynamicComponentCreationInboundPortURI);
+		addDeployedComponent(dynamicComponentCreator);
 		
 		admissionControler = new AdmissionControler(admissionControlerURI,
 				max_ressources, 
 				admissionControlerManagementInboundURI, 
 				requestAdmissionSubmissionInboundPortURI,
+				dynamicComponentCreationInboundPortURI,
 				computers,
 				computerMonitors,
 				computersURI);
 		
 		
-		requestGenerator = new RequestGenerator(URI_RequestGenerator, 500, 10, 
+		requestGenerator = new RequestGenerator(URI_RequestGenerator, 200, 5, 
 				RequestGeneratorManagementInboundPortURI, requestSubmissionInboundPortURI,
 				requestNotificationInboundPortURI, requestAdmissionSubmissionInboundPortURI);
 		
-
 		
-		
+			
 		requestGenerator.toggleTracing();
 		requestGenerator.toggleLogging();
 		
+		addDeployedComponent(admissionControler);
+		
 		addDeployedComponent(requestGenerator);
 		
-		addDeployedComponent(admissionControler);
+		
 		
 		integrator = new Integrator2(RequestGeneratorManagementInboundPortURI,
 				admissionControlerManagementInboundURI);

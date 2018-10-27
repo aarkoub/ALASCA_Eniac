@@ -8,16 +8,17 @@ import etape1.admissioncontroler.interfaces.RequestAdmissionI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import etape1.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
 import etape1.admissioncontroler.ports.RequestAdmissionSubmissionInboundPort;
-import etape1.cvm.CVM4DynamicPurpose;
+import etape1.cvm.Integrator3;
+import etape1.dynamiccomponentcreator.DynamicComponentCreationConnector;
+import etape1.dynamiccomponentcreator.DynamicComponentCreationI;
+import etape1.dynamiccomponentcreator.DynamicComponentCreationOutboundPort;
 import etape1.requestdispatcher.RequestDispatcher;
-import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
-import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
+import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
-import fr.sorbonne_u.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
-import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionI;
 
 public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI, 
@@ -39,12 +40,15 @@ RequestAdmissionSubmissionHandlerI{
 	
 	private int id=0;
 	private AdmissionControlerManagementInboundPort managementInboundPort;
+	private DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
+	private String dynamicComponentCreationInboundPortURI;
 	
 	
 	public AdmissionControler(String uri, 
 			int nbComputers,
 			String AdmissionControlerManagementInboundURI,
 			String RequestAdmissionSubmissionInboundPortURI,
+			String dynamicComponentCreationInboundPortURI,
 			List<Computer> computers,
 			List<ComputerMonitor> computerMonitors,
 			List<String> computersURI) throws Exception{
@@ -55,6 +59,7 @@ RequestAdmissionSubmissionHandlerI{
 		assert uri != null;
 		assert AdmissionControlerManagementInboundURI != null;
 		assert RequestAdmissionSubmissionInboundPortURI != null;
+		assert dynamicComponentCreationInboundPortURI != null;
 		
 		this.computers = computers;
 		this.computerMonitors = computerMonitors ;
@@ -72,12 +77,53 @@ RequestAdmissionSubmissionHandlerI{
 		addPort(reqSubInPort);
 		reqSubInPort.publishPort();
 		
+		addRequiredInterface(DynamicComponentCreationI.class);
+		this.dynamicComponentCreationInboundPortURI = dynamicComponentCreationInboundPortURI;
+		dynamicComponentCreationOutboundPort = new DynamicComponentCreationOutboundPort(this);
+		addPort(dynamicComponentCreationOutboundPort);
+		dynamicComponentCreationOutboundPort.publishPort();
+		
+		
 		
 	}
 	
 	@Override
-	public void start(){
+	public void start() throws ComponentStartException{
+		super.start();
+			
+			try {
+				doPortConnection(dynamicComponentCreationOutboundPort.getPortURI(), dynamicComponentCreationInboundPortURI, 
+						DynamicComponentCreationConnector.class.getCanonicalName());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		
+	}
+	
+	@Override
+	public void			finalise() throws Exception
+	{
+		this.doPortDisconnection(
+							dynamicComponentCreationOutboundPort.getPortURI()) ;
+
+		super.finalise() ;
+	}
+	
+	@Override
+	public void			shutdown() throws ComponentShutdownException
+	{
+		// Disconnect ports to the request emitter and to the processors owning
+		// the allocated cores.
+	
+			try {
+				this.dynamicComponentCreationOutboundPort.unpublishPort() ;
+			} catch (Exception e) {
+				throw new ComponentShutdownException("Error when shutdown admission controler");
+			}
+			
+
+		super.shutdown();
 	}
 
 	@Override
@@ -85,81 +131,72 @@ RequestAdmissionSubmissionHandlerI{
 		
 		if(ressources_libres !=max_ressources) {
 			
-			RequestDistributorManagementOutboundPort distribOutboundPort;
-			ApplicationVMManagementOutboundPort appliOutboundPort;
-			ComputerServicesOutboundPort computerOutboundPort;
-			
 			String rd_uri = "dispatcher_"+id;
 			String distribInPortURI = "dispatcher_management_inbound_port_URI_"+id;
 			String requestSubmissionInboundPortURI = "dispatcher_submission_inboud_port_URI_"+id;
 			String requestNotificationInboundPortURI = requestAdmission.getRequestNotificationPortURI();
-			String distribOutPortURI = "dispatcher_management_outbound_port_URI_"+id;
+		
 			
 			String vmURI = "appli_vm_"+id;
 			String appliInPortURI = "appli_vm_management_inbound_port_URI_"+id;
 			String requestSubmissionInboundPortURIVM = "request_sub_inbound_port_uri_"+id;
 			String requestNotificationInboundPortURIVM = "request_notif_inbound_port_uri_"+id;
-			String appliOutPortURI = "appli_vm_management_outbound_port_URI_"+id;
-	
 			
 			
-			ApplicationVM appliVM = new ApplicationVM(vmURI, 
-					appliInPortURI,
-					requestSubmissionInboundPortURIVM, 
-					requestNotificationInboundPortURIVM);
 			
-			RequestDispatcher dispatcher = new RequestDispatcher(rd_uri,
+			requestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
+			
+
+
+			Object[] argumentsDispatcher = {rd_uri,
 					distribInPortURI, 
 					requestSubmissionInboundPortURI, 
 					requestNotificationInboundPortURI, 
 					requestSubmissionInboundPortURIVM,
-					requestNotificationInboundPortURIVM);
-			
-			
-			used.add(dispatcher);
-			usedVM.add(appliVM);
-			
-			requestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
-			
-			String ComputerServicesInboundPortURI = "computer_services_outbound_"+ressources_libres;
-			
-			CVM4DynamicPurpose cvm = new CVM4DynamicPurpose(dispatcher, 
-					appliVM, computers.get(ressources_libres), computerMonitors.get(ressources_libres),
-					distribInPortURI, appliInPortURI, computersURI.get(ressources_libres));
-			
-			cvm.deploy();
-			cvm.getIntegrator().start();
-			cvm.getIntegrator().execute();
-			
-			AbstractCVM currentCVM = AbstractCVM.getCVM();
-			
-			currentCVM.addDeployedComponent(computers.get(ressources_libres));
-			currentCVM.addDeployedComponent(computerMonitors.get(ressources_libres));
-			currentCVM.addDeployedComponent(appliVM);
-			currentCVM.addDeployedComponent(dispatcher);
-			
-			computers.get(ressources_libres).start();
-			computerMonitors.get(ressources_libres).start();
-			appliVM.start();
-			dispatcher.start();
-			
+					requestNotificationInboundPortURIVM};
 
+			dynamicComponentCreationOutboundPort.createComponent(RequestDispatcher.class.getCanonicalName(),
+					argumentsDispatcher);		
+			
+			Object[] argumentsAppVM = {vmURI, 
+								appliInPortURI,
+								requestSubmissionInboundPortURIVM, 
+								requestNotificationInboundPortURIVM};
+			
+			dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
+					argumentsAppVM);		
+
+				
+
+			String computerOutPortURI = computersURI.get(ressources_libres);
+			
+			Object[] argumentsIntegrator = {requestAdmission.getRequestGeneratorManagementInboundPortURI(),distribInPortURI, appliInPortURI,
+					computerOutPortURI };
+			
+			dynamicComponentCreationOutboundPort.createComponent(Integrator3.class.getCanonicalName(),
+					argumentsIntegrator);
+
+			dynamicComponentCreationOutboundPort.startComponents();
+			
+			
 			return requestSubmissionInboundPortURI;
 		}
+		
 		return null;
 	}
 
-	/*@Override
-	public void acceptRequestAdmissionSubmission(RequestAdmissionI requestai) throws Exception {
-		// TODO Auto-generated method stub
+	/*private void enableToogle(RequestDispatcher dispatcher, ApplicationVM appliVM, Computer computer,
+			ComputerMonitor computerMonitor) {
 		
-	}
-
-
-
-	@Override
-	public void acceptRequestAdmissionSubmissionAndNotify(RequestAdmissionI requestai) throws Exception {
-		// TODO Auto-generated method stub
+		dispatcher.toggleTracing();
+		dispatcher.toggleLogging();
+		
+		appliVM.toggleLogging();
+		appliVM.toggleTracing();
+		
+		computer.toggleLogging();
+		computer.toggleTracing();
+		
 		
 	}*/
 

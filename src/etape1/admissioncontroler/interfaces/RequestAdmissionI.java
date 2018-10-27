@@ -10,4 +10,8 @@ public interface RequestAdmissionI extends Serializable {
 
 	public String getRequestSubmissionPortURI();
 	
+	public String getRequestGeneratorManagementInboundPortURI();
+	
+	public void setRequestGeneratorManagementInboundPortURI(String uri);
+	
 }

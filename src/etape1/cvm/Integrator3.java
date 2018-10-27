@@ -1,5 +1,7 @@
 package etape1.cvm;
 
+import etape1.requestGeneratorForAdmissionControler.RequestGeneratorManagementConnector;
+import etape1.requestGeneratorForAdmissionControler.RequestGeneratorManagementOutboundPort;
 import etape1.requestdistributor.connectors.RequestDistributorManagementConnector;
 import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
@@ -10,8 +12,7 @@ import fr.sorbonne_u.datacenter.hardware.computers.connectors.ComputerServicesCo
 import fr.sorbonne_u.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.sorbonne_u.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
-import fr.sorbonne_u.datacenterclient.requestgenerator.connectors.RequestGeneratorManagementConnector;
-import fr.sorbonne_u.datacenterclient.requestgenerator.ports.RequestGeneratorManagementOutboundPort;
+
 
 public class Integrator3 extends AbstractComponent {
 	
@@ -19,19 +20,22 @@ public class Integrator3 extends AbstractComponent {
 
 	protected ApplicationVMManagementOutboundPort appliOutboundPort;
 	protected ComputerServicesOutboundPort computerOutboundPort;
-	private String distribInPortURI;
-	private String generatorInPortURI; 
+	private String distribInPortURI; 
 	private String appliInPortURI;
 	private String computerInPortURI;
+	private String genInPortURI;
+
+	private RequestGeneratorManagementOutboundPort generatorOutboundPort;
 	
 	
 	
-	public Integrator3(String requestDistributorManagementInboundPortURI,  String applicationVMManagementInboundPortURI,
+	public Integrator3(String requestGeneratorManagementInboundPortURI,
+			String requestDistributorManagementInboundPortURI,  String applicationVMManagementInboundPortURI,
 			String computerServiceInboundPortURI) throws Exception {
 		super(0,0);
 		
 		assert requestDistributorManagementInboundPortURI !=null;
-		
+		assert requestGeneratorManagementInboundPortURI != null;
 		assert applicationVMManagementInboundPortURI != null;
 		assert computerServiceInboundPortURI != null;
 		
@@ -40,6 +44,8 @@ public class Integrator3 extends AbstractComponent {
 	
 		appliInPortURI = applicationVMManagementInboundPortURI;
 		computerInPortURI = computerServiceInboundPortURI;
+		
+		genInPortURI = requestGeneratorManagementInboundPortURI;
 		
 		
 		distribOutboundPort = new RequestDistributorManagementOutboundPort(this);
@@ -54,6 +60,10 @@ public class Integrator3 extends AbstractComponent {
 		addPort(computerOutboundPort);
 		computerOutboundPort.publishPort();
 		
+		generatorOutboundPort = new RequestGeneratorManagementOutboundPort(this);
+		addPort(generatorOutboundPort);
+		generatorOutboundPort.publishPort();
+		
 				
 	}
 	
@@ -63,6 +73,7 @@ public class Integrator3 extends AbstractComponent {
 		
 		super.start();
 		try {
+			doPortConnection(generatorOutboundPort.getPortURI(), genInPortURI, RequestGeneratorManagementConnector.class.getCanonicalName());
 			doPortConnection(distribOutboundPort.getPortURI(), distribInPortURI, RequestDistributorManagementConnector.class.getCanonicalName()) ;
 			doPortConnection(computerOutboundPort.getPortURI(), computerInPortURI, ComputerServicesConnector.class.getCanonicalName());
 			doPortConnection(appliOutboundPort.getPortURI(), appliInPortURI, ApplicationVMManagementConnector.class.getCanonicalName());
@@ -83,9 +94,12 @@ public class Integrator3 extends AbstractComponent {
 		AllocatedCore[] ac = this.computerOutboundPort.allocateCores(4) ;
 		this.appliOutboundPort.allocateCores(ac) ;
 
+		
+		this.generatorOutboundPort.startGeneration() ;
 		// wait 20 seconds
 		Thread.sleep(2000L) ;
 		// then stop the generation.
+		this.generatorOutboundPort.stopGeneration() ;
 	
 	}
 	
@@ -98,6 +112,7 @@ public class Integrator3 extends AbstractComponent {
 		this.doPortDisconnection(this.distribOutboundPort.getPortURI()) ;
 		doPortDisconnection(computerOutboundPort.getPortURI());
 		doPortDisconnection(appliOutboundPort.getPortURI());
+		doPortDisconnection(generatorOutboundPort.getPortURI());
 		super.finalise();
 	}
 	
@@ -110,6 +125,7 @@ public class Integrator3 extends AbstractComponent {
 			this.distribOutboundPort.unpublishPort() ;
 			computerOutboundPort.unpublishPort();
 			appliOutboundPort.unpublishPort();
+			generatorOutboundPort.unpublishPort();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
 		}
@@ -125,6 +141,7 @@ public class Integrator3 extends AbstractComponent {
 			this.distribOutboundPort.unpublishPort() ;
 			computerOutboundPort.unpublishPort();
 			appliOutboundPort.unpublishPort();
+			generatorOutboundPort.unpublishPort();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
 		}

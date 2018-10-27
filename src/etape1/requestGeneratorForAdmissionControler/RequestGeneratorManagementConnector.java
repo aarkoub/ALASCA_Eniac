@@ -34,13 +34,12 @@ package etape1.requestGeneratorForAdmissionControler;
 //The fact that you are presently reading this means that you have had
 //knowledge of the CeCILL-C license and that you accept its terms.
 
-import fr.sorbonne_u.components.AbstractComponent;
-import fr.sorbonne_u.components.ComponentI;
-import fr.sorbonne_u.components.ports.AbstractInboundPort;
+import fr.sorbonne_u.components.connectors.AbstractConnector;
 
 /**
- * The class <code>RequestGeneratorManagementInboundPort</code> implements the
- * inbound port through which the component management methods are called.
+ * The class <code>RequestGeneratorManagementConnector</code> implements a
+ * standard client/server connector for the management request generator
+ * management interface.
  *
  * <p><strong>Description</strong></p>
  * 
@@ -54,54 +53,17 @@ import fr.sorbonne_u.components.ports.AbstractInboundPort;
  * 
  * @author	<a href="mailto:Jacques.Malenfant@lip6.fr">Jacques Malenfant</a>
  */
-public class				RequestGeneratorManagementInboundPort
-extends		AbstractInboundPort
+public class				RequestGeneratorManagementConnector
+extends		AbstractConnector
 implements	RequestGeneratorManagementI
 {
-	private static final long serialVersionUID = 1L ;
-
-	// ------------------------------------------------------------------------
-	// Constructors
-	// ------------------------------------------------------------------------
-
-	public				RequestGeneratorManagementInboundPort(
-		ComponentI owner
-		) throws Exception
-	{
-		super(RequestGeneratorManagementI.class, owner) ;
-
-		assert	owner != null && owner instanceof RequestGenerator ;
-	}
-
-	public				RequestGeneratorManagementInboundPort(
-		String uri,
-		ComponentI owner
-		) throws Exception
-	{
-		super(uri, RequestGeneratorManagementI.class, owner);
-
-		assert	owner != null && owner instanceof RequestGenerator ;
-	}
-
-	// ------------------------------------------------------------------------
-	// Methods
-	// ------------------------------------------------------------------------
-
 	/**
 	 * @see fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI#startGeneration()
 	 */
 	@Override
 	public void			startGeneration() throws Exception
 	{
-		this.getOwner().handleRequestAsync(
-					new AbstractComponent.AbstractService<Void>() {
-						@Override
-						public Void call() throws Exception {
-							((RequestGenerator)this.getOwner()).
-								startGeneration() ;
-							return null;
-						}
-					}) ;
+		((RequestGeneratorManagementI)this.offering).startGeneration() ;
 	}
 
 	/**
@@ -110,15 +72,7 @@ implements	RequestGeneratorManagementI
 	@Override
 	public void			stopGeneration() throws Exception
 	{
-		this.getOwner().handleRequestAsync(
-					new AbstractComponent.AbstractService<Void>() {
-						@Override
-						public Void call() throws Exception {
-							((RequestGenerator)this.getOwner()).
-								stopGeneration() ;
-							return null;
-						}
-					}) ;
+		((RequestGeneratorManagementI)this.offering).stopGeneration() ;
 	}
 
 	/**
@@ -127,31 +81,18 @@ implements	RequestGeneratorManagementI
 	@Override
 	public double		getMeanInterArrivalTime() throws Exception
 	{
-		return this.getOwner().handleRequestSync(
-				new AbstractComponent.AbstractService<Double>() {
-					@Override
-					public Double call() throws Exception {
-						return ((RequestGenerator)this.getOwner()).
-									getMeanInterArrivalTime() ;
-					}
-				}) ;
+		return ((RequestGeneratorManagementI)this.offering).
+													getMeanInterArrivalTime() ;
 	}
 
 	/**
 	 * @see fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI#setMeanInterArrivalTime(double)
 	 */
 	@Override
-	public void			setMeanInterArrivalTime(final double miat)
+	public void			setMeanInterArrivalTime(double miat)
 	throws Exception
 	{
-		this.getOwner().handleRequestAsync(
-					new AbstractComponent.AbstractService<Void>() {
-						@Override
-						public Void call() throws Exception {
-							((RequestGenerator)this.getOwner()).
-								setMeanInterArrivalTime(miat) ;
-							return null;
-						}
-					}) ;
+		((RequestGeneratorManagementI)this.offering).
+											setMeanInterArrivalTime(miat) ;
 	}
 }
