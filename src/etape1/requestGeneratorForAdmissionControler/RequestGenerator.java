@@ -255,51 +255,7 @@ implements	RequestNotificationHandlerI
 			
 	}
 	
-	@Override
-	public void execute() throws Exception{
-		
-		if(!executionDone){
-			super.execute() ;
-	
-			requestAdmission.setRequestGeneratorManagementInboundPortURI(rgmip.getPortURI());
-			
-			// Soumission de la demande d'hebergement (recupere le port de soumission de Request Dispatcher)
-			String reqSubInboundPortURI = null;
-			try {
-				reqSubInboundPortURI = requestAdmissionOutport.getSubmissionInboundPortURI(requestAdmission);	
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-			
-			
-			// Desinscription du port de soumission du Controleur d'Admission
-			try {
-				requestAdmissionOutport.unpublishPort();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-			
-			
-			
-			if(requestAdmission.getRequestSubmissionPortURI()==null) {
-				throw new ComponentStartException("Refus du controleur d'admission");
-				
-			}
-			
-			
-			// Connexion du port de soumission vers le Request Dispatcher
-			try {
-				this.doPortConnection(
-						this.rsop.getPortURI(),
-						reqSubInboundPortURI,
-						RequestSubmissionConnector.class.getCanonicalName()) ;
-			} catch (Exception e) {
-				throw new ComponentStartException(e) ;
-			}
-			executionDone = true;
-		}
-		
-	}
+
 
 	/**
 	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
@@ -384,6 +340,7 @@ implements	RequestNotificationHandlerI
 	 */
 	public void			stopGeneration() throws Exception
 	{
+		
 		if (RequestGenerator.DEBUG_LEVEL == 1) {
 			this.logMessage("Request generator " + this.rgURI + " stopping.") ;
 		}
@@ -466,14 +423,14 @@ implements	RequestNotificationHandlerI
 		// submit the current request.
 		this.rsop.submitRequestAndNotify(r) ;
 		// schedule the next request generation.
-		System.out.println("ICI");
+	
 		this.nextRequestTaskFuture =
 			this.scheduleTask(
 				new AbstractComponent.AbstractTask() {
 					@Override
 					public void run() {
 						try {
-							
+						
 							((RequestGenerator)this.getOwner()).
 								generateNextRequest() ;
 						} catch (Exception e) {
@@ -483,6 +440,7 @@ implements	RequestNotificationHandlerI
 				},
 				TimeManagement.acceleratedDelay(interArrivalDelay),
 				TimeUnit.MILLISECONDS) ;
+		
 	}
 
 	/**
@@ -510,5 +468,49 @@ implements	RequestNotificationHandlerI
 							" is notified that request "+ r.getRequestURI() +
 							" has ended.") ;
 		}
+	}
+	
+	public boolean askAdmissionControler() throws Exception{
+
+	
+		requestAdmission.setRequestGeneratorManagementInboundPortURI(rgmip.getPortURI());
+		
+		// Soumission de la demande d'hebergement (recupere le port de soumission de Request Dispatcher)
+		String reqSubInboundPortURI = null;
+		try {
+			reqSubInboundPortURI = requestAdmissionOutport.getSubmissionInboundPortURI(requestAdmission);	
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		
+		// Desinscription du port de soumission du Controleur d'Admission
+		try {
+			requestAdmissionOutport.unpublishPort();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		
+		
+		if(requestAdmission.getRequestSubmissionPortURI()==null) {
+			return false;
+			
+		}
+		
+		
+		// Connexion du port de soumission vers le Request Dispatcher
+		try {
+			this.doPortConnection(
+					this.rsop.getPortURI(),
+					reqSubInboundPortURI,
+					RequestSubmissionConnector.class.getCanonicalName()) ;
+		} catch (Exception e) {
+			throw new ComponentStartException(e) ;
+		}
+
+			
+		
+		return true;
 	}
 }

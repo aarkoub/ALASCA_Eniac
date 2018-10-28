@@ -95,4 +95,11 @@ implements	RequestGeneratorManagementI
 		((RequestGeneratorManagementI)this.offering).
 											setMeanInterArrivalTime(miat) ;
 	}
+
+	@Override
+	public boolean askAdmissionControler() throws Exception {
+		return ((RequestGeneratorManagementI)this.offering).
+		askAdmissionControler();
+		
+	}
 }

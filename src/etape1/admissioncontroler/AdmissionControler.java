@@ -8,7 +8,7 @@ import etape1.admissioncontroler.interfaces.RequestAdmissionI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import etape1.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
 import etape1.admissioncontroler.ports.RequestAdmissionSubmissionInboundPort;
-import etape1.cvm.Integrator3;
+import etape1.cvm.IntegratorForRequestGeneration;
 import etape1.dynamiccomponentcreator.DynamicComponentCreationConnector;
 import etape1.dynamiccomponentcreator.DynamicComponentCreationI;
 import etape1.dynamiccomponentcreator.DynamicComponentCreationOutboundPort;
@@ -129,6 +129,9 @@ RequestAdmissionSubmissionHandlerI{
 	@Override
 	public String getSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
 		
+		/*
+		 * Si on a encore des ressources libres
+		 */
 		if(ressources_libres !=max_ressources) {
 			
 			String rd_uri = "dispatcher_"+id;
@@ -142,12 +145,16 @@ RequestAdmissionSubmissionHandlerI{
 			String requestSubmissionInboundPortURIVM = "request_sub_inbound_port_uri_"+id;
 			String requestNotificationInboundPortURIVM = "request_notif_inbound_port_uri_"+id;
 			
+			String computerOutPortURI = computersURI.get(ressources_libres);
 			
 			
+			//On fournit au generateur l'uri du port de submission de requete du dispatcher 
 			requestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
 			
 
-
+			/*
+			 * On crée le dispatcher via le dynamicComponentCreator
+			 */
 			Object[] argumentsDispatcher = {rd_uri,
 					distribInPortURI, 
 					requestSubmissionInboundPortURI, 
@@ -158,6 +165,9 @@ RequestAdmissionSubmissionHandlerI{
 			dynamicComponentCreationOutboundPort.createComponent(RequestDispatcher.class.getCanonicalName(),
 					argumentsDispatcher);		
 			
+			/*
+			 * On crée l'application VM via le dynamicComponentCreator
+			 */
 			Object[] argumentsAppVM = {vmURI, 
 								appliInPortURI,
 								requestSubmissionInboundPortURIVM, 
@@ -168,37 +178,36 @@ RequestAdmissionSubmissionHandlerI{
 
 				
 
-			String computerOutPortURI = computersURI.get(ressources_libres);
+			/*
+			 * On crée l'integrateur qui va gérer la génération de requete
+			 *  via le dynamicComponentCreator :
+			 * on récupère l'uri du port de management du générateur de requête dans l'objet
+			 * requete d'admission, fourni en argument de la methode
+			 */
 			
-			Object[] argumentsIntegrator = {requestAdmission.getRequestGeneratorManagementInboundPortURI(),distribInPortURI, appliInPortURI,
+			Object[] argumentsIntegrator = {requestAdmission.getRequestGeneratorManagementInboundPortURI(),
+					appliInPortURI,
 					computerOutPortURI };
 			
-			dynamicComponentCreationOutboundPort.createComponent(Integrator3.class.getCanonicalName(),
+			dynamicComponentCreationOutboundPort.createComponent(IntegratorForRequestGeneration.class.getCanonicalName(),
 					argumentsIntegrator);
 
 			dynamicComponentCreationOutboundPort.startComponents();
 			
 			
+			/*
+			 * On retourne l'uri du port de soumission de requetes
+			 */
+			
 			return requestSubmissionInboundPortURI;
 		}
 		
+		/*
+		 * Sinon, si on n'a pas les ressources nécessaires pour satisfaire 
+		 * les besoins du générateur de requêtes, on renvoie null
+		 */
 		return null;
 	}
 
-	/*private void enableToogle(RequestDispatcher dispatcher, ApplicationVM appliVM, Computer computer,
-			ComputerMonitor computerMonitor) {
-		
-		dispatcher.toggleTracing();
-		dispatcher.toggleLogging();
-		
-		appliVM.toggleLogging();
-		appliVM.toggleTracing();
-		
-		computer.toggleLogging();
-		computer.toggleTracing();
-		
-		
-	}*/
 
-	
 }

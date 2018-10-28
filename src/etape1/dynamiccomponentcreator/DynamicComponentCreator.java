@@ -39,6 +39,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import etape1.requestGeneratorForAdmissionControler.RequestGenerator;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
@@ -165,6 +166,7 @@ extends		AbstractComponent
 	
 	public void startComponents() throws Exception{
 		for(AbstractComponent c : componentsToStart){
+			
 			try {
 				c.start();
 				
@@ -173,17 +175,22 @@ extends		AbstractComponent
 				e.printStackTrace();
 			}
 		}
+				
+	
+		
+	}
+
+	public void executeComponents() throws Exception {
 		
 		for(AbstractComponent c : componentsToStart){
-			try {
-				
+			
 				c.execute();
-			} catch (ComponentStartException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				
+				//if(c instanceof RequestGenerator)
+					
+			
 		}
-		
+				
 		componentsToStart.clear();
 		
 	}

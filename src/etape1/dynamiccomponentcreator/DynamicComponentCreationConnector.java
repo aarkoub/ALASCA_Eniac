@@ -76,5 +76,12 @@ implements	DynamicComponentCreationI
 		((DynamicComponentCreationI)this.offering).
 		startComponents();
 	}
+
+	@Override
+	public void executeComponents() throws Exception {
+		((DynamicComponentCreationI)this.offering).
+		executeComponents();
+		
+	}
 }
 //-----------------------------------------------------------------------------

@@ -115,4 +115,6 @@ extends		OfferedI,
 	 * @throws Exception		<i>todo.</i>
 	 */
 	public void			setMeanInterArrivalTime(double miat) throws Exception ;
+
+	public boolean askAdmissionControler() throws Exception;
 }

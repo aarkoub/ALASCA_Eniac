@@ -112,7 +112,7 @@ public class CVM extends AbstractCVM {
 				// --------------------------------------------------------------------
 
 		
-		requestGenerator = new RequestGenerator(URI_RequestGenerator, 500, 10, RequestGeneratorManagementInboundPortURI, requestSubmissionInboundPortURI, requestNotificationInboundPortURI);
+		requestGenerator = new RequestGenerator(URI_RequestGenerator, 500, 50, RequestGeneratorManagementInboundPortURI, requestSubmissionInboundPortURI, requestNotificationInboundPortURI);
 		requestDisbributor = new RequestDispatcher(URI_RequestDistributor, RequestDistributorManagementInboundPortURI, requestSubmissionInboundPortURI,
 								requestNotificationInboundPortURI,
 								RequestSubmissionInboundPortURI_2, RequestNotificationInboundPortURI_2);

@@ -69,6 +69,10 @@ public class CVM2 extends AbstractCVM {
 		assert	!this.deploymentDone() ;
 		
 		int max_ressources = 2;
+		
+		/*
+		 * Création des computeurs (en ressources du contrôleur d'admission)
+		 */
 		for(int i=0; i<max_ressources; i++) {
 		
 			String ComputerDynamicStateDataInboundPortURI = "computerDynamic_inport_uri_"+i;
@@ -117,9 +121,15 @@ public class CVM2 extends AbstractCVM {
 			
 		}
 		
+		/*
+		 * Creation du dynamic component creator
+		 */
 		dynamicComponentCreator = new DynamicComponentCreator(dynamicComponentCreationInboundPortURI);
-		addDeployedComponent(dynamicComponentCreator);
 		
+		
+		/*
+		 * Creation du controleur d'admission
+		 */
 		admissionControler = new AdmissionControler(admissionControlerURI,
 				max_ressources, 
 				admissionControlerManagementInboundURI, 
@@ -129,8 +139,10 @@ public class CVM2 extends AbstractCVM {
 				computerMonitors,
 				computersURI);
 		
-		
-		requestGenerator = new RequestGenerator(URI_RequestGenerator, 200, 5, 
+		/*
+		 * Creation du générateur de requetes
+		 */
+		requestGenerator = new RequestGenerator(URI_RequestGenerator, 500, 50, 
 				RequestGeneratorManagementInboundPortURI, requestSubmissionInboundPortURI,
 				requestNotificationInboundPortURI, requestAdmissionSubmissionInboundPortURI);
 		
@@ -139,19 +151,27 @@ public class CVM2 extends AbstractCVM {
 		requestGenerator.toggleTracing();
 		requestGenerator.toggleLogging();
 		
+		/*
+		 * Creation du l'intégrateur 2
+		 */
+		integrator = new Integrator2(RequestGeneratorManagementInboundPortURI,
+				 dynamicComponentCreationInboundPortURI);
+		
+		
+		
+		/*
+		 * Déploiement
+		 */
+		
+		addDeployedComponent(dynamicComponentCreator);
+		
 		addDeployedComponent(admissionControler);
 		
 		addDeployedComponent(requestGenerator);
 		
-		
-		
-		integrator = new Integrator2(RequestGeneratorManagementInboundPortURI,
-				admissionControlerManagementInboundURI);
-		
 		addDeployedComponent(integrator) ;
 		
-		
-		
+			
 		super.deploy();
 		
 		assert this.deploymentDone();

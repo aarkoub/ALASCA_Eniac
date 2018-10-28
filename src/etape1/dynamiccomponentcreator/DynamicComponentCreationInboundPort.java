@@ -111,5 +111,19 @@ implements	DynamicComponentCreationI
 				}) ;
 		
 	}
+
+	@Override
+	public void executeComponents() throws Exception {
+		this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService<Void>() {
+					@Override
+					public Void call() throws Exception {
+						((DynamicComponentCreator)this.getOwner()).
+							executeComponents() ;
+						return null ;
+					}
+				}) ;
+		
+	}
 }
 //-----------------------------------------------------------------------------

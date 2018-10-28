@@ -95,4 +95,10 @@ implements	DynamicComponentCreationI
 		startComponents();
 		
 	}
+
+	public void executeComponents() throws Exception {
+		((DynamicComponentCreationI)this.connector).
+		executeComponents();
+		
+	}
 }

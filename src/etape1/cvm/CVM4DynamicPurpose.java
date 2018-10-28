@@ -19,7 +19,7 @@ public class CVM4DynamicPurpose extends AbstractCVM {
 
 	String ApplicationVMManagementInboundPortURI;
 	String ComputerServicesInboundPortURI;
-	private Integrator3 integrator;
+	private IntegratorForRequestGeneration integrator;
 
 
 	public CVM4DynamicPurpose(
@@ -95,7 +95,7 @@ public class CVM4DynamicPurpose extends AbstractCVM {
 		
 	}
 	
-	public Integrator3 getIntegrator(){
+	public IntegratorForRequestGeneration getIntegrator(){
 		return integrator;
 	}
 	

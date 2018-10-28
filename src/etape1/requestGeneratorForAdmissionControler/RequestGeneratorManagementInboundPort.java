@@ -59,6 +59,7 @@ extends		AbstractInboundPort
 implements	RequestGeneratorManagementI
 {
 	private static final long serialVersionUID = 1L ;
+	private Boolean res = false;
 
 	// ------------------------------------------------------------------------
 	// Constructors
@@ -153,5 +154,21 @@ implements	RequestGeneratorManagementI
 							return null;
 						}
 					}) ;
+	}
+
+	@Override
+	public boolean askAdmissionControler() throws Exception {
+			
+		this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService<Boolean>() {
+					@Override
+					public Boolean call() throws Exception {
+						return (res=((RequestGenerator)this.getOwner()).
+							askAdmissionControler() );
+						
+					}
+				}) ;
+		return res;
+		
 	}
 }

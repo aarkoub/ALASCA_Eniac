@@ -125,4 +125,11 @@ implements	RequestGeneratorManagementI
 		((RequestGeneratorManagementI)this.connector).
 												setMeanInterArrivalTime(miat) ;
 	}
+
+	@Override
+	public boolean askAdmissionControler() throws Exception {
+		return ((RequestGeneratorManagementI)this.connector).
+		askAdmissionControler();
+		
+	}
 }
