@@ -1,4 +1,4 @@
-package etape1.admissioncontroler.ports;
+package etape1.requestadmission.ports;
 
 import etape1.admissioncontroler.interfaces.RequestAdmissionI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
@@ -24,9 +24,9 @@ public class RequestAdmissionSubmissionOutboundPort extends AbstractOutboundPort
 	}
 
 	@Override
-	public String getSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
+	public void setSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
 		
-		return ((RequestAdmissionSubmissionI)this.connector).getSubmissionInboundPortURI(requestAdmission);
+		((RequestAdmissionSubmissionI)this.connector).setSubmissionInboundPortURI(requestAdmission);
 	}
 
 	/*@Override

@@ -171,4 +171,18 @@ implements	RequestGeneratorManagementI
 		return res;
 		
 	}
+
+	@Override
+	public void freeAdmissionControlerRessources() throws Exception {
+		this.getOwner().handleRequestAsync(
+				new AbstractComponent.AbstractService<Void>() {
+					@Override
+					public Void call() throws Exception {
+						((RequestGenerator)this.getOwner()).
+							freeAdmissionControlerRessources() ;
+						return null;
+					}
+				}) ;
+		
+	}
 }

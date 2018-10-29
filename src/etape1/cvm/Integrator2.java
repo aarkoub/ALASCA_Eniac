@@ -14,32 +14,28 @@ public class Integrator2 extends AbstractComponent {
 	
 	
 	protected RequestGeneratorManagementOutboundPort generatorOutboundPort;
-	protected DynamicComponentCreationOutboundPort dynamic_outbound;
+
 	private String generatorInPortURI; 
-	private String dynamic_outbound_uri;
+
 	
 	
 	
-	public Integrator2(String requestGeneratorManagementInboundPortURI,
-			String dynamicOutbound) throws Exception {
+	public Integrator2(String requestGeneratorManagementInboundPortURI) throws Exception {
 		super(1,0);
 		
 		assert requestGeneratorManagementInboundPortURI != null;
-		assert dynamicOutbound != null;
+		
 		
 		
 		generatorInPortURI = requestGeneratorManagementInboundPortURI;
-		this.dynamic_outbound_uri = dynamicOutbound;
+
 		
 		
 		generatorOutboundPort = new RequestGeneratorManagementOutboundPort(this);
 		addPort(generatorOutboundPort);
 		generatorOutboundPort.publishPort();
 		
-		
-		dynamic_outbound = new DynamicComponentCreationOutboundPort(this);
-		addPort(dynamic_outbound);
-		dynamic_outbound.publishPort();
+
 						
 	}
 	
@@ -51,7 +47,6 @@ public class Integrator2 extends AbstractComponent {
 		
 		try {
 			doPortConnection(generatorOutboundPort.getPortURI(), generatorInPortURI, RequestGeneratorManagementConnector.class.getCanonicalName());
-			doPortConnection(dynamic_outbound.getPortURI(), dynamic_outbound_uri, DynamicComponentCreationConnector.class.getCanonicalName());
 			
 		} catch (Exception e) {
 			throw new ComponentStartException(e);
@@ -66,16 +61,26 @@ public class Integrator2 extends AbstractComponent {
 		/*generateur de requetes demande si le controleur d'admission
 		 * a les ressources necessaires
 		 * */
-		if(!generatorOutboundPort.askAdmissionControler()){
-			throw new Exception("Refus du controleur d'admission");
-		};
+		if(generatorOutboundPort.askAdmissionControler()){
+			
+			/*
+			 * Tous les composants sont prêts,
+			 * On peut commencer la generation de requêtes
+			 */
+			
+			generatorOutboundPort.startGeneration();
+			Thread.sleep(2000L) ;
+			// then stop the generation.
+			
+			generatorOutboundPort.stopGeneration() ;
+			
+			
+			generatorOutboundPort.freeAdmissionControlerRessources();
+			
+		}
 		
-		/*
-		 * On peut exécuter les composants crées par le dynamic component creator
-		 * et donc notamment on exécute l'integrateur 3 qui va allouer les coeurs
-		 * et démarrer la génération de requêtes (et finalement la stopper)
-		 */
-		dynamic_outbound.executeComponents();
+		
+		
 	}
 	
 	
@@ -85,7 +90,6 @@ public class Integrator2 extends AbstractComponent {
 		
 		this.doPortDisconnection(this.generatorOutboundPort.getPortURI()) ;
 
-		doPortDisconnection(dynamic_outbound.getPortURI());
 		super.finalise();
 	}
 	
@@ -95,7 +99,6 @@ public class Integrator2 extends AbstractComponent {
 	{
 		try {
 			this.generatorOutboundPort.unpublishPort() ;
-			dynamic_outbound.unpublishPort();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
 		}
@@ -108,7 +111,6 @@ public class Integrator2 extends AbstractComponent {
 	{
 		try {
 			this.generatorOutboundPort.unpublishPort() ;
-			dynamic_outbound.unpublishPort();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
 		}

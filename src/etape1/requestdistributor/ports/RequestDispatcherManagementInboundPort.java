@@ -1,12 +1,12 @@
 package etape1.requestdistributor.ports;
 
 import etape1.requestdispatcher.RequestDispatcher;
-import etape1.requestdistributor.interfaces.RequestDistributorManagementI;
+import etape1.requestdistributor.interfaces.RequestDispatcherManagementI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 
-public class RequestDistributorManagementInboundPort extends		AbstractInboundPort
-implements	RequestDistributorManagementI {
+public class RequestDispatcherManagementInboundPort extends		AbstractInboundPort
+implements	RequestDispatcherManagementI {
 	
 
 	/**
@@ -14,21 +14,21 @@ implements	RequestDistributorManagementI {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public	RequestDistributorManagementInboundPort(
+	public	RequestDispatcherManagementInboundPort(
 		ComponentI owner
 		) throws Exception
 	{
-		super(RequestDistributorManagementI.class, owner) ;
+		super(RequestDispatcherManagementI.class, owner) ;
 
 		assert	owner != null && owner instanceof RequestDispatcher ;
 	}
 
-	public	RequestDistributorManagementInboundPort(
+	public	RequestDispatcherManagementInboundPort(
 		String uri,
 		ComponentI owner
 		) throws Exception
 	{
-		super(uri, RequestDistributorManagementI.class, owner);
+		super(uri, RequestDispatcherManagementI.class, owner);
 
 		assert	owner != null && owner instanceof RequestDispatcher ;
 	}

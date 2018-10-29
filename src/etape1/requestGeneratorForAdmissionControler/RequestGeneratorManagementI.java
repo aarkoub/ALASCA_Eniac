@@ -117,4 +117,6 @@ extends		OfferedI,
 	public void			setMeanInterArrivalTime(double miat) throws Exception ;
 
 	public boolean askAdmissionControler() throws Exception;
+
+	public void freeAdmissionControlerRessources() throws Exception;
 }

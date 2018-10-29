@@ -1,9 +1,5 @@
 package etape1.cvm;
 
-import etape1.requestGeneratorForAdmissionControler.RequestGeneratorManagementConnector;
-import etape1.requestGeneratorForAdmissionControler.RequestGeneratorManagementOutboundPort;
-import etape1.requestdistributor.connectors.RequestDistributorManagementConnector;
-import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
@@ -19,28 +15,23 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 
 	protected ApplicationVMManagementOutboundPort appliOutboundPort;
 	protected ComputerServicesOutboundPort computerOutboundPort;
-	private RequestGeneratorManagementOutboundPort generatorOutboundPort;
 	
 	private String appliInPortURI;
 	private String computerInPortURI;
-	private String genInPortURI;
 
 	
 	
 	
-	public IntegratorForRequestGeneration(String requestGeneratorManagementInboundPortURI,
-			String applicationVMManagementInboundPortURI,
+	public IntegratorForRequestGeneration(String applicationVMManagementInboundPortURI,
 			String computerServiceInboundPortURI) throws Exception {
 		super(0,0);
 		
-		assert requestGeneratorManagementInboundPortURI != null;
 		assert applicationVMManagementInboundPortURI != null;
 		assert computerServiceInboundPortURI != null;
 		
 		
 		appliInPortURI = applicationVMManagementInboundPortURI;
 		computerInPortURI = computerServiceInboundPortURI;
-		genInPortURI = requestGeneratorManagementInboundPortURI;
 		
 
 		appliOutboundPort = new ApplicationVMManagementOutboundPort(this);
@@ -51,9 +42,6 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 		addPort(computerOutboundPort);
 		computerOutboundPort.publishPort();
 		
-		generatorOutboundPort = new RequestGeneratorManagementOutboundPort(this);
-		addPort(generatorOutboundPort);
-		generatorOutboundPort.publishPort();
 		
 				
 	}
@@ -64,7 +52,6 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 		
 		super.start();
 		try {
-			doPortConnection(generatorOutboundPort.getPortURI(), genInPortURI, RequestGeneratorManagementConnector.class.getCanonicalName());
 			doPortConnection(computerOutboundPort.getPortURI(), computerInPortURI, ComputerServicesConnector.class.getCanonicalName());
 			doPortConnection(appliOutboundPort.getPortURI(), appliInPortURI, ApplicationVMManagementConnector.class.getCanonicalName());
 			
@@ -84,14 +71,6 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 		AllocatedCore[] ac = this.computerOutboundPort.allocateCores(4) ;
 		this.appliOutboundPort.allocateCores(ac) ;
 		
-		
-		this.generatorOutboundPort.startGeneration() ;
-		// wait 20 seconds
-
-		Thread.sleep(2000L) ;
-		// then stop the generation.
-		
-		this.generatorOutboundPort.stopGeneration() ;
 	
 	}
 	
@@ -103,7 +82,7 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 		
 		doPortDisconnection(computerOutboundPort.getPortURI());
 		doPortDisconnection(appliOutboundPort.getPortURI());
-		doPortDisconnection(generatorOutboundPort.getPortURI());
+		
 		super.finalise();
 	}
 	
@@ -115,7 +94,7 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 			
 			computerOutboundPort.unpublishPort();
 			appliOutboundPort.unpublishPort();
-			generatorOutboundPort.unpublishPort();
+		
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
 		}
@@ -130,7 +109,7 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 	
 			computerOutboundPort.unpublishPort();
 			appliOutboundPort.unpublishPort();
-			generatorOutboundPort.unpublishPort();
+		
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
 		}

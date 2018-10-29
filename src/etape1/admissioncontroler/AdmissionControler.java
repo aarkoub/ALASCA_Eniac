@@ -1,17 +1,26 @@
 package etape1.admissioncontroler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 import etape1.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionI;
+import etape1.admissioncontroler.interfaces.RequestAdmissionNotificationHandlerI;
+import etape1.admissioncontroler.interfaces.RequestAdmissionNotificationI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
+import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
 import etape1.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
-import etape1.admissioncontroler.ports.RequestAdmissionSubmissionInboundPort;
 import etape1.cvm.IntegratorForRequestGeneration;
 import etape1.dynamiccomponentcreator.DynamicComponentCreationConnector;
 import etape1.dynamiccomponentcreator.DynamicComponentCreationI;
 import etape1.dynamiccomponentcreator.DynamicComponentCreationOutboundPort;
+import etape1.requestadmission.ports.RequestAdmissionNotificationInboundPort;
+import etape1.requestadmission.ports.RequestAdmissionSubmissionInboundPort;
 import etape1.requestdispatcher.RequestDispatcher;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
@@ -19,10 +28,10 @@ import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
-import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionI;
 
 public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI, 
-RequestAdmissionSubmissionHandlerI{
+RequestAdmissionSubmissionHandlerI,
+RequestAdmissionNotificationHandlerI{
 	
 	String uri;
 	int ressources_libres = 0;
@@ -34,21 +43,31 @@ RequestAdmissionSubmissionHandlerI{
 	List<String> computersURI;
 	List<Computer> computers ;
 	List<ComputerMonitor> computerMonitors ;
+	
+	Map<String, Integer> ressourcesPrises = new HashMap<>();
+	Stack<Integer> ressourcesLibres = new Stack<Integer>();
 
 	
-	RequestAdmissionSubmissionInboundPort reqSubInPort;
+	//protected List<RequestAdmissionSubmissionInboundPort> requestAdmissionSubmissionInboundPorts = new ArrayList<>();
+	//protected List<RequestAdmissionNotificationInboundPort> requestAdmissionNotificationInboundPorts = new ArrayList<>();
+	//protected List<String> requestAdmissionNotificationInboundPortURIS;
+	//protected List<String> requestAdmissionSubmissionInboundPortURIS;
 	
 	private int id=0;
-	private AdmissionControlerManagementInboundPort managementInboundPort;
+	private AdmissionControlerManagementInboundPort admissionControlerManagementInboundPort;
 	private DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
 	private String dynamicComponentCreationInboundPortURI;
+	private RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
+	private RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
+	
 	
 	
 	public AdmissionControler(String uri, 
 			int nbComputers,
 			String AdmissionControlerManagementInboundURI,
-			String RequestAdmissionSubmissionInboundPortURI,
 			String dynamicComponentCreationInboundPortURI,
+			String RequestAdmissionSubmissionInboundPortURI,
+			String RequestAdmissionNotificationInboundPortURI,
 			List<Computer> computers,
 			List<ComputerMonitor> computerMonitors,
 			List<String> computersURI) throws Exception{
@@ -59,6 +78,7 @@ RequestAdmissionSubmissionHandlerI{
 		assert uri != null;
 		assert AdmissionControlerManagementInboundURI != null;
 		assert RequestAdmissionSubmissionInboundPortURI != null;
+		assert RequestAdmissionNotificationInboundPortURI != null;
 		assert dynamicComponentCreationInboundPortURI != null;
 		
 		this.computers = computers;
@@ -68,14 +88,30 @@ RequestAdmissionSubmissionHandlerI{
 		max_ressources = nbComputers;
 		this.uri = uri;
 		
-		managementInboundPort = new AdmissionControlerManagementInboundPort(AdmissionControlerManagementInboundURI, this);
-		addPort(managementInboundPort);
-		managementInboundPort.publishPort();
+		admissionControlerManagementInboundPort = new AdmissionControlerManagementInboundPort(AdmissionControlerManagementInboundURI, this);
+		addPort(admissionControlerManagementInboundPort);
+		admissionControlerManagementInboundPort.publishPort();
 		
-		addOfferedInterface(RequestSubmissionI.class);
-		reqSubInPort = new RequestAdmissionSubmissionInboundPort(RequestAdmissionSubmissionInboundPortURI, this);
-		addPort(reqSubInPort);
-		reqSubInPort.publishPort();
+		
+		addOfferedInterface(RequestAdmissionSubmissionI.class);
+		requestAdmissionSubmissionInboundPort = new RequestAdmissionSubmissionInboundPort(RequestAdmissionSubmissionInboundPortURI, this);
+		addPort(requestAdmissionSubmissionInboundPort);
+		requestAdmissionSubmissionInboundPort.publishPort();
+		//requestAdmissionSubmissionInboundPorts.add(sub_port);
+		
+		
+		addOfferedInterface(RequestAdmissionNotificationI.class);
+		requestAdmissionNotificationInboundPort = new RequestAdmissionNotificationInboundPort(RequestAdmissionNotificationInboundPortURI, this);
+		addPort(requestAdmissionNotificationInboundPort);
+		requestAdmissionNotificationInboundPort.publishPort();
+		//requestAdmissionNotificationInboundPorts.add(notif_port);	
+		
+		
+		for(int i=0; i<max_ressources; i++){
+				
+			ressourcesLibres.push(i);
+			
+		}
 		
 		addRequiredInterface(DynamicComponentCreationI.class);
 		this.dynamicComponentCreationInboundPortURI = dynamicComponentCreationInboundPortURI;
@@ -83,8 +119,7 @@ RequestAdmissionSubmissionHandlerI{
 		addPort(dynamicComponentCreationOutboundPort);
 		dynamicComponentCreationOutboundPort.publishPort();
 		
-		
-		
+						
 	}
 	
 	@Override
@@ -117,6 +152,10 @@ RequestAdmissionSubmissionHandlerI{
 		// the allocated cores.
 	
 			try {
+				admissionControlerManagementInboundPort.unpublishPort();
+				requestAdmissionSubmissionInboundPort.unpublishPort();
+				requestAdmissionNotificationInboundPort.unpublishPort();
+
 				this.dynamicComponentCreationOutboundPort.unpublishPort() ;
 			} catch (Exception e) {
 				throw new ComponentShutdownException("Error when shutdown admission controler");
@@ -125,14 +164,38 @@ RequestAdmissionSubmissionHandlerI{
 
 		super.shutdown();
 	}
+	
+	
+	@Override
+	public void			shutdownNow() throws ComponentShutdownException
+	{
+		// Disconnect ports to the request emitter and to the processors owning
+		// the allocated cores.
+	
+			try {
+				admissionControlerManagementInboundPort.unpublishPort();
+				requestAdmissionSubmissionInboundPort.unpublishPort();
+				requestAdmissionNotificationInboundPort.unpublishPort();
+				this.dynamicComponentCreationOutboundPort.unpublishPort() ;
+			} catch (Exception e) {
+				throw new ComponentShutdownException("Error when shutdown admission controler");
+			}
+			
+
+		super.shutdownNow();
+	}
 
 	@Override
 	public String getSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
-		
+	
 		/*
 		 * Si on a encore des ressources libres
 		 */
-		if(ressources_libres !=max_ressources) {
+		if(ressourcesLibres.size() !=0) {
+			
+			id = ressourcesLibres.pop();
+			
+			ressourcesPrises.put(requestAdmission.getRequestGeneratorManagementInboundPortURI(), id);
 			
 			String rd_uri = "dispatcher_"+id;
 			String distribInPortURI = "dispatcher_management_inbound_port_URI_"+id;
@@ -145,54 +208,66 @@ RequestAdmissionSubmissionHandlerI{
 			String requestSubmissionInboundPortURIVM = "request_sub_inbound_port_uri_"+id;
 			String requestNotificationInboundPortURIVM = "request_notif_inbound_port_uri_"+id;
 			
-			String computerOutPortURI = computersURI.get(ressources_libres);
+			
+			String computerOutPortURI = computersURI.get(id);
+			Computer c = computers.get(id);
+			c.toggleLogging() ;
+			c.toggleTracing() ;
 			
 			
 			//On fournit au generateur l'uri du port de submission de requete du dispatcher 
 			requestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
 			
-
-			/*
-			 * On crée le dispatcher via le dynamicComponentCreator
-			 */
-			Object[] argumentsDispatcher = {rd_uri,
-					distribInPortURI, 
-					requestSubmissionInboundPortURI, 
-					requestNotificationInboundPortURI, 
-					requestSubmissionInboundPortURIVM,
-					requestNotificationInboundPortURIVM};
-
-			dynamicComponentCreationOutboundPort.createComponent(RequestDispatcher.class.getCanonicalName(),
-					argumentsDispatcher);		
-			
-			/*
-			 * On crée l'application VM via le dynamicComponentCreator
-			 */
-			Object[] argumentsAppVM = {vmURI, 
-								appliInPortURI,
-								requestSubmissionInboundPortURIVM, 
-								requestNotificationInboundPortURIVM};
-			
-			dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
-					argumentsAppVM);		
-
+			/*on limite l'acces au dynamic component creator car il doit créer/démarrer/exécuter
+			 *  tous les composants nécessaires pour un seul générateur d'un coup !
+			 *  Donc pas d'accès concurrents
+			*/
+			synchronized (dynamicComponentCreationOutboundPort) {
+					
+				/*
+				 * On crée le dispatcher via le dynamicComponentCreator
+				 */
+				Object[] argumentsDispatcher = {rd_uri,
+						distribInPortURI, 
+						requestSubmissionInboundPortURI, 
+						requestNotificationInboundPortURI, 
+						requestSubmissionInboundPortURIVM,
+						requestNotificationInboundPortURIVM};
+	
+				dynamicComponentCreationOutboundPort.createComponent(RequestDispatcher.class.getCanonicalName(),
+						argumentsDispatcher);		
 				
-
-			/*
-			 * On crée l'integrateur qui va gérer la génération de requete
-			 *  via le dynamicComponentCreator :
-			 * on récupère l'uri du port de management du générateur de requête dans l'objet
-			 * requete d'admission, fourni en argument de la methode
-			 */
+				/*
+				 * On crée l'application VM via le dynamicComponentCreator
+				 */
+				Object[] argumentsAppVM = {vmURI, 
+									appliInPortURI,
+									requestSubmissionInboundPortURIVM, 
+									requestNotificationInboundPortURIVM};
+				
+				dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
+						argumentsAppVM);		
+	
+					
+	
+				/*
+				 * On crée l'integrateur qui va gérer la génération de requete
+				 *  via le dynamicComponentCreator :
+				 * on récupère l'uri du port de management du générateur de requête dans l'objet
+				 * requete d'admission, fourni en argument de la methode
+				 */
+				
+				Object[] argumentsIntegrator = {appliInPortURI,
+						computerOutPortURI };
+				
+				dynamicComponentCreationOutboundPort.createComponent(IntegratorForRequestGeneration.class.getCanonicalName(),
+						argumentsIntegrator);
+				
+				dynamicComponentCreationOutboundPort.startComponents();
+				dynamicComponentCreationOutboundPort.executeComponents();
+			}
 			
-			Object[] argumentsIntegrator = {requestAdmission.getRequestGeneratorManagementInboundPortURI(),
-					appliInPortURI,
-					computerOutPortURI };
-			
-			dynamicComponentCreationOutboundPort.createComponent(IntegratorForRequestGeneration.class.getCanonicalName(),
-					argumentsIntegrator);
-
-			dynamicComponentCreationOutboundPort.startComponents();
+			logMessage("Controleur d'admission : Acceptation de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
 			
 			
 			/*
@@ -202,11 +277,24 @@ RequestAdmissionSubmissionHandlerI{
 			return requestSubmissionInboundPortURI;
 		}
 		
+		logMessage("Controleur d'admission : Refus de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
 		/*
 		 * Sinon, si on n'a pas les ressources nécessaires pour satisfaire 
 		 * les besoins du générateur de requêtes, on renvoie null
 		 */
 		return null;
+	}
+
+
+	@Override
+	public void acceptRequestAdmissionTerminationNotification(RequestAdmissionI requestAdmission) throws Exception {
+		
+		int id_libere = ressourcesPrises.remove(requestAdmission.getRequestGeneratorManagementInboundPortURI());
+
+		ressourcesLibres.push(id_libere);
+		
+		logMessage("Controleur d'admission : Ressources libérées par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
+		
 	}
 
 

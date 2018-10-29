@@ -1,7 +1,7 @@
 package etape1.requestdispatcher;
 
-import etape1.requestdistributor.interfaces.RequestDistributorManagementI;
-import etape1.requestdistributor.ports.RequestDistributorManagementInboundPort;
+import etape1.requestdistributor.interfaces.RequestDispatcherManagementI;
+import etape1.requestdistributor.ports.RequestDispatcherManagementInboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
@@ -20,12 +20,12 @@ import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
 
 
 
-public class RequestDispatcher extends AbstractComponent implements RequestDistributorManagementI,
+public class RequestDispatcher extends AbstractComponent implements RequestDispatcherManagementI,
 RequestSubmissionHandlerI,
 RequestNotificationHandlerI{
 
 	private String rd_uri;
-	private RequestDistributorManagementInboundPort managementInboundPort;
+	private RequestDispatcherManagementInboundPort requestDispatcherManagementInboundPort;
 	private String requestNotificationInboundPortURI;
 	
 	//connecteur pour le generateur
@@ -63,11 +63,11 @@ RequestNotificationHandlerI{
 		
 		this.requestSubmissionInboundPortURIVM = requestSubmissionInboundPortURIVM;
 		
-		addOfferedInterface(RequestDistributorManagementI.class);
+		addOfferedInterface(RequestDispatcherManagementI.class);
 		
-		managementInboundPort = new RequestDistributorManagementInboundPort(managementInboundPortURI, this);
-		addPort(managementInboundPort);
-		managementInboundPort.publishPort();
+		requestDispatcherManagementInboundPort = new RequestDispatcherManagementInboundPort(managementInboundPortURI, this);
+		addPort(requestDispatcherManagementInboundPort);
+		requestDispatcherManagementInboundPort.publishPort();
 		
 		addOfferedInterface(RequestSubmissionI.class);
 		requestSubmissionInboundPort = new RequestSubmissionInboundPort(requestSubmissionInboundPortURI, this);
@@ -128,7 +128,7 @@ RequestNotificationHandlerI{
 	
 		try {
 			requestSubmissionInboundPort.unpublishPort();
-			managementInboundPort.unpublishPort();
+			requestDispatcherManagementInboundPort.unpublishPort();
 			requestNotificationOutboundPort.unpublishPort();
 			requestSubmissionOutboundPortVM.unpublishPort();
 			requestNotificationInboundPortVM.unpublishPort();
@@ -144,6 +144,30 @@ RequestNotificationHandlerI{
 		
 		
 	}
+	
+	@Override
+	public void shutdownNow() throws ComponentShutdownException {
+	
+		try {
+			requestSubmissionInboundPort.unpublishPort();
+			requestDispatcherManagementInboundPort.unpublishPort();
+			requestNotificationOutboundPort.unpublishPort();
+			requestSubmissionOutboundPortVM.unpublishPort();
+			requestNotificationInboundPortVM.unpublishPort();
+			
+		} catch (Exception e) {
+			throw new ComponentShutdownException(
+					"processor services outbound port disconnection"
+					+ " error", e) ;
+		}
+		
+		
+		super.shutdownNow();
+		
+		
+		
+	}
+
 
 
 	@Override

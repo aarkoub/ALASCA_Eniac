@@ -1,20 +1,20 @@
 package etape1.requestdistributor.ports;
 
-import etape1.requestdistributor.interfaces.RequestDistributorManagementI;
+import etape1.requestdistributor.interfaces.RequestDispatcherManagementI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 
 public class RequestDistributorManagementOutboundPort extends AbstractOutboundPort
-implements RequestDistributorManagementI {
+implements RequestDispatcherManagementI {
 
 	
 	public RequestDistributorManagementOutboundPort(String uri, ComponentI owner ) throws Exception{
-		super(uri, RequestDistributorManagementI.class, owner);
+		super(uri, RequestDispatcherManagementI.class, owner);
 		assert	uri != null && owner != null ;
 	}
 	
 	public RequestDistributorManagementOutboundPort(ComponentI owner) throws Exception {
-		super(RequestDistributorManagementI.class, owner);
+		super(RequestDispatcherManagementI.class, owner);
 		assert owner!=null;
 	}
 	

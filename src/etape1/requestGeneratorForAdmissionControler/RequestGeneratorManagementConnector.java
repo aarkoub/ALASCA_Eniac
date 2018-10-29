@@ -102,4 +102,11 @@ implements	RequestGeneratorManagementI
 		askAdmissionControler();
 		
 	}
+
+	@Override
+	public void freeAdmissionControlerRessources() throws Exception {
+		((RequestGeneratorManagementI)this.offering).
+		freeAdmissionControlerRessources();
+		
+	}
 }

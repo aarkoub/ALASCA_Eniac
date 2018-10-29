@@ -42,13 +42,24 @@ public class CVM2 extends AbstractCVM {
 	
 	protected static final String admissionControlerURI = "admission_controler";
 	protected static final String admissionControlerManagementInboundURI = "admission_controler_management_inbound_uri";
-	protected static final String requestAdmissionSubmissionInboundPortURI = "request_admission_submission_inbound_port_uri";
+	protected static final List<String> requestAdmissionSubmissionInboundPortURIS = new ArrayList<>();
+	protected static final List<String> requestAdmissionNotificationInboundPortURIS = new ArrayList<>();
 	
 	
 	protected List<Computer> computers = new ArrayList<>();
 	protected List<ComputerMonitor> computerMonitors = new ArrayList<>();
 	protected List<String> computerMonitorsURI = new ArrayList<>();
 	protected List<String> computersURI = new ArrayList<>();
+	protected List<RequestGenerator> requestGenerators = new ArrayList<>();
+	protected List<Integrator2> integrators = new ArrayList<>();
+
+
+	final String requestAdmissionSubmissionInboundPortURI ="request_admission_submission_inbound_port_uri";
+
+
+	final String requestAdmissionNotificationInboundPortURI = "request_admission_notification_inbound_port_uri";
+
+
 
 
 	private static final String dynamicComponentCreationInboundPortURI = "dynamicComponentCreationInboundPortURI";
@@ -100,8 +111,7 @@ public class CVM2 extends AbstractCVM {
 								ComputerStaticStateDataInboundPortURI,
 								ComputerDynamicStateDataInboundPortURI) ;
 			this.addDeployedComponent(c) ;
-			c.toggleLogging() ;
-			c.toggleTracing() ;
+			
 			// --------------------------------------------------------------------
 	
 			// --------------------------------------------------------------------
@@ -121,6 +131,12 @@ public class CVM2 extends AbstractCVM {
 			
 		}
 		
+		
+		for(int i=0; i<max_ressources; i++){
+			requestAdmissionSubmissionInboundPortURIS.add("request_admission_submission_inbound_port_uri_"+i);
+			requestAdmissionNotificationInboundPortURIS.add("request_admission_notification_inbound_port_uri_"+i);
+		}
+		
 		/*
 		 * Creation du dynamic component creator
 		 */
@@ -133,30 +149,44 @@ public class CVM2 extends AbstractCVM {
 		admissionControler = new AdmissionControler(admissionControlerURI,
 				max_ressources, 
 				admissionControlerManagementInboundURI, 
-				requestAdmissionSubmissionInboundPortURI,
 				dynamicComponentCreationInboundPortURI,
+				requestAdmissionSubmissionInboundPortURI,
+				requestAdmissionNotificationInboundPortURI,
 				computers,
 				computerMonitors,
 				computersURI);
 		
-		/*
-		 * Creation du générateur de requetes
-		 */
-		requestGenerator = new RequestGenerator(URI_RequestGenerator, 500, 50, 
-				RequestGeneratorManagementInboundPortURI, requestSubmissionInboundPortURI,
-				requestNotificationInboundPortURI, requestAdmissionSubmissionInboundPortURI);
+		admissionControler.toggleLogging();
+		admissionControler.toggleTracing();
 		
 		
+		for(int i=0; i<max_ressources+1; i++){
 			
-		requestGenerator.toggleTracing();
-		requestGenerator.toggleLogging();
+
+			/*
+			 * Creation du générateur de requetes
+			 */
 		
-		/*
-		 * Creation du l'intégrateur 2
-		 */
-		integrator = new Integrator2(RequestGeneratorManagementInboundPortURI,
-				 dynamicComponentCreationInboundPortURI);
-		
+			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 500, 50, 
+					RequestGeneratorManagementInboundPortURI+i, requestSubmissionInboundPortURI+i,
+					requestNotificationInboundPortURI+i, requestAdmissionSubmissionInboundPortURI,
+					requestAdmissionNotificationInboundPortURI);
+			
+			
+				
+			requestGenerator.toggleTracing();
+			requestGenerator.toggleLogging();
+			
+			requestGenerators.add(requestGenerator);
+			
+			/*
+			 * Creation du l'intégrateur 2
+			 */
+			integrator = new Integrator2(RequestGeneratorManagementInboundPortURI+i);
+			
+			integrators.add(integrator);
+		}
+			
 		
 		
 		/*
@@ -167,9 +197,12 @@ public class CVM2 extends AbstractCVM {
 		
 		addDeployedComponent(admissionControler);
 		
-		addDeployedComponent(requestGenerator);
+		for(RequestGenerator reqGen : requestGenerators)
+			addDeployedComponent(reqGen);
 		
-		addDeployedComponent(integrator) ;
+		
+		for(Integrator2 inte : integrators)
+			addDeployedComponent(inte) ;
 		
 			
 		super.deploy();
@@ -187,7 +220,7 @@ public class CVM2 extends AbstractCVM {
 			// Create an instance of the defined component virtual machine.
 			CVM2 a = new CVM2() ;
 			// Execute the application.
-			a.startStandardLifeCycle(15000L) ;
+			a.startStandardLifeCycle(18000L) ;
 			// Give some time to see the traces (convenience).
 			Thread.sleep(10000L) ;
 			// Simplifies the termination (termination has yet to be treated

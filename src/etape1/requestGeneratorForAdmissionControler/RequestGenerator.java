@@ -39,9 +39,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
 import etape1.admissioncontroler.RequestAdmission;
+import etape1.admissioncontroler.connectors.RequestAdmissionNotificationConnector;
 import etape1.admissioncontroler.connectors.RequestAdmissionSubmissionConnector;
 import etape1.admissioncontroler.interfaces.RequestAdmissionI;
-import etape1.admissioncontroler.ports.RequestAdmissionSubmissionOutboundPort;
+import etape1.admissioncontroler.interfaces.RequestAdmissionNotificationI;
+import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
+import etape1.requestadmission.ports.RequestAdmissionNotificationInboundPort;
+import etape1.requestadmission.ports.RequestAdmissionNotificationOutboundPort;
+import etape1.requestadmission.ports.RequestAdmissionSubmissionOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
@@ -127,16 +132,21 @@ implements	RequestNotificationHandlerI
 	
 	
 	
-	protected RequestAdmissionSubmissionOutboundPort requestAdmissionOutport;
+	protected RequestAdmissionSubmissionOutboundPort requestAdmissionSubmissionOutboundPort;
 	
-	protected String requestAdmissionInboundPortURI;
+	protected String requestAdmissionSubmissionInboundPortURI;
+	
+	protected RequestAdmissionNotificationOutboundPort requestAdmissionNotificationOutboundPort;
+	
+	protected String requestAdmissionNotificationInboundPortURI;
 	
 	protected String requestNotificationInboundPortURI;
 	
 	protected RequestAdmissionI requestAdmission;
 	
-	private boolean executionDone = false;
-
+	protected boolean isRsopPortConnected = false;
+	
+	
 	// -------------------------------------------------------------------------
 	// Constructors
 	// -------------------------------------------------------------------------
@@ -167,7 +177,8 @@ implements	RequestNotificationHandlerI
 		String managementInboundPortURI,
 		String requestSubmissionInboundPortURI,
 		String requestNotificationInboundPortURI,
-		String requestAdmissionInboundPortURI
+		String requestAdmissionSubmissionInboundPortURI,
+		String requestAdmissionNotificationInboundPortURI
 		) throws Exception
 	{
 		super(1, 1) ;
@@ -177,7 +188,8 @@ implements	RequestNotificationHandlerI
 		assert	managementInboundPortURI != null ;
 		assert	requestSubmissionInboundPortURI != null ;
 		assert	requestNotificationInboundPortURI != null ;
-		assert requestAdmissionInboundPortURI != null;
+		assert requestAdmissionSubmissionInboundPortURI != null;
+		assert requestAdmissionNotificationInboundPortURI != null;
 
 		// initialization
 		this.rgURI = rgURI ;
@@ -189,7 +201,7 @@ implements	RequestNotificationHandlerI
 		this.nextRequestTaskFuture = null ;
 		this.requestSubmissionInboundPortURI =
 										requestSubmissionInboundPortURI ;
-		this.requestAdmissionInboundPortURI = requestAdmissionInboundPortURI;
+		this.requestAdmissionSubmissionInboundPortURI = requestAdmissionSubmissionInboundPortURI;
 		
 		this.requestNotificationInboundPortURI = requestNotificationInboundPortURI;
 
@@ -218,10 +230,21 @@ implements	RequestNotificationHandlerI
 		requestAdmission = new RequestAdmission(requestNotificationInboundPortURI);
 		
 		// Ajout du port pour soumettre la demande d'hebergement au Controleur d'Admission
-		addRequiredInterface(RequestAdmissionI.class);
-		requestAdmissionOutport = new RequestAdmissionSubmissionOutboundPort(this);
-		addPort(requestAdmissionOutport);
-		requestAdmissionOutport.publishPort();
+		addRequiredInterface(RequestAdmissionSubmissionI.class);
+		requestAdmissionSubmissionOutboundPort = new RequestAdmissionSubmissionOutboundPort(this);
+		addPort(requestAdmissionSubmissionOutboundPort);
+		requestAdmissionSubmissionOutboundPort.publishPort();
+		
+		//Ajout du port pour notifier la terminaison de la requete d'admission
+		
+		this.requestAdmissionNotificationInboundPortURI = requestAdmissionNotificationInboundPortURI;
+		
+		addRequiredInterface(RequestAdmissionNotificationI.class);
+		requestAdmissionNotificationOutboundPort = 
+				new RequestAdmissionNotificationOutboundPort(this);
+		addPort(requestAdmissionNotificationOutboundPort);
+		requestAdmissionNotificationOutboundPort.publishPort();
+		
 
 		
 
@@ -230,6 +253,10 @@ implements	RequestNotificationHandlerI
 		assert	this.meanInterArrivalTime > 0.0 ;
 		assert	this.meanNumberOfInstructions > 0 ;
 		assert	this.rsop != null && this.rsop instanceof RequestSubmissionI ;
+		assert  this.requestAdmissionSubmissionOutboundPort!=null && 
+				requestAdmissionSubmissionOutboundPort instanceof RequestAdmissionSubmissionI;
+		assert requestAdmissionNotificationOutboundPort != null &&
+				requestAdmissionNotificationOutboundPort instanceof RequestAdmissionNotificationI;
 	}
 
 	// -------------------------------------------------------------------------
@@ -246,9 +273,14 @@ implements	RequestNotificationHandlerI
 		
 		// Connexion du port pour demander au controleur d'admission
 		try {
-			doPortConnection(requestAdmissionOutport.getPortURI(), 
-				requestAdmissionInboundPortURI,
+			doPortConnection(requestAdmissionSubmissionOutboundPort.getPortURI(), 
+				requestAdmissionSubmissionInboundPortURI,
 					RequestAdmissionSubmissionConnector.class.getCanonicalName());
+			
+			doPortConnection(requestAdmissionNotificationOutboundPort.getPortURI(),
+					requestAdmissionNotificationInboundPortURI,
+					RequestAdmissionNotificationConnector.class.getCanonicalName());
+			
 		}catch(Exception e) {
 			throw new ComponentStartException(e) ;
 		}
@@ -268,7 +300,9 @@ implements	RequestNotificationHandlerI
 						this.nextRequestTaskFuture.isDone())) {
 			this.nextRequestTaskFuture.cancel(true) ;
 		}
-		this.doPortDisconnection(this.rsop.getPortURI()) ;
+		
+		if(isRsopPortConnected)
+			this.doPortDisconnection(this.rsop.getPortURI()) ;
 
 		super.finalise() ;
 	}
@@ -294,11 +328,32 @@ implements	RequestNotificationHandlerI
 			this.rsop.unpublishPort() ;
 			this.rnip.unpublishPort() ;
 			this.rgmip.unpublishPort() ;
+			requestAdmissionSubmissionOutboundPort.unpublishPort();
+			requestAdmissionNotificationOutboundPort.unpublishPort();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
 		}
 
 		super.shutdown();
+	}
+	
+	
+	@Override
+	public void			shutdownNow() throws ComponentShutdownException
+	{
+
+		try {
+			
+			this.rsop.unpublishPort() ;
+			this.rnip.unpublishPort() ;
+			this.rgmip.unpublishPort() ;
+			requestAdmissionSubmissionOutboundPort.unpublishPort();
+			requestAdmissionNotificationOutboundPort.unpublishPort();
+		} catch (Exception e) {
+			throw new ComponentShutdownException(e) ;
+		}
+
+		super.shutdownNow();
 	}
 
 	// -------------------------------------------------------------------------
@@ -478,7 +533,8 @@ implements	RequestNotificationHandlerI
 		// Soumission de la demande d'hebergement (recupere le port de soumission de Request Dispatcher)
 		String reqSubInboundPortURI = null;
 		try {
-			reqSubInboundPortURI = requestAdmissionOutport.getSubmissionInboundPortURI(requestAdmission);	
+			requestAdmissionSubmissionOutboundPort.setSubmissionInboundPortURI(requestAdmission);
+			reqSubInboundPortURI=requestAdmission.getRequestSubmissionPortURI();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -486,7 +542,7 @@ implements	RequestNotificationHandlerI
 		
 		// Desinscription du port de soumission du Controleur d'Admission
 		try {
-			requestAdmissionOutport.unpublishPort();
+			requestAdmissionSubmissionOutboundPort.unpublishPort();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -494,10 +550,13 @@ implements	RequestNotificationHandlerI
 		
 		
 		if(requestAdmission.getRequestSubmissionPortURI()==null) {
+			logMessage("Request generator " + this.rgURI +" : Refus du controleur d'admission");
 			return false;
 			
 		}
 		
+		
+		logMessage("Request generator " + this.rgURI +" : Acceptation de la demande par le controleur d'admission");
 		
 		// Connexion du port de soumission vers le Request Dispatcher
 		try {
@@ -505,12 +564,23 @@ implements	RequestNotificationHandlerI
 					this.rsop.getPortURI(),
 					reqSubInboundPortURI,
 					RequestSubmissionConnector.class.getCanonicalName()) ;
+			isRsopPortConnected=true;
+			
 		} catch (Exception e) {
 			throw new ComponentStartException(e) ;
 		}
 
 			
-		
 		return true;
+	}
+
+	public void freeAdmissionControlerRessources() {
+		try {
+			requestAdmissionNotificationOutboundPort.acceptRequestTerminationNotification(requestAdmission);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 }

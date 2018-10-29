@@ -1,5 +1,6 @@
-package etape1.admissioncontroler.ports;
+package etape1.requestadmission.ports;
 
+import etape1.admissioncontroler.interfaces.RequestAdmissionI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionNotificationI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
@@ -24,8 +25,8 @@ public class RequestAdmissionNotificationOutboundPort extends AbstractOutboundPo
 	}
 
 	@Override
-	public void acceptRequestTerminationNotification(boolean b) throws Exception {
-		((RequestAdmissionNotificationI)this.connector).acceptRequestTerminationNotification(b);
+	public void acceptRequestTerminationNotification(RequestAdmissionI requestAdmission) throws Exception {
+		((RequestAdmissionNotificationI)this.connector).acceptRequestTerminationNotification(requestAdmission);
 
 	}
 
