@@ -3,6 +3,8 @@ package etape1.requestdispatcher.multi;
 import java.util.ArrayList;
 import java.util.List;
 
+import etape1.requestdispatcher.multi.interfaces.RequestDispatcherMultiVMManagementI;
+import etape1.requestdispatcher.multi.ports.RequestDispatcherMultiVMManagementInboundPort;
 import etape1.requestdistributor.interfaces.RequestDispatcherManagementI;
 import etape1.requestdistributor.ports.RequestDispatcherManagementInboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
@@ -23,12 +25,12 @@ import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
 
 
 
-public class RequestDispatcherMultiVM extends AbstractComponent implements RequestDispatcherManagementI,
+public class RequestDispatcherMultiVM extends AbstractComponent implements RequestDispatcherMultiVMManagementI,
 RequestSubmissionHandlerI,
 RequestNotificationHandlerI{
 
 	private String rd_uri;
-	private RequestDispatcherManagementInboundPort requestDispatcherManagementInboundPort;
+	private RequestDispatcherMultiVMManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
 	private String requestNotificationInboundPortURI;
 	
 	//connecteur pour le generateur
@@ -64,9 +66,9 @@ RequestNotificationHandlerI{
 		
 		addOfferedInterface(RequestDispatcherManagementI.class);
 		
-		requestDispatcherManagementInboundPort = new RequestDispatcherManagementInboundPort(managementInboundPortURI, this);
-		addPort(requestDispatcherManagementInboundPort);
-		requestDispatcherManagementInboundPort.publishPort();
+		requestDispatcherMultiVMManagementInboundPort = new RequestDispatcherMultiVMManagementInboundPort(managementInboundPortURI, this);
+		addPort(requestDispatcherMultiVMManagementInboundPort);
+		requestDispatcherMultiVMManagementInboundPort.publishPort();
 		
 		addOfferedInterface(RequestSubmissionI.class);
 		requestSubmissionInboundPort = new RequestSubmissionInboundPort(requestSubmissionInboundPortURI, this);
@@ -140,7 +142,7 @@ RequestNotificationHandlerI{
 	
 		try {
 			requestSubmissionInboundPort.unpublishPort();
-			requestDispatcherManagementInboundPort.unpublishPort();
+			requestDispatcherMultiVMManagementInboundPort.unpublishPort();
 			requestNotificationOutboundPort.unpublishPort();
 			for(int i = 0; i < avms.size(); i++) {
 				avms.get(i).getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
@@ -165,7 +167,7 @@ RequestNotificationHandlerI{
 	
 		try {
 			requestSubmissionInboundPort.unpublishPort();
-			requestDispatcherManagementInboundPort.unpublishPort();
+			requestDispatcherMultiVMManagementInboundPort.unpublishPort();
 			requestNotificationOutboundPort.unpublishPort();
 			for(int i = 0; i < avms.size(); i++) {
 				avms.get(i).getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
@@ -209,6 +211,54 @@ RequestNotificationHandlerI{
 	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
 		logMessage("Requete terminé : "+r.getRequestURI());
 		requestNotificationOutboundPort.notifyRequestTermination(r);
+	}
+
+
+	@Override
+	public boolean removeAVM(String uri) {
+		AVMData data = null;
+		for(AVMData tmp: avms) {
+			if(tmp.getAvmuris().getAVMUri() == uri) {
+				data = tmp;
+				break;
+			}
+		}
+		
+		if(data == null) return false;
+		try {
+			doPortDisconnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI());
+			avms.remove(data);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		return false;
+	}
+
+	@Override
+	public int getNbAvm() {
+		return avms.size();
+	}
+
+	@Override
+	public void addAVM(AVMUris avmuris) throws Exception {
+		RequestSubmissionOutboundPort requestSubmissionOutboundPortVM;
+		RequestNotificationInboundPort requestNotificationInboundPortVM;
+		AVMData data;
+		
+		requestNotificationInboundPortVM = new RequestNotificationInboundPort(avmuris.getRequestNotificationInboundPortVM(), this);
+		addPort(requestNotificationInboundPortVM);
+		requestNotificationInboundPortVM.publishPort();
+		requestSubmissionOutboundPortVM = new RequestSubmissionOutboundPort(this);
+		addPort(requestSubmissionOutboundPortVM);
+		requestSubmissionOutboundPortVM.publishPort();
+		data = new AVMData(avmuris, new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM));
+		avms.add(data);
+		doPortConnection(requestSubmissionOutboundPortVM.getPortURI(),
+				avmuris.getRequestSubmissionInboundPortVM(),
+				RequestSubmissionConnector.class.getCanonicalName());
 	}
 	
 

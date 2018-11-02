@@ -2,11 +2,10 @@ package etape1.admissioncontroler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
+
 
 import etape1.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionI;
@@ -24,6 +23,8 @@ import etape1.requestadmission.ports.RequestAdmissionSubmissionInboundPort;
 import etape1.requestdispatcher.RequestDispatcher;
 import etape1.requestdispatcher.multi.AVMUris;
 import etape1.requestdispatcher.multi.RequestDispatcherMultiVM;
+import etape1.requestdispatcher.multi.connectors.RequestDispatcherMultiVMManagementConnector;
+import etape1.requestdispatcher.multi.ports.RequestDispatcherMultiVMManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
@@ -61,7 +62,10 @@ RequestAdmissionNotificationHandlerI{
 	private String dynamicComponentCreationInboundPortURI;
 	private RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
 	private RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
+	
+	
 	private static final int DEFAULT_AVM_SIZE = 2;
+	private Map<String, RequestDispatcherMultiVMManagementOutboundPort> rdmanagementport;
 	
 	
 	public AdmissionControler(String uri, 
@@ -121,6 +125,7 @@ RequestAdmissionNotificationHandlerI{
 		addPort(dynamicComponentCreationOutboundPort);
 		dynamicComponentCreationOutboundPort.publishPort();
 		
+		rdmanagementport = new HashMap<>();
 						
 	}
 	
@@ -242,6 +247,12 @@ RequestAdmissionNotificationHandlerI{
 				dynamicComponentCreationOutboundPort.createComponent(RequestDispatcherMultiVM.class.getCanonicalName(),
 						argumentsDispatcher);		
 				
+				RequestDispatcherMultiVMManagementOutboundPort rsmvmmop = new RequestDispatcherMultiVMManagementOutboundPort(this);
+				addPort(rsmvmmop);
+				rsmvmmop.publishPort();
+				doPortConnection(rsmvmmop.getPortURI(), distribInPortURI, RequestDispatcherMultiVMManagementConnector.class.getCanonicalName());
+				rdmanagementport.put(distribInPortURI, rsmvmmop);
+				
 				/*
 				 * On cr�e l'application VM via le dynamicComponentCreator
 				 */
@@ -264,14 +275,16 @@ RequestAdmissionNotificationHandlerI{
 				 * requete d'admission, fourni en argument de la methode
 				 */
 				
-				Object[] argumentsIntegrator = {uris,
-						computerOutPortURI };
+				Object[] argumentsIntegrator = {
+						uris,
+						computerOutPortURI};
 				
 				dynamicComponentCreationOutboundPort.createComponent(IntegratorForRequestGeneration.class.getCanonicalName(),
 						argumentsIntegrator);
 				
 				dynamicComponentCreationOutboundPort.startComponents();
 				dynamicComponentCreationOutboundPort.executeComponents();
+				
 			}
 			
 			logMessage("Controleur d'admission : Acceptation de la demande du g�n�rateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
@@ -280,7 +293,7 @@ RequestAdmissionNotificationHandlerI{
 			/*
 			 * On retourne l'uri du port de soumission de requetes
 			 */
-			
+					
 			return requestSubmissionInboundPortURI;
 		}
 		

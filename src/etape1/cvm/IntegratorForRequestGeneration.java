@@ -20,7 +20,6 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 	protected List<ApplicationVMManagementOutboundPort> appliOutboundPorts;
 	protected List<AVMUris> uris;
 	protected ComputerServicesOutboundPort computerOutboundPort;
-	
 	private String computerInPortURI;
 
 	
@@ -47,6 +46,7 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 		computerOutboundPort = new ComputerServicesOutboundPort(this);
 		addPort(computerOutboundPort);
 		computerOutboundPort.publishPort();
+		
 		
 		
 				
