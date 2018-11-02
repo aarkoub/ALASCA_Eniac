@@ -1,5 +1,9 @@
 package etape1.cvm;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import etape1.requestdispatcher.multi.AVMUris;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
@@ -13,30 +17,32 @@ import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManage
 public class IntegratorForRequestGeneration extends AbstractComponent {
 	
 
-	protected ApplicationVMManagementOutboundPort appliOutboundPort;
+	protected List<ApplicationVMManagementOutboundPort> appliOutboundPorts;
+	protected List<AVMUris> uris;
 	protected ComputerServicesOutboundPort computerOutboundPort;
 	
-	private String appliInPortURI;
 	private String computerInPortURI;
 
 	
 	
 	
-	public IntegratorForRequestGeneration(String applicationVMManagementInboundPortURI,
+	public IntegratorForRequestGeneration(ArrayList<AVMUris> uris,
 			String computerServiceInboundPortURI) throws Exception {
 		super(0,0);
 		
-		assert applicationVMManagementInboundPortURI != null;
+		assert uris != null;
 		assert computerServiceInboundPortURI != null;
 		
-		
-		appliInPortURI = applicationVMManagementInboundPortURI;
 		computerInPortURI = computerServiceInboundPortURI;
 		
-
-		appliOutboundPort = new ApplicationVMManagementOutboundPort(this);
-		addPort(appliOutboundPort);
-		appliOutboundPort.publishPort();
+		this.uris = uris;
+		appliOutboundPorts = new ArrayList<>();
+		for(int i = 0; i < uris.size(); i++) {
+			ApplicationVMManagementOutboundPort appliOutboundPort = new ApplicationVMManagementOutboundPort(this);
+			addPort(appliOutboundPort);
+			appliOutboundPort.publishPort();
+			appliOutboundPorts.add(appliOutboundPort);
+		}
 		
 		computerOutboundPort = new ComputerServicesOutboundPort(this);
 		addPort(computerOutboundPort);
@@ -53,7 +59,10 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 		super.start();
 		try {
 			doPortConnection(computerOutboundPort.getPortURI(), computerInPortURI, ComputerServicesConnector.class.getCanonicalName());
-			doPortConnection(appliOutboundPort.getPortURI(), appliInPortURI, ApplicationVMManagementConnector.class.getCanonicalName());
+			for(int i = 0; i < appliOutboundPorts.size(); i++) {
+				doPortConnection(appliOutboundPorts.get(i).getPortURI(), uris.get(i).getApplicationVMManagementInboundPortVM(),
+						ApplicationVMManagementConnector.class.getCanonicalName());
+			}
 			
 			
 		} catch (Exception e) {
@@ -68,8 +77,10 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 	{
 		super.execute() ;
 		
-		AllocatedCore[] ac = this.computerOutboundPort.allocateCores(4) ;
-		this.appliOutboundPort.allocateCores(ac) ;
+		for(int i = 0; i < appliOutboundPorts.size(); i++) {
+			AllocatedCore[] ac = this.computerOutboundPort.allocateCores(2) ;
+			appliOutboundPorts.get(i).allocateCores(ac) ;
+		}
 		
 	
 	}
@@ -81,7 +92,9 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 		
 		
 		doPortDisconnection(computerOutboundPort.getPortURI());
-		doPortDisconnection(appliOutboundPort.getPortURI());
+		for(int i = 0; i < appliOutboundPorts.size(); i++) {
+			doPortDisconnection(appliOutboundPorts.get(i).getPortURI());;
+		}
 		
 		super.finalise();
 	}
@@ -93,7 +106,9 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 		try {
 			
 			computerOutboundPort.unpublishPort();
-			appliOutboundPort.unpublishPort();
+			for(int i = 0; i < appliOutboundPorts.size(); i++) {
+				appliOutboundPorts.get(i).unpublishPort();
+			}
 		
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
@@ -108,7 +123,9 @@ public class IntegratorForRequestGeneration extends AbstractComponent {
 		try {
 	
 			computerOutboundPort.unpublishPort();
-			appliOutboundPort.unpublishPort();
+			for(int i = 0; i < appliOutboundPorts.size(); i++) {
+				appliOutboundPorts.get(i).unpublishPort();
+			}
 		
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
