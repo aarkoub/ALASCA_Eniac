@@ -31,6 +31,8 @@ import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
+import fr.sorbonne_u.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
+import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
 
 public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI, 
 RequestAdmissionSubmissionHandlerI,
@@ -284,10 +286,37 @@ RequestAdmissionNotificationHandlerI{
 				
 				dynamicComponentCreationOutboundPort.startComponents();
 				dynamicComponentCreationOutboundPort.executeComponents();
-				
+				/*
+				ApplicationVM vm = new ApplicationVM("vmURI",
+						"applicationVMManagementInboundPortURI",
+						"requestSubmissionInboundPortURI",
+						"requestNotificationInboundPortURI");
+				vm.toggleLogging();
+				vm.toggleTracing();
+				vm.logMessage("Creation de la VM vmURI");
+				ApplicationVMManagementOutboundPort out =
+						new ApplicationVMManagementOutboundPort("applicationVMManagementInboundPortURI", this);
+				out.publishPort();
+				out.doConnection("applicationVMManagementInboundPortURI",
+						ApplicationVMManagementConnector.class.getCanonicalName());
+				rsmvmmop.addAVM(new AVMUris("requestSubmissionInboundPortURI", "requestNotificationInboundPortURI", "applicationVMManagementInboundPortURI", "vmURI"));
+				//rsmvmmop.removeAVM("vmURI");
+				*/
+				Object[] args = {
+						"vmURI",
+						"applicationVMManagementInboundPortURI",
+						"requestSubmissionInboundPortURI",
+						"requestNotificationInboundPortURI"
+				};
+				rsmvmmop.addAVM(new AVMUris("requestSubmissionInboundPortURI", "requestNotificationInboundPortURI", "applicationVMManagementInboundPortURI", "vmURI"));
+				dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
+						args);
 			}
 			
 			logMessage("Controleur d'admission : Acceptation de la demande du g�n�rateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
+			
+			
+	
 			
 			
 			/*
