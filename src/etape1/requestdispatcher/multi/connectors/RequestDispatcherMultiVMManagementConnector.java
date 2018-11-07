@@ -22,4 +22,9 @@ public class RequestDispatcherMultiVMManagementConnector extends AbstractConnect
 		return ((RequestDispatcherMultiVMManagementI)this.offering).getNbAvm();
 	}
 
+	@Override
+	public void connectAVM(String uri) throws Exception {
+		((RequestDispatcherMultiVMManagementI)this.offering).connectAVM(uri);;
+	}
+
 }

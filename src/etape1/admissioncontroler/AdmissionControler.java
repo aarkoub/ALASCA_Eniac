@@ -311,6 +311,10 @@ RequestAdmissionNotificationHandlerI{
 				rsmvmmop.addAVM(new AVMUris("requestSubmissionInboundPortURI", "requestNotificationInboundPortURI", "applicationVMManagementInboundPortURI", "vmURI"));
 				dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
 						args);
+				rsmvmmop.connectAVM("vmURI");
+				dynamicComponentCreationOutboundPort.startComponents();
+				dynamicComponentCreationOutboundPort.executeComponents();
+				
 			}
 			
 			logMessage("Controleur d'admission : Acceptation de la demande du g�n�rateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());

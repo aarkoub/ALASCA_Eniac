@@ -8,6 +8,8 @@ public interface RequestDispatcherMultiVMManagementI extends OfferedI, RequiredI
 	
 	public void addAVM(AVMUris avmuris) throws Exception ;
 	
+	public void connectAVM(String uri) throws Exception ;
+	
 	public boolean removeAVM(String uri) throws Exception ;
 	
 	public int getNbAvm() throws Exception ;

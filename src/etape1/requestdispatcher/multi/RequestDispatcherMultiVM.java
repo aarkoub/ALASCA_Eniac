@@ -256,9 +256,21 @@ RequestNotificationHandlerI{
 		requestSubmissionOutboundPortVM.publishPort();
 		data = new AVMData(avmuris, new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM));
 		avms.add(data);
-		doPortConnection(requestSubmissionOutboundPortVM.getPortURI(),
-				avmuris.getRequestSubmissionInboundPortVM(),
-				RequestSubmissionConnector.class.getCanonicalName());
+		
+	}
+
+	@Override
+	public void connectAVM(String uri) throws Exception {
+		for(int i = 0; i < avms.size(); i++) {
+			AVMData data = avms.get(i); 
+			if(data.getAvmuris().getAVMUri() == uri) {
+				doPortConnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
+						data.getAvmuris().getRequestSubmissionInboundPortVM(),
+						RequestSubmissionConnector.class.getCanonicalName());
+				return;
+			}
+		}
+		
 	}
 	
 
