@@ -1,12 +1,15 @@
-package etape1.requestdispatcher.multi;
+package etape1.requestdispatcher.multi.components;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import etape1.requestdispatcher.interfaces.RequestDispatcherManagementI;
+import etape1.requestdispatcher.multi.data.AVMData;
+import etape1.requestdispatcher.multi.data.AVMPorts;
+import etape1.requestdispatcher.multi.data.AVMUris;
 import etape1.requestdispatcher.multi.interfaces.RequestDispatcherMultiVMManagementI;
 import etape1.requestdispatcher.multi.ports.RequestDispatcherMultiVMManagementInboundPort;
-import etape1.requestdistributor.interfaces.RequestDispatcherManagementI;
-import etape1.requestdistributor.ports.RequestDispatcherManagementInboundPort;
+import etape1.requestdispatcher.ports.RequestDispatcherManagementInboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;

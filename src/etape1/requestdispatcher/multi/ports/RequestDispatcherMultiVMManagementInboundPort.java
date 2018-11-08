@@ -1,7 +1,7 @@
 package etape1.requestdispatcher.multi.ports;
 
-import etape1.requestdispatcher.multi.AVMUris;
-import etape1.requestdispatcher.multi.RequestDispatcherMultiVM;
+import etape1.requestdispatcher.multi.components.RequestDispatcherMultiVM;
+import etape1.requestdispatcher.multi.data.AVMUris;
 import etape1.requestdispatcher.multi.interfaces.RequestDispatcherMultiVMManagementI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;

@@ -1,4 +1,4 @@
-package etape1.requestdispatcher.multi;
+package etape1.requestdispatcher.multi.data;
 
 import fr.sorbonne_u.datacenter.software.ports.RequestNotificationInboundPort;
 import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;

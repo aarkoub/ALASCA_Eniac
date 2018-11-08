@@ -1,6 +1,6 @@
 package etape1.requestdispatcher.multi.interfaces;
 
-import etape1.requestdispatcher.multi.AVMUris;
+import etape1.requestdispatcher.multi.data.AVMUris;
 import fr.sorbonne_u.components.interfaces.OfferedI;
 import fr.sorbonne_u.components.interfaces.RequiredI;
 

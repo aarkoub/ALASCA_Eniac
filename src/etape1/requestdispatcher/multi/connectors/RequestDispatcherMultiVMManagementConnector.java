@@ -1,6 +1,6 @@
 package etape1.requestdispatcher.multi.connectors;
 
-import etape1.requestdispatcher.multi.AVMUris;
+import etape1.requestdispatcher.multi.data.AVMUris;
 import etape1.requestdispatcher.multi.interfaces.RequestDispatcherMultiVMManagementI;
 import fr.sorbonne_u.components.connectors.AbstractConnector;
 

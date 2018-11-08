@@ -1,4 +1,4 @@
-package etape1.requestdispatcher.multi;
+package etape1.requestdispatcher.multi.data;
 
 public class AVMUris {
 	private String RequestSubmissionInboundPortVM;

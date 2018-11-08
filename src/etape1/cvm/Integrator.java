@@ -1,7 +1,7 @@
 package etape1.cvm;
 
-import etape1.requestdistributor.connectors.RequestDistributorManagementConnector;
-import etape1.requestdistributor.ports.RequestDistributorManagementOutboundPort;
+import etape1.requestdispatcher.connectors.RequestDistributorManagementConnector;
+import etape1.requestdispatcher.ports.RequestDistributorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;

@@ -3,7 +3,7 @@ package etape1.cvm;
 import java.util.ArrayList;
 import java.util.List;
 
-import etape1.requestdispatcher.multi.AVMUris;
+import etape1.requestdispatcher.multi.data.AVMUris;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;

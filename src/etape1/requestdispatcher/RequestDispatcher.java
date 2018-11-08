@@ -1,7 +1,7 @@
 package etape1.requestdispatcher;
 
-import etape1.requestdistributor.interfaces.RequestDispatcherManagementI;
-import etape1.requestdistributor.ports.RequestDispatcherManagementInboundPort;
+import etape1.requestdispatcher.interfaces.RequestDispatcherManagementI;
+import etape1.requestdispatcher.ports.RequestDispatcherManagementInboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;

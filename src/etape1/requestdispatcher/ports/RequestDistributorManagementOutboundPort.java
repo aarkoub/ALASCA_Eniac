@@ -1,6 +1,6 @@
-package etape1.requestdistributor.ports;
+package etape1.requestdispatcher.ports;
 
-import etape1.requestdistributor.interfaces.RequestDispatcherManagementI;
+import etape1.requestdispatcher.interfaces.RequestDispatcherManagementI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 
