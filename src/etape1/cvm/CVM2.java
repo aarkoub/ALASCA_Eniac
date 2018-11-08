@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import etape1.admissioncontroler.AdmissionControler;
+import etape1.admissioncontroler.ComputerURI;
 import etape1.dynamiccomponentcreator.DynamicComponentCreator;
 import etape1.requestGeneratorForAdmissionControler.RequestGenerator;
 
@@ -82,8 +83,10 @@ public class CVM2 extends AbstractCVM {
 		int max_ressources = 2;
 		
 		/*
-		 * Création des computeurs (en ressources du contrôleur d'admission)
+		 * Crï¿½ation des computeurs (en ressources du contrï¿½leur d'admission)
 		 */
+		
+		List<ComputerURI> computeruris = new ArrayList<>();
 		for(int i=0; i<max_ressources; i++) {
 		
 			String ComputerDynamicStateDataInboundPortURI = "computerDynamic_inport_uri_"+i;
@@ -91,7 +94,7 @@ public class CVM2 extends AbstractCVM {
 			String ComputerServicesInboundPortURI = "computer_in_port_"+i;
 			String computerURI = "computer_"+i ;
 			int numberOfProcessors = 2 ;
-			int numberOfCores = 2 ;
+			int numberOfCores = 4 ;
 			Set<Integer> admissibleFrequencies = new HashSet<Integer>() ;
 			admissibleFrequencies.add(1500) ;	// Cores can run at 1,5 GHz
 			admissibleFrequencies.add(3000) ;	// and at 3 GHz
@@ -123,11 +126,12 @@ public class CVM2 extends AbstractCVM {
 										 ComputerStaticStateDataInboundPortURI,
 										 ComputerDynamicStateDataInboundPortURI) ;
 			this.addDeployedComponent(this.computerMonitor) ;
-			
+			c.toggleLogging();
+			c.toggleTracing();
 			computers.add(c);
 			computerMonitors.add(computerMonitor);
 			computersURI.add(ComputerServicesInboundPortURI);
-			
+			computeruris.add(new ComputerURI(computerURI, ComputerServicesInboundPortURI, ComputerStaticStateDataInboundPortURI, ComputerDynamicStateDataInboundPortURI));
 			
 		}
 		
@@ -153,18 +157,18 @@ public class CVM2 extends AbstractCVM {
 				requestAdmissionSubmissionInboundPortURI,
 				requestAdmissionNotificationInboundPortURI,
 				computers,
-				computerMonitors,
-				computersURI);
+				computeruris,
+				computerMonitors);
 		
 		admissionControler.toggleLogging();
 		admissionControler.toggleTracing();
 		
 		
-		for(int i=0; i<max_ressources+1; i++){
+		for(int i=0; i<max_ressources+1-1; i++){
 			
 
 			/*
-			 * Creation du générateur de requetes
+			 * Creation du gï¿½nï¿½rateur de requetes
 			 */
 		
 			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 500, 50, 
@@ -180,7 +184,7 @@ public class CVM2 extends AbstractCVM {
 			requestGenerators.add(requestGenerator);
 			
 			/*
-			 * Creation du l'intégrateur 2
+			 * Creation du l'intï¿½grateur 2
 			 */
 			integrator = new Integrator2(RequestGeneratorManagementInboundPortURI+i);
 			
@@ -190,7 +194,7 @@ public class CVM2 extends AbstractCVM {
 		
 		
 		/*
-		 * Déploiement
+		 * Dï¿½ploiement
 		 */
 		
 		addDeployedComponent(dynamicComponentCreator);
