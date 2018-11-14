@@ -14,4 +14,8 @@ public interface RequestAdmissionI extends Serializable {
 	
 	public void setRequestGeneratorManagementInboundPortURI(String uri);
 	
+	public String getRequestDispatcherURI();
+	
+	public void setRequestDispatcherURI(String uri);	
+	
 }

@@ -93,8 +93,8 @@ public class CVM2 extends AbstractCVM {
 			String ComputerStaticStateDataInboundPortURI = "computerStatic_inport_uri_"+i;
 			String ComputerServicesInboundPortURI = "computer_in_port_"+i;
 			String computerURI = "computer_"+i ;
-			int numberOfProcessors = 2 ;
-			int numberOfCores = 4 ;
+			int numberOfProcessors = 1 ;
+			int numberOfCores = 3 ;
 			Set<Integer> admissibleFrequencies = new HashSet<Integer>() ;
 			admissibleFrequencies.add(1500) ;	// Cores can run at 1,5 GHz
 			admissibleFrequencies.add(3000) ;	// and at 3 GHz
@@ -164,7 +164,7 @@ public class CVM2 extends AbstractCVM {
 		admissionControler.toggleTracing();
 		
 		
-		for(int i=0; i<max_ressources+1-1; i++){
+		for(int i=0; i<max_ressources+1; i++){
 			
 
 			/*
@@ -226,7 +226,7 @@ public class CVM2 extends AbstractCVM {
 			// Execute the application.
 			a.startStandardLifeCycle(18000L) ;
 			// Give some time to see the traces (convenience).
-			Thread.sleep(10000L) ;
+			Thread.sleep(10000000L) ;
 			// Simplifies the termination (termination has yet to be treated
 			// properly in BCM).
 			System.exit(0) ;
