@@ -1,4 +1,4 @@
-package etape1.requestdispatcher;
+package etape1.requestdispatcher.components;
 
 import etape1.requestdispatcher.interfaces.RequestDispatcherManagementI;
 import etape1.requestdispatcher.ports.RequestDispatcherManagementInboundPort;

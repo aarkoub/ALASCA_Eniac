@@ -19,7 +19,7 @@ import etape1.dynamiccomponentcreator.DynamicComponentCreationI;
 import etape1.dynamiccomponentcreator.DynamicComponentCreationOutboundPort;
 import etape1.requestadmission.ports.RequestAdmissionNotificationInboundPort;
 import etape1.requestadmission.ports.RequestAdmissionSubmissionInboundPort;
-import etape1.requestdispatcher.RequestDispatcher;
+import etape1.requestdispatcher.components.RequestDispatcher;
 import etape1.requestdispatcher.multi.components.RequestDispatcherMultiVM;
 import etape1.requestdispatcher.multi.connectors.RequestDispatcherMultiVMManagementConnector;
 import etape1.requestdispatcher.multi.data.AVMUris;

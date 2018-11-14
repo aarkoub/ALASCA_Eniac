@@ -2,7 +2,7 @@ package etape1.admissioncontroler.ports;
 
 import etape1.admissioncontroler.AdmissionControler;
 import etape1.admissioncontroler.interfaces.AdmissionControlerManagementI;
-import etape1.requestdispatcher.RequestDispatcher;
+import etape1.requestdispatcher.components.RequestDispatcher;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 
