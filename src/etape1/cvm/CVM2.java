@@ -94,7 +94,7 @@ public class CVM2 extends AbstractCVM {
 			String ComputerServicesInboundPortURI = "computer_in_port_"+i;
 			String computerURI = "computer_"+i ;
 			int numberOfProcessors = 1 ;
-			int numberOfCores = 3 ;
+			int numberOfCores = 2 ;
 			Set<Integer> admissibleFrequencies = new HashSet<Integer>() ;
 			admissibleFrequencies.add(1500) ;	// Cores can run at 1,5 GHz
 			admissibleFrequencies.add(3000) ;	// and at 3 GHz
