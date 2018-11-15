@@ -250,7 +250,7 @@ RequestAdmissionNotificationHandlerI{
 		 */
 		
 		
-		List<AllocationCore> allocation = allocateCoreFromComputers(1, DEFAULT_AVM_SIZE);
+		List<AllocationCore> allocation = allocateCoreFromComputers(2, DEFAULT_AVM_SIZE);
 		if(allocation != null) {
 			String rd_uri = "dispatcher_"+id;
 			String distribInPortURI = "dispatcher_management_inbound_port_URI_"+id;
@@ -335,7 +335,7 @@ RequestAdmissionNotificationHandlerI{
 				dynamicComponentCreationOutboundPort.startComponents();
 				dynamicComponentCreationOutboundPort.executeComponents();
 
-				//createAndAddVMToRequestDispatcher(rdmanagementport.keySet().stream().findFirst().get());
+				createAndAddVMToRequestDispatcher(rdmanagementport.keySet().stream().findFirst().get());
 				
 				
 			}
@@ -376,10 +376,10 @@ RequestAdmissionNotificationHandlerI{
 		
 		RequestDispatcherMultiVMManagementOutboundPort rsmvmmop = rdmanagementport.get(RequestDispatcherURI);
 		
-		rsmvmmop.addAVM(new AVMUris(AVMREQUESTSUBMISSIONURI+id_avm, AVMREQUESTNOTIFICATIONURI+id_avm, AVMMANAGEMENTURI+id_avm, AVMURI+id_avm));
+		rsmvmmop.addAVM(uri);
 		dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
 				args);
-		rsmvmmop.connectAVM(AVMURI+id_avm);
+		
 		
 		id_avm++;
 		
@@ -393,6 +393,8 @@ RequestAdmissionNotificationHandlerI{
 		
 		dynamicComponentCreationOutboundPort.startComponents();
 		dynamicComponentCreationOutboundPort.executeComponents();
+		
+		rsmvmmop.connectAVM(uri.getAVMUri());
 		return true;
 	}
 
