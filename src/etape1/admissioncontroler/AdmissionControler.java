@@ -250,7 +250,7 @@ RequestAdmissionNotificationHandlerI{
 		 */
 		
 		
-		List<AllocationCore> allocation = allocateCoreFromComputers(2, DEFAULT_AVM_SIZE);
+		List<AllocationCore> allocation = allocateCoreFromComputers(1, DEFAULT_AVM_SIZE);
 		if(allocation != null) {
 			String rd_uri = "dispatcher_"+id;
 			String distribInPortURI = "dispatcher_management_inbound_port_URI_"+id;
@@ -335,7 +335,7 @@ RequestAdmissionNotificationHandlerI{
 				dynamicComponentCreationOutboundPort.startComponents();
 				dynamicComponentCreationOutboundPort.executeComponents();
 
-				createAndAddVMToRequestDispatcher(rdmanagementport.keySet().stream().findFirst().get());
+				//createAndAddVMToRequestDispatcher(rdmanagementport.keySet().stream().findFirst().get());
 				
 				
 			}
