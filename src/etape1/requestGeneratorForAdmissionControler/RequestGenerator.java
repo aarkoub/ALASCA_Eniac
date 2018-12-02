@@ -554,7 +554,7 @@ implements	RequestNotificationHandlerI
 			return false;
 			
 		}
-		requestAdmission.setRequestGeneratorManagementInboundPortURI(rgmip.getPortURI());
+		
 		
 		logMessage("Request generator " + this.rgURI +" : Acceptation de la demande par le controleur d'admission");
 		

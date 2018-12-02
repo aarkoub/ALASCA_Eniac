@@ -249,7 +249,7 @@ RequestAdmissionNotificationHandlerI{
 		 * Si on a encore des ressources libres
 		 */
 		
-		RequestAdmissionI newRequestAdmission = new RequestAdmission(requestAdmission.getRequestNotificationPortURI());
+		RequestAdmissionI newRequestAdmission = requestAdmission.copy();
 		
 		List<AllocationCore> allocation = allocateCoreFromComputers(1, DEFAULT_AVM_SIZE);
 		if(allocation != null) {

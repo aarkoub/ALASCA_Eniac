@@ -16,6 +16,10 @@ public interface RequestAdmissionI extends Serializable {
 	
 	public String getRequestDispatcherURI();
 	
-	public void setRequestDispatcherURI(String uri);	
+	public void setRequestDispatcherURI(String uri);
+
+	public RequestAdmissionI copy();
+
+
 	
 }
