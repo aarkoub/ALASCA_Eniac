@@ -24,9 +24,9 @@ public class RequestAdmissionSubmissionOutboundPort extends AbstractOutboundPort
 	}
 
 	@Override
-	public void setSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
+	public RequestAdmissionI getRequestAdmissionFromAdmissionController(RequestAdmissionI requestAdmission) throws Exception {
 		
-		((RequestAdmissionSubmissionI)this.connector).setSubmissionInboundPortURI(requestAdmission);
+		return ((RequestAdmissionSubmissionI)this.connector).getRequestAdmissionFromAdmissionController(requestAdmission);
 	}
 
 	/*@Override

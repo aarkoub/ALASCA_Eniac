@@ -243,12 +243,13 @@ RequestAdmissionNotificationHandlerI{
 	}
 	
 	@Override
-	public String getSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
+	public RequestAdmissionI getNewRequestAdmission(RequestAdmissionI requestAdmission) throws Exception {
 	
 		/*
 		 * Si on a encore des ressources libres
 		 */
 		
+		RequestAdmissionI newRequestAdmission = new RequestAdmission(requestAdmission.getRequestNotificationPortURI());
 		
 		List<AllocationCore> allocation = allocateCoreFromComputers(1, DEFAULT_AVM_SIZE);
 		if(allocation != null) {
@@ -256,7 +257,8 @@ RequestAdmissionNotificationHandlerI{
 			String distribInPortURI = "dispatcher_management_inbound_port_URI_"+id;
 			String requestSubmissionInboundPortURI = "dispatcher_submission_inboud_port_URI_"+id;
 			String requestNotificationInboundPortURI = requestAdmission.getRequestNotificationPortURI();
-			requestAdmission.setRequestDispatcherURI(rd_uri);
+			newRequestAdmission.setRequestDispatcherURI(rd_uri);
+		
 			id++;
 			List<AVMUris> uris = new ArrayList<>();
 			for(int i = 0; i < DEFAULT_AVM_SIZE; i++) {
@@ -269,7 +271,7 @@ RequestAdmissionNotificationHandlerI{
 			}
 			
 			//On fournit au generateur l'uri du port de submission de requete du dispatcher 
-			requestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
+			newRequestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
 			
 			/*on limite l'acces au dynamic component creator car il doit cr�er/d�marrer/ex�cuter
 			 *  tous les composants n�cessaires pour un seul g�n�rateur d'un coup !
@@ -346,7 +348,6 @@ RequestAdmissionNotificationHandlerI{
 			 * On retourne l'uri du port de soumission de requetes
 			 */
 					
-			return requestSubmissionInboundPortURI;
 		}
 		
 		logMessage("Controleur d'admission : Refus de la demande du g�n�rateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
@@ -356,7 +357,7 @@ RequestAdmissionNotificationHandlerI{
 		 * Sinon, si on n'a pas les ressources n�cessaires pour satisfaire 
 		 * les besoins du g�n�rateur de requ�tes, on renvoie null
 		 */
-		return null;
+		return newRequestAdmission;
 	}
 	
 	
@@ -410,7 +411,7 @@ RequestAdmissionNotificationHandlerI{
 			}
 		});
 		allocationVMCores.remove(requestAdmission.getRequestDispatcherURI());
-		logMessage("Controleur d'admission : Ressources lib�r�es par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
+		logMessage("Controleur d'admission : Ressources libérées par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
 		
 	}
 

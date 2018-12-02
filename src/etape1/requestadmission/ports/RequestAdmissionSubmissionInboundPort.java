@@ -14,8 +14,6 @@ public class RequestAdmissionSubmissionInboundPort extends AbstractInboundPort i
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private String response=null;
-
 	public RequestAdmissionSubmissionInboundPort(String uri, ComponentI owner)
 			throws Exception {
 		super(uri, RequestAdmissionSubmissionI.class, owner);
@@ -27,16 +25,16 @@ public class RequestAdmissionSubmissionInboundPort extends AbstractInboundPort i
 	}
 
 	@Override
-	public void setSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
-		this.getOwner().handleRequestSync(
-				new AbstractComponent.AbstractService<Void>() {
+	public RequestAdmissionI getRequestAdmissionFromAdmissionController(RequestAdmissionI requestAdmission) throws Exception {
+		return this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService<RequestAdmissionI>() {
 					@Override
-					public Void call() throws Exception {
-						response = ((AdmissionControler)this.getOwner()).getSubmissionInboundPortURI(requestAdmission);
-						return null;
+					public RequestAdmissionI call() throws Exception {
+						return ((AdmissionControler)this.getOwner()).getNewRequestAdmission(requestAdmission);
+					
 					}
 				}) ;
-		
+			
 		
 	}
 
