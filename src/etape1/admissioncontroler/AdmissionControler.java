@@ -60,6 +60,8 @@ RequestAdmissionNotificationHandlerI{
 	private static final String AVMREQUESTSUBMISSIONURI = "avm_rsuri_";
 	private static final String AVMREQUESTNOTIFICATIONURI = "avm_rnuri_";
 	
+	private Map<Integer, List<Computer>> nbCoresMap ;
+	
 	
 	public AdmissionControler(String uri, 
 			int nbComputers,
@@ -112,14 +114,19 @@ RequestAdmissionNotificationHandlerI{
 		computerdata = new HashMap<>();
 		avmmanagementport = new HashMap<>();
 		allocationVMCores = new HashMap<>();
+		nbCoresMap = new HashMap<>();
 		
 		ComputerServicesOutboundPort csop;
 		for (int i = 0; i < computers.size(); i++) {
+			Computer c =  computers.get(i);
+			ComputerURI cUri = computeruris.get(i);
 			csop = new ComputerServicesOutboundPort(this);
 			addPort(csop);
 			csop.publishPort();
-			computerdata.put(computeruris.get(i).getComputerUri(), new ComputerData(computeruris.get(i), computers.get(i), csop));
-			doPortConnection(csop.getPortURI(),computeruris.get(i).getComputerServicesInboundPortURI(), ComputerServicesConnector.class.getCanonicalName());
+			ComputerData computerData =  new ComputerData(cUri,c, csop);
+			computerdata.put(cUri.getComputerUri(), computerData);
+			doPortConnection(csop.getPortURI(),cUri.getComputerServicesInboundPortURI(), ComputerServicesConnector.class.getCanonicalName());
+			
 		}
 	}
 	
