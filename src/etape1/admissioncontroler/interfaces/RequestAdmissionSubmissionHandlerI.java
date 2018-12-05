@@ -7,6 +7,6 @@ public interface RequestAdmissionSubmissionHandlerI {
 	public void acceptRequestAdmissionSubmissionAndNotify(final RequestAdmissionI requestai) throws Exception;*/
 	
 	
-	public String getSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception;
+	public RequestAdmissionI getNewRequestAdmission(RequestAdmissionI requestAdmission) throws Exception;
 	
 }

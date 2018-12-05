@@ -5,5 +5,5 @@ import fr.sorbonne_u.components.interfaces.RequiredI;
 
 public interface RequestAdmissionSubmissionI extends OfferedI, RequiredI {
 	
-	public void setSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception;
+	public RequestAdmissionI getRequestAdmissionFromAdmissionController(RequestAdmissionI requestAdmission) throws Exception;
 }

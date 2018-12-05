@@ -5,19 +5,19 @@ import etape1.admissioncontroler.interfaces.RequestAdmissionI;
 public class RequestAdmission implements RequestAdmissionI {
 	private static final long serialVersionUID = 1L;
 	
-	private String RequestNotificationPortURI;
+	private String requestNotificationPortURI;
 	private String requestSubmissionPortURI;
-	private String RequestDispatcherURI;
+	private String requestDispatcherURI;
 	private String requestGeneratorManagementInboundPortURI;
 	
 	
-	public RequestAdmission(String RequestNotificationPortURI) {
-		this.RequestNotificationPortURI = RequestNotificationPortURI;
+	public RequestAdmission(String requestNotificationPortURI) {
+		this.requestNotificationPortURI = requestNotificationPortURI;
 	}
 	
 	@Override
 	public String getRequestNotificationPortURI() {
-		return RequestNotificationPortURI;
+		return requestNotificationPortURI;
 	}
 	
 	@Override
@@ -42,13 +42,24 @@ public class RequestAdmission implements RequestAdmissionI {
 
 	@Override
 	public String getRequestDispatcherURI() {
-		return RequestDispatcherURI;
+		return requestDispatcherURI;
 	}
 
 	@Override
 	public void setRequestDispatcherURI(String uri) {
-		RequestDispatcherURI = uri;
+		requestDispatcherURI = uri;
 		
+	}
+
+	@Override
+	public RequestAdmissionI copy() {
+		RequestAdmission newRequestAdmission = new RequestAdmission(requestNotificationPortURI);
+		newRequestAdmission.requestGeneratorManagementInboundPortURI = this.requestGeneratorManagementInboundPortURI;
+		newRequestAdmission.requestNotificationPortURI = this.requestNotificationPortURI;
+		newRequestAdmission.requestSubmissionPortURI = this.requestSubmissionPortURI;
+		newRequestAdmission.requestDispatcherURI = this.requestDispatcherURI;
+		
+		return newRequestAdmission;
 	}
 	
 

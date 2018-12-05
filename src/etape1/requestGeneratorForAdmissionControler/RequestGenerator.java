@@ -596,7 +596,7 @@ implements	RequestNotificationHandlerI
 		// Soumission de la demande d'hebergement (recupere le port de soumission de Request Dispatcher)
 		String reqSubInboundPortURI = null;
 		try {
-			requestAdmissionSubmissionOutboundPort.setSubmissionInboundPortURI(requestAdmission);
+			requestAdmission = requestAdmissionSubmissionOutboundPort.getRequestAdmissionFromAdmissionController(requestAdmission);
 			reqSubInboundPortURI=requestAdmission.getRequestSubmissionPortURI();
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -612,7 +612,7 @@ implements	RequestNotificationHandlerI
 		
 		
 		
-		if(requestAdmission.getRequestSubmissionPortURI()==null) {
+		if(reqSubInboundPortURI==null) {
 			logMessage("Request generator " + this.rgURI +" : Refus du controleur d'admission");
 			return false;
 			

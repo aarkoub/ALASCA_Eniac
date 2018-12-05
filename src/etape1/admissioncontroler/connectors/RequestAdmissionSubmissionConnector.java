@@ -7,8 +7,8 @@ import fr.sorbonne_u.components.connectors.AbstractConnector;
 public class RequestAdmissionSubmissionConnector extends AbstractConnector implements RequestAdmissionSubmissionI {
 
 	@Override
-	public void setSubmissionInboundPortURI(RequestAdmissionI requestAdmission) throws Exception {
-		((RequestAdmissionSubmissionI)this.offering).setSubmissionInboundPortURI(requestAdmission);
+	public RequestAdmissionI getRequestAdmissionFromAdmissionController(RequestAdmissionI requestAdmission) throws Exception {
+		return ((RequestAdmissionSubmissionI)this.offering).getRequestAdmissionFromAdmissionController(requestAdmission);
 	}
 
 	/*@Override
