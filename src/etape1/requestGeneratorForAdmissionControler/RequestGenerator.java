@@ -1,5 +1,8 @@
 package etape1.requestGeneratorForAdmissionControler;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -48,6 +51,7 @@ import etape1.requestadmission.ports.RequestAdmissionNotificationInboundPort;
 import etape1.requestadmission.ports.RequestAdmissionNotificationOutboundPort;
 import etape1.requestadmission.ports.RequestAdmissionSubmissionOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
+import fr.sorbonne_u.components.connectors.AbstractConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.datacenter.TimeManagement;
@@ -60,6 +64,9 @@ import fr.sorbonne_u.datacenter.software.ports.RequestNotificationInboundPort;
 import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
 import fr.sorbonne_u.datacenterclient.requestgenerator.Request;
 import fr.sorbonne_u.datacenterclient.utils.TimeProcessing;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
 
 /**
  * The class <code>RequestGenerator</code> implements a component that generates
@@ -122,7 +129,7 @@ implements	RequestNotificationHandlerI
 	/** the inbound port provided to manage the component.					*/
 	protected RequestGeneratorManagementInboundPort	rgmip ;
 	/** the output port used to send requests to the service provider.		*/
-	public RequestSubmissionOutboundPort	rsop ;
+	public SendSubmissionOutboundPort	rsop ;
 	protected String							requestSubmissionInboundPortURI ;
 	/** the inbound port receiving end of execution notifications.			*/
 	protected RequestNotificationInboundPort	rnip ;
@@ -212,7 +219,7 @@ implements	RequestNotificationHandlerI
 		this.rgmip.publishPort() ;
 
 		this.addRequiredInterface(RequestSubmissionI.class) ;
-		this.rsop = new RequestSubmissionOutboundPort(this) ;
+		this.rsop = new SendSubmissionOutboundPort(this) ;
 		this.addPort(this.rsop) ;
 		this.rsop.publishPort() ;
 
@@ -257,6 +264,8 @@ implements	RequestNotificationHandlerI
 				requestAdmissionSubmissionOutboundPort instanceof RequestAdmissionSubmissionI;
 		assert requestAdmissionNotificationOutboundPort != null &&
 				requestAdmissionNotificationOutboundPort instanceof RequestAdmissionNotificationI;
+		
+		
 	}
 
 	// -------------------------------------------------------------------------
@@ -286,8 +295,62 @@ implements	RequestNotificationHandlerI
 		}
 			
 	}
-	
-
+	public static int cpt = 0;
+	public static Class<?> makeConnectorClassJavassist(String connectorCanonicalClassName,
+			Class<?> connectorSuperClass,
+			Class<?> connectorImplementedInterface,
+			Class<?> offeredInterface,
+			HashMap<String, String> methodNamesMap) throws Exception{
+		ClassPool pool = ClassPool.getDefault() ;
+		CtClass cs = pool.get(connectorSuperClass.getCanonicalName()) ;
+		CtClass cii = pool.get(connectorImplementedInterface.getCanonicalName()) ;
+		CtClass oi = pool.get(offeredInterface.getCanonicalName()) ;
+		CtClass connectorCtClass = pool.makeClass(connectorCanonicalClassName) ;
+		
+		connectorCtClass.setSuperclass(cs) ;
+		Method[] methodsToImplement = connectorImplementedInterface.getDeclaredMethods() ;
+		
+		for (int i = 0 ; i < methodsToImplement.length ; i++) {
+			String source = "public " ;
+			source += methodsToImplement[i].getReturnType().getName() + " " ;
+			source += methodsToImplement[i].getName() + "(" ;
+			Class<?>[] pt = methodsToImplement[i].getParameterTypes() ;
+			String callParam = "" ;
+			for (int j = 0 ; j < pt.length ; j++) {
+				String pName = "aaa" + j ;
+				source += pt[j].getCanonicalName() + " " + pName ;
+				callParam += pName ;
+				if (j < pt.length - 1) {
+					source += ", " ;
+					callParam += ", " ;
+				}
+			}
+			source += ")" ;
+			Class<?>[] et = methodsToImplement[i].getExceptionTypes() ;
+			if(et != null && et.length > 0) {
+				source += " throws ";
+				for (int z = 0 ; z < et.length ; z++) {
+					source += et[z].getCanonicalName() ;
+					if (z < et.length - 1) {
+						source += "," ;
+					}
+				}
+			}
+			source += "\n{ return ((" ;
+			source += offeredInterface.getCanonicalName() + ")this.offering)." ;
+			source += methodNamesMap.get(methodsToImplement[i].getName()) ;
+			source += "(" + callParam + ") ;\n}" ;
+			CtMethod theCtMethod = CtMethod.make(source, connectorCtClass) ;
+			connectorCtClass.addMethod(theCtMethod) ;
+		}
+		connectorCtClass.setInterfaces(new CtClass[]{cii}) ;
+		//cii.detach() ;
+		//cs.detach() ;
+		//oi.detach() ;
+		Class<?> ret = connectorCtClass.toClass() ;
+		connectorCtClass.detach() ;
+		return ret ;
+	}
 
 	/**
 	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
@@ -476,7 +539,7 @@ implements	RequestNotificationHandlerI
 		}
 
 		// submit the current request.
-		this.rsop.submitRequestAndNotify(r) ;
+		this.rsop.sendRequestAndNotify(r) ;
 		// schedule the next request generation.
 	
 		this.nextRequestTaskFuture =
@@ -560,13 +623,23 @@ implements	RequestNotificationHandlerI
 		
 		// Connexion du port de soumission vers le Request Dispatcher
 		try {
+			HashMap<String, String> methodmap = new HashMap<>();
+			methodmap.put("sendRequest", "submitRequest");
+			methodmap.put("sendRequestAndNotify", "submitRequestAndNotify");
+			Class<?> connector = makeConnectorClassJavassist("etape1.requestGeneratorForAdmissionControler.connectorJavassist"+cpt++,
+					AbstractConnector.class,
+					SubmissionISend.class,
+					RequestSubmissionI.class,
+					methodmap);
 			this.doPortConnection(
 					this.rsop.getPortURI(),
 					reqSubInboundPortURI,
-					RequestSubmissionConnector.class.getCanonicalName()) ;
+					connector.getCanonicalName()) ;
 			isRsopPortConnected=true;
 			
+			
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new ComponentStartException(e) ;
 		}
 

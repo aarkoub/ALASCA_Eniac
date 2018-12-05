@@ -403,7 +403,7 @@ RequestAdmissionNotificationHandlerI{
 	public void acceptRequestAdmissionTerminationNotification(RequestAdmissionI requestAdmission) throws Exception {
 		allocationVMCores.get(requestAdmission.getRequestDispatcherURI()).stream().forEach(arg0 -> {
 			try {
-				//arg0.freeCores();
+				arg0.freeCores();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
