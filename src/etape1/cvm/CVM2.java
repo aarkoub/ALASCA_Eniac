@@ -10,7 +10,6 @@ import java.util.Set;
 
 import etape1.admissioncontroler.AdmissionControler;
 import etape1.admissioncontroler.ComputerURI;
-import etape1.dynamiccomponentcreator.DynamicComponentCreator;
 import etape1.requestGeneratorForAdmissionControler.RequestGenerator;
 
 import fr.sorbonne_u.components.cvm.AbstractCVM;
@@ -33,7 +32,6 @@ public class CVM2 extends AbstractCVM {
 	protected Integrator2 integrator;
 	protected ComputerMonitor computerMonitor;
 	protected AdmissionControler admissionControler;
-	protected DynamicComponentCreator dynamicComponentCreator;
 	
 	
 	protected static final String requestSubmissionInboundPortURI = "request_sub_inbound_port";
@@ -141,11 +139,6 @@ public class CVM2 extends AbstractCVM {
 			requestAdmissionNotificationInboundPortURIS.add("request_admission_notification_inbound_port_uri_"+i);
 		}
 		
-		/*
-		 * Creation du dynamic component creator
-		 */
-		dynamicComponentCreator = new DynamicComponentCreator(dynamicComponentCreationInboundPortURI);
-		
 		
 		/*
 		 * Creation du controleur d'admission
@@ -197,7 +190,6 @@ public class CVM2 extends AbstractCVM {
 		 * D�ploiement
 		 */
 		
-		addDeployedComponent(dynamicComponentCreator);
 		
 		addDeployedComponent(admissionControler);
 		

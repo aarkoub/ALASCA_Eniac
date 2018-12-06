@@ -52,7 +52,7 @@ RequestNotificationHandlerI{
 			ArrayList<AVMUris> uris) throws Exception {
 		
 
-		super(1,1);
+		super(rd_uri,1,1);
 		
 		assert rd_uri != null;
 		assert	managementInboundPortURI != null ;
@@ -102,27 +102,30 @@ RequestNotificationHandlerI{
 			avms.add(data);
 		}
 		
-		 
+		this.toggleLogging();
+		this.toggleTracing();
 	}
 	
 	@Override
 	public void start() throws ComponentStartException {
-		
 		super.start();
 		
+	}
+	
+	public void startPortConnection() {
 		try {
 			doPortConnection(requestNotificationOutboundPort.getPortURI(), requestNotificationInboundPortURI,
 					RequestNotificationConnector.class.getCanonicalName());
-			
 			for(int i = 0; i < avms.size(); i++) {
 				doPortConnection(avms.get(i).getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
 						avms.get(i).getAvmuris().getRequestSubmissionInboundPortVM(),
 						RequestSubmissionConnector.class.getCanonicalName());
 			}
-			
 		} catch (Exception e) {
-			throw new ComponentStartException(e) ;
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+			
 	}
 	
 	

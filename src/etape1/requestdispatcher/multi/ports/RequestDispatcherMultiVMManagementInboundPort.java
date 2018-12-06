@@ -77,11 +77,27 @@ public class RequestDispatcherMultiVMManagementInboundPort extends AbstractInbou
 					@Override
 					public Void call() throws Exception {
 						((RequestDispatcherMultiVM)this.getOwner()).
-							connectAVM(uri); ;
+							connectAVM(uri);
 						return null;
 					}
 				}) ;
 		
 	}
+
+	@Override
+	public void startPortConnection() throws Exception {
+		this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService<Void>() {
+					@Override
+					public Void call() throws Exception {
+						((RequestDispatcherMultiVM)this.getOwner()).
+							startPortConnection();
+						return null;
+					}
+				}) ;
+		
+		
+	}
+
 
 }

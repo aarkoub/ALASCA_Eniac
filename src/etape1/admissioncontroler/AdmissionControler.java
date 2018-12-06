@@ -13,18 +13,23 @@ import etape1.admissioncontroler.interfaces.RequestAdmissionNotificationI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
 import etape1.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
-import etape1.dynamiccomponentcreator.DynamicComponentCreationConnector;
-import etape1.dynamiccomponentcreator.DynamicComponentCreationI;
-import etape1.dynamiccomponentcreator.DynamicComponentCreationOutboundPort;
 import etape1.requestadmission.ports.RequestAdmissionNotificationInboundPort;
 import etape1.requestadmission.ports.RequestAdmissionSubmissionInboundPort;
 import etape1.requestdispatcher.multi.components.RequestDispatcherMultiVM;
 import etape1.requestdispatcher.multi.connectors.RequestDispatcherMultiVMManagementConnector;
 import etape1.requestdispatcher.multi.data.AVMUris;
+import etape1.requestdispatcher.multi.interfaces.RequestDispatcherMultiVMManagementI;
 import etape1.requestdispatcher.multi.ports.RequestDispatcherMultiVMManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
+import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
+import fr.sorbonne_u.components.pre.dcc.connectors.DynamicComponentCreationConnector;
+import fr.sorbonne_u.components.pre.dcc.interfaces.DynamicComponentCreationI;
+import fr.sorbonne_u.components.pre.dcc.ports.DynamicComponentCreationOutboundPort;
+import fr.sorbonne_u.components.reflection.connectors.ReflectionConnector;
+import fr.sorbonne_u.components.reflection.interfaces.ReflectionI;
+import fr.sorbonne_u.components.reflection.ports.ReflectionOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.computers.connectors.ComputerServicesConnector;
@@ -39,12 +44,11 @@ public class AdmissionControler extends AbstractComponent implements AdmissionCo
 RequestAdmissionSubmissionHandlerI,
 RequestAdmissionNotificationHandlerI{
 	
-	String uri;
+	private String uri;
 	
 	private int id=0;
 	private AdmissionControlerManagementInboundPort admissionControlerManagementInboundPort;
 	private DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
-	private String dynamicComponentCreationInboundPortURI;
 	private RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
 	private RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
 	
@@ -73,7 +77,7 @@ RequestAdmissionNotificationHandlerI{
 			List<ComputerURI> computeruris,
 			List<ComputerMonitor> computerMonitors) throws Exception{
 		
-		super(1,1);
+		super(uri, 1, 1);
 		assert nbComputers > 0;
 		assert uri != null;
 		assert AdmissionControlerManagementInboundURI != null;
@@ -105,7 +109,6 @@ RequestAdmissionNotificationHandlerI{
 
 		
 		addRequiredInterface(DynamicComponentCreationI.class);
-		this.dynamicComponentCreationInboundPortURI = dynamicComponentCreationInboundPortURI;
 		dynamicComponentCreationOutboundPort = new DynamicComponentCreationOutboundPort(this);
 		addPort(dynamicComponentCreationOutboundPort);
 		dynamicComponentCreationOutboundPort.publishPort();
@@ -128,6 +131,8 @@ RequestAdmissionNotificationHandlerI{
 			doPortConnection(csop.getPortURI(),cUri.getComputerServicesInboundPortURI(), ComputerServicesConnector.class.getCanonicalName());
 			
 		}
+		
+		
 	}
 	
 	
@@ -136,9 +141,10 @@ RequestAdmissionNotificationHandlerI{
 	@Override
 	public void start() throws ComponentStartException{
 		super.start();
-			
+		
+					
 			try {
-				doPortConnection(dynamicComponentCreationOutboundPort.getPortURI(), dynamicComponentCreationInboundPortURI, 
+				doPortConnection(dynamicComponentCreationOutboundPort.getPortURI(), AbstractCVM.DCC_INBOUNDPORT_URI_SUFFIX, 
 						DynamicComponentCreationConnector.class.getCanonicalName());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -251,120 +257,123 @@ RequestAdmissionNotificationHandlerI{
 	
 	@Override
 	public RequestAdmissionI getNewRequestAdmission(RequestAdmissionI requestAdmission) throws Exception {
-	
-		/*
-		 * Si on a encore des ressources libres
-		 */
+		
+
 		
 		RequestAdmissionI newRequestAdmission = requestAdmission.copy();
 		
 		List<AllocationCore> allocation = allocateCoreFromComputers(1, DEFAULT_AVM_SIZE);
-		if(allocation != null) {
-			String rd_uri = "dispatcher_"+id;
-			String distribInPortURI = "dispatcher_management_inbound_port_URI_"+id;
-			String requestSubmissionInboundPortURI = "dispatcher_submission_inboud_port_URI_"+id;
-			String requestNotificationInboundPortURI = requestAdmission.getRequestNotificationPortURI();
-			newRequestAdmission.setRequestDispatcherURI(rd_uri);
-		
-			id++;
-			List<AVMUris> uris = new ArrayList<>();
-			for(int i = 0; i < DEFAULT_AVM_SIZE; i++) {
-				String vmURI = AVMURI+id_avm;
-				String appliInPortURI = AVMMANAGEMENTURI+id_avm;
-				String requestSubmissionInboundPortURIVM = AVMREQUESTSUBMISSIONURI+id_avm;
-				String requestNotificationInboundPortURIVM = AVMREQUESTNOTIFICATIONURI+id_avm;
-				uris.add(new AVMUris(requestSubmissionInboundPortURIVM, requestNotificationInboundPortURIVM, appliInPortURI, vmURI));
-				id_avm++;
-			}
-			
-			//On fournit au generateur l'uri du port de submission de requete du dispatcher 
-			newRequestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
-			
-			/*on limite l'acces au dynamic component creator car il doit cr�er/d�marrer/ex�cuter
-			 *  tous les composants n�cessaires pour un seul g�n�rateur d'un coup !
-			 *  Donc pas d'acc�s concurrents
-			*/
-			synchronized (dynamicComponentCreationOutboundPort) {
-					
-				/*
-				 * On cr�e le dispatcher via le dynamicComponentCreator
-				 */
-				Object[] argumentsDispatcher = {rd_uri,
-						distribInPortURI, 
-						requestSubmissionInboundPortURI, 
-						requestNotificationInboundPortURI, 
-						uris};
-	
-				dynamicComponentCreationOutboundPort.createComponent(RequestDispatcherMultiVM.class.getCanonicalName(),
-						argumentsDispatcher);		
-				
-				RequestDispatcherMultiVMManagementOutboundPort rsmvmmop = new RequestDispatcherMultiVMManagementOutboundPort(this);
-				addPort(rsmvmmop);
-				rsmvmmop.publishPort();
-				doPortConnection(rsmvmmop.getPortURI(), distribInPortURI, RequestDispatcherMultiVMManagementConnector.class.getCanonicalName());
-				rdmanagementport.put(rd_uri, rsmvmmop);
-				
-				/*
-				 * On cr�e l'application VM via le dynamicComponentCreator
-				 */
-				for(int i = 0; i < DEFAULT_AVM_SIZE; i++) {
-					Object[] argumentsAppVM = {uris.get(i).getAVMUri(), 
-							uris.get(i).getApplicationVMManagementInboundPortVM(),
-							uris.get(i).getRequestSubmissionInboundPortVM(), 
-							uris.get(i).getRequestNotificationInboundPortVM()};
-		
-					dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
-							argumentsAppVM);	
-				}
-	
-					
-	
-				/*
-				 * On cr�e l'integrateur qui va g�rer la g�n�ration de requete
-				 *  via le dynamicComponentCreator :
-				 * on r�cup�re l'uri du port de management du g�n�rateur de requ�te dans l'objet
-				 * requete d'admission, fourni en argument de la methode
-				 */
-				
-				
-				ApplicationVMManagementOutboundPort avmmop;
-				allocationVMCores.put(rd_uri, new ArrayList<>());
-				for(int i = 0; i < uris.size(); i++) {
-					AVMUris auri = uris.get(i);
-					avmmop = new ApplicationVMManagementOutboundPort(this);
-					addPort(avmmop);
-					avmmop.publishPort();
-					doPortConnection(avmmop.getPortURI(), auri.getApplicationVMManagementInboundPortVM(), ApplicationVMManagementConnector.class.getCanonicalName());
-					avmmanagementport.put(auri.getAVMUri(), avmmop);
-					
-					allocation.get(i).setVMUri(auri.getAVMUri());
-					avmmop.allocateCores(allocation.get(i).getCores());
-					allocationVMCores.get(rd_uri).add(allocation.get(i));
-				}
-				dynamicComponentCreationOutboundPort.startComponents();
-				dynamicComponentCreationOutboundPort.executeComponents();
-
-				//createAndAddVMToRequestDispatcher(rdmanagementport.keySet().stream().findFirst().get());
-				
-				
-			}
-			
-			logMessage("Controleur d'admission : Acceptation de la demande du g�n�rateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
-	
-			/*
-			 * On retourne l'uri du port de soumission de requetes
-			 */
-					
+		/* Il n'y a pas assez de ressources pour satisfaire les besoins du générateur de requête */
+		if(allocation == null) {
+			logMessage("Controleur d'admission : Refus de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
+			return newRequestAdmission;
 		}
 		
-		logMessage("Controleur d'admission : Refus de la demande du g�n�rateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
+		String rd_uri = "dispatcher_"+id;
+		String distribInPortURI = "dispatcher_management_inbound_port_URI_"+id;
+		String requestSubmissionInboundPortURI = "dispatcher_submission_inboud_port_URI_"+id;
+		String requestNotificationInboundPortURI = requestAdmission.getRequestNotificationPortURI();
+		newRequestAdmission.setRequestDispatcherURI(rd_uri);
+	
+		id++;
+		List<AVMUris> uris = new ArrayList<>();
+		for(int i = 0; i < DEFAULT_AVM_SIZE; i++) {
+			String vmURI = AVMURI+id_avm;
+			String appliInPortURI = AVMMANAGEMENTURI+id_avm;
+			String requestSubmissionInboundPortURIVM = AVMREQUESTSUBMISSIONURI+id_avm;
+			String requestNotificationInboundPortURIVM = AVMREQUESTNOTIFICATIONURI+id_avm;
+			uris.add(new AVMUris(requestSubmissionInboundPortURIVM, requestNotificationInboundPortURIVM, appliInPortURI, vmURI));
+			id_avm++;
+		}
+		//On fournit au generateur l'uri du port de submission de requete du dispatcher 
+		newRequestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
 		
+		/*on limite l'acces au dynamic component creator car il doit cr�er/d�marrer/ex�cuter
+		 *  tous les composants n�cessaires pour un seul g�n�rateur d'un coup !
+		 *  Donc pas d'acc�s concurrents
+		*/
+			
+		/*
+		 * On cr�e le dispatcher via le dynamicComponentCreator
+		 */
+		Object[] argumentsDispatcher = {rd_uri,
+				distribInPortURI, 
+				requestSubmissionInboundPortURI, 
+				requestNotificationInboundPortURI, 
+				uris};
+
+
+		dynamicComponentCreationOutboundPort.createComponent(RequestDispatcherMultiVM.class.getCanonicalName(),
+					argumentsDispatcher);
+		
+		
+		
+		addRequiredInterface(RequestDispatcherMultiVMManagementI.class);
+		RequestDispatcherMultiVMManagementOutboundPort rsmvmmop = new RequestDispatcherMultiVMManagementOutboundPort(this);
+		addPort(rsmvmmop);
+		rsmvmmop.publishPort();
+		try {
+			doPortConnection(rsmvmmop.getPortURI(), distribInPortURI, RequestDispatcherMultiVMManagementConnector.class.getCanonicalName());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		rdmanagementport.put(rd_uri, rsmvmmop);
 		
 		/*
-		 * Sinon, si on n'a pas les ressources n�cessaires pour satisfaire 
-		 * les besoins du g�n�rateur de requ�tes, on renvoie null
+		 * On cr�e l'application VM via le dynamicComponentCreator
 		 */
+		for(int i = 0; i < DEFAULT_AVM_SIZE; i++) {
+			Object[] argumentsAppVM = {uris.get(i).getAVMUri(), 
+					uris.get(i).getApplicationVMManagementInboundPortVM(),
+					uris.get(i).getRequestSubmissionInboundPortVM(), 
+					uris.get(i).getRequestNotificationInboundPortVM()};
+
+			dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
+					argumentsAppVM);	
+		}
+
+			
+
+		/*
+		 * On cr�e l'integrateur qui va g�rer la g�n�ration de requete
+		 *  via le dynamicComponentCreator :
+		 * on r�cup�re l'uri du port de management du g�n�rateur de requ�te dans l'objet
+		 * requete d'admission, fourni en argument de la methode
+		 */
+		
+		
+		ApplicationVMManagementOutboundPort avmmop;
+		allocationVMCores.put(rd_uri, new ArrayList<>());
+		
+		
+		for(int i = 0; i < uris.size(); i++) {
+			AVMUris auri = uris.get(i);
+			avmmop = new ApplicationVMManagementOutboundPort(this);
+			addPort(avmmop);
+			avmmop.publishPort();
+			doPortConnection(avmmop.getPortURI(), auri.getApplicationVMManagementInboundPortVM(), ApplicationVMManagementConnector.class.getCanonicalName());
+			avmmanagementport.put(auri.getAVMUri(), avmmop);
+			
+			allocation.get(i).setVMUri(auri.getAVMUri());
+			avmmop.allocateCores(allocation.get(i).getCores());
+			allocationVMCores.get(rd_uri).add(allocation.get(i));
+			
+		}
+		
+		rsmvmmop.startPortConnection();
+
+		//createAndAddVMToRequestDispatcher(rdmanagementport.keySet().stream().findFirst().get());
+		
+		logMessage("Controleur d'admission : Acceptation de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
+
+		/*
+		 * On retourne l'uri du port de soumission de requetes
+		 */
+					
 		return newRequestAdmission;
+		
+		
 	}
 	
 	
@@ -399,8 +408,6 @@ RequestAdmissionNotificationHandlerI{
 		avmmanagementport.put(uri.getAVMUri(), avmmop);
 		avmmop.allocateCores(ac);
 		
-		dynamicComponentCreationOutboundPort.startComponents();
-		dynamicComponentCreationOutboundPort.executeComponents();
 		
 		rsmvmmop.connectAVM(uri.getAVMUri());
 		return true;

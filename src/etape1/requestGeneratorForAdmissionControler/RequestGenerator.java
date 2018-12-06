@@ -188,7 +188,7 @@ implements	RequestNotificationHandlerI
 		String requestAdmissionNotificationInboundPortURI
 		) throws Exception
 	{
-		super(1, 1) ;
+		super(rgURI, 1, 1) ;
 
 		// preconditions check
 		assert	meanInterArrivalTime > 0.0 && meanNumberOfInstructions > 0 ;
@@ -251,9 +251,6 @@ implements	RequestNotificationHandlerI
 				new RequestAdmissionNotificationOutboundPort(this);
 		addPort(requestAdmissionNotificationOutboundPort);
 		requestAdmissionNotificationOutboundPort.publishPort();
-		
-
-		
 
 		// post-conditions check
 		assert	this.rng != null && this.counter >= 0 ;

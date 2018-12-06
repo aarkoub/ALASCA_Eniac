@@ -103,6 +103,6 @@ implements	SubmissionISend
 	public void			sendRequestAndNotify(RequestI r)
 	throws Exception
 	{
-		((SubmissionISend)this.connector).sendRequest(r) ;
+		((SubmissionISend)this.connector).sendRequestAndNotify(r) ;
 	}
 }

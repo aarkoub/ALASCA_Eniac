@@ -24,7 +24,14 @@ public class RequestDispatcherMultiVMManagementConnector extends AbstractConnect
 
 	@Override
 	public void connectAVM(String uri) throws Exception {
-		((RequestDispatcherMultiVMManagementI)this.offering).connectAVM(uri);;
+		((RequestDispatcherMultiVMManagementI)this.offering).connectAVM(uri);
 	}
+
+	@Override
+	public void startPortConnection() throws Exception {
+		((RequestDispatcherMultiVMManagementI)this.offering).startPortConnection();
+		
+	}
+
 
 }

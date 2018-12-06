@@ -1,8 +1,6 @@
 package etape1.cvm;
 
 import etape1.admissioncontroler.ports.AdmissionControlerManagementOutboundPort;
-import etape1.dynamiccomponentcreator.DynamicComponentCreationConnector;
-import etape1.dynamiccomponentcreator.DynamicComponentCreationOutboundPort;
 import etape1.requestGeneratorForAdmissionControler.RequestGeneratorManagementConnector;
 import etape1.requestGeneratorForAdmissionControler.RequestGeneratorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
@@ -64,8 +62,8 @@ public class Integrator2 extends AbstractComponent {
 		if(generatorOutboundPort.askAdmissionControler()){
 			
 			/*
-			 * Tous les composants sont prêts,
-			 * On peut commencer la generation de requêtes
+			 * Tous les composants sont prï¿½ts,
+			 * On peut commencer la generation de requï¿½tes
 			 */
 			
 			generatorOutboundPort.startGeneration();

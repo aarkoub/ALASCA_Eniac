@@ -212,7 +212,7 @@ implements	ProcessorServicesNotificationConsumerI,
 		// The normal thread pool is used to process component services, while
 		// the scheduled one is used to schedule the pushes of dynamic state
 		// when requested.
-		super(1, 1) ;
+		super(vmURI, 1, 1) ;
 
 		// Preconditions
 		assert	vmURI != null ;
@@ -260,6 +260,9 @@ implements	ProcessorServicesNotificationConsumerI,
 								new RequestNotificationOutboundPort(this) ;
 		this.addPort(this.requestNotificationOutboundPort) ;
 		this.requestNotificationOutboundPort.publishPort() ;
+		
+		this.toggleLogging();
+		this.toggleTracing();
 	}
 
 	// ------------------------------------------------------------------------

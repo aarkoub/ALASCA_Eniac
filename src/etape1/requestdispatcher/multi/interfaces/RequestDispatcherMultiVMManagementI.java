@@ -12,5 +12,8 @@ public interface RequestDispatcherMultiVMManagementI extends OfferedI, RequiredI
 	
 	public boolean removeAVM(String uri) throws Exception ;
 	
-	public int getNbAvm() throws Exception ;
+	public int getNbAvm() throws Exception ;	
+	
+	public void startPortConnection() throws Exception;
+	
 }

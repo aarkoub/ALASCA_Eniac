@@ -55,4 +55,10 @@ public class RequestDispatcherMultiVMManagementOutboundPort extends AbstractOutb
 		((RequestDispatcherMultiVMManagementI)this.connector).connectAVM(uri);
 	}
 
+	@Override
+	public void startPortConnection() throws Exception {
+		((RequestDispatcherMultiVMManagementI)this.connector).startPortConnection();
+	}
+
+
 }
