@@ -1,5 +1,9 @@
 package etape1.requestdispatcher.components;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import etape1.requestdispatcher.interfaces.RequestDispatcherManagementI;
 import etape1.requestdispatcher.ports.RequestDispatcherManagementInboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
@@ -36,6 +40,9 @@ RequestNotificationHandlerI{
 	private RequestSubmissionOutboundPort requestSubmissionOutboundPortVM;
 	private RequestNotificationInboundPort requestNotificationInboundPortVM;
 	private String requestSubmissionInboundPortURIVM;
+	
+	private int numberOfRequestSubmission=0;
+	private Map<String,Date> t1,t2;
 	
 	
 	
@@ -90,6 +97,9 @@ RequestNotificationHandlerI{
 		addPort(requestSubmissionOutboundPortVM);
 		requestSubmissionOutboundPortVM.publishPort();
 		
+		t1 = new HashMap<>();
+		t2 = new HashMap<>();
+		
 		 
 	}
 	
@@ -139,10 +149,7 @@ RequestNotificationHandlerI{
 		}
 		
 		
-		super.shutdown();
-		
-		
-		
+		super.shutdown();		
 	}
 	
 	@Override
@@ -172,6 +179,9 @@ RequestNotificationHandlerI{
 
 	@Override
 	public void acceptRequestSubmission(RequestI r) throws Exception {
+		
+		numberOfRequestSubmission++;
+		
 		logMessage("RequestDispatcher "+rd_uri+" requete reçue "+r.getRequestURI());
 		requestSubmissionOutboundPortVM.submitRequest(r);
 		
@@ -179,16 +189,46 @@ RequestNotificationHandlerI{
 
 	@Override
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
-		logMessage("RequestDispatcher "+rd_uri+" requete reçue avec notification: "+r.getRequestURI());
+		
+		numberOfRequestSubmission++;
+		
+		Date r1 = new Date();
+		
+		t1.put(r.getRequestURI(), r1);
+		
+		logMessage("RequestDispatcher "+rd_uri+" requete reçue avec notification : "+r.getRequestURI());
 		requestSubmissionOutboundPortVM.submitRequestAndNotify(r);
 		
 	}
 
 	@Override
 	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
-		logMessage("Requete terminé : "+r.getRequestURI());
+		
+		Date r2 = new Date();
+		
+		t2.put(r.getRequestURI(), r2);
+		
+		logMessage("Requete terminée : "+r.getRequestURI());
 		requestNotificationOutboundPort.notifyRequestTermination(r);
+		
+		System.out.println(getAverageRequestTime());
 	}
 	
-
+	public long getAverageRequestTime(){
+		
+		long average=0 ;
+		
+		for(String reqUri : t1.keySet()){
+			
+			Date r1 = t1.get(reqUri);
+			Date r2 = t2.get(reqUri);
+			
+			average += (r1.getTime()-r2.getTime());
+			
+		}
+		
+		return average/numberOfRequestSubmission;
+		
+	}
+	
 }

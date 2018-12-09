@@ -1,7 +1,10 @@
 package etape1.requestdispatcher.multi.components;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import etape1.requestdispatcher.interfaces.RequestDispatcherManagementI;
 import etape1.requestdispatcher.multi.data.AVMData;
@@ -9,10 +12,16 @@ import etape1.requestdispatcher.multi.data.AVMPorts;
 import etape1.requestdispatcher.multi.data.AVMUris;
 import etape1.requestdispatcher.multi.interfaces.RequestDispatcherMultiVMManagementI;
 import etape1.requestdispatcher.multi.ports.RequestDispatcherMultiVMManagementInboundPort;
-import etape1.requestdispatcher.ports.RequestDispatcherManagementInboundPort;
+import etape2.capteurs.interfaces.ApplicationVMStateDataConsumerI;
+import etape2.capteurs.ports.ApplicationVMDynamicStateDataOutboundPort;
+import etape2.capteurs.ports.ApplicationVMStaticStateDataOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
+import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
+import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
+import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMDynamicStateI;
+import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateI;
 import fr.sorbonne_u.datacenter.software.connectors.RequestNotificationConnector;
 import fr.sorbonne_u.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestI;
@@ -30,7 +39,8 @@ import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
 
 public class RequestDispatcherMultiVM extends AbstractComponent implements RequestDispatcherMultiVMManagementI,
 RequestSubmissionHandlerI,
-RequestNotificationHandlerI{
+RequestNotificationHandlerI,
+ApplicationVMStateDataConsumerI{
 
 	private String rd_uri;
 	private RequestDispatcherMultiVMManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
@@ -43,6 +53,11 @@ RequestNotificationHandlerI{
 	//connecteur pour la VM
 	private List<AVMData> avms;
 	private int chooser;
+;
+	private Map<String,Date> t1,t2;
+	
+	private ApplicationVMDynamicStateDataOutboundPort[] vmDynamicOutports;
+	private ApplicationVMStaticStateDataOutboundPort[] vmStaticOutports;
 	
 	
 	public RequestDispatcherMultiVM(String rd_uri,
@@ -91,7 +106,13 @@ RequestNotificationHandlerI{
 		RequestNotificationInboundPort requestNotificationInboundPortVM;
 		AVMData data;
 		
+		vmDynamicOutports = new ApplicationVMDynamicStateDataOutboundPort[uris.size()];
+		vmStaticOutports = new ApplicationVMStaticStateDataOutboundPort[uris.size()];
+		
 		for(int i = 0; i < uris.size(); i++) {
+			
+			
+			
 			requestNotificationInboundPortVM = new RequestNotificationInboundPort(uris.get(i).getRequestNotificationInboundPortVM(), this);
 			addPort(requestNotificationInboundPortVM);
 			requestNotificationInboundPortVM.publishPort();
@@ -100,10 +121,36 @@ RequestNotificationHandlerI{
 			requestSubmissionOutboundPortVM.publishPort();
 			data = new AVMData(uris.get(i), new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM));
 			avms.add(data);
+			
+			String avmDynamicStateDataInboundPortURI = data.getAvmuris().getAVMUri() + "-avmdsdibp" ; 
+			String avmStaticStateDataInboundPortURI = data.getAvmuris().getAVMUri() + "-avmssdibp" ; 
+						
+			vmStaticOutports[i] = new ApplicationVMStaticStateDataOutboundPort(this, data.getAvmuris().getAVMUri());
+			addPort(vmStaticOutports[i]);
+			vmStaticOutports[i].publishPort();
+		
+			
+			
+			vmDynamicOutports[i] = new ApplicationVMDynamicStateDataOutboundPort(this, data.getAvmuris().getAVMUri());
+			addPort(vmDynamicOutports[i]);
+			vmDynamicOutports[i].publishPort();
+			
+			
+			data.setAvmDynamicStateDataInboundPortURI(avmDynamicStateDataInboundPortURI);
+			data.setAvmStaticStateDataInboundPortURI(avmStaticStateDataInboundPortURI);
+			
+			data.setAvmDynamicStateDataOutboundPort(vmDynamicOutports[i]);
+			data.setAvmStaticStateDataOutboundPort(vmStaticOutports[i]);
+			
 		}
 		
 		this.toggleLogging();
 		this.toggleTracing();
+		t1 = new HashMap<>();
+		t2 = new HashMap<>();
+		
+		
+		
 	}
 	
 	@Override
@@ -116,10 +163,14 @@ RequestNotificationHandlerI{
 		try {
 			doPortConnection(requestNotificationOutboundPort.getPortURI(), requestNotificationInboundPortURI,
 					RequestNotificationConnector.class.getCanonicalName());
-			for(int i = 0; i < avms.size(); i++) {
-				doPortConnection(avms.get(i).getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
-						avms.get(i).getAvmuris().getRequestSubmissionInboundPortVM(),
+			
+			for(AVMData data  : avms) {
+				doPortConnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
+						data.getAvmuris().getRequestSubmissionInboundPortVM(),
 						RequestSubmissionConnector.class.getCanonicalName());
+			
+				doPortConnection(data.getAvmStaticStateDataOutboundPort().getPortURI(), data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(), DataConnector.class.getCanonicalName());
+				doPortConnection(data.getAvmDynamicStateDataOutboundPort().getPortURI(),data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(),ControlledDataConnector.class.getCanonicalName());
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -202,6 +253,10 @@ RequestNotificationHandlerI{
 		avms.get(chooser).getAvmports().getRequestSubmissionOutboundPort().submitRequest(r);
 		chooser++;
 		
+		Date r1 = new Date();
+		
+		t1.put(r.getRequestURI(), r1);
+		
 	}
 
 	@Override
@@ -211,12 +266,22 @@ RequestNotificationHandlerI{
 		avms.get(chooser).getAvmports().getRequestSubmissionOutboundPort().submitRequestAndNotify(r);
 		chooser++;
 		
+		Date r1 = new Date();
+		
+		t1.put(r.getRequestURI(), r1);
+		
 	}
 
 	@Override
 	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
-		logMessage("Requete terminé : "+r.getRequestURI());
+		Date r2 = new Date();
+		t2.put(r.getRequestURI(), r2);
+	
+		logMessage("Requete terminée : "+r.getRequestURI());
 		requestNotificationOutboundPort.notifyRequestTermination(r);
+		
+		System.out.println(getAverageRequestTime());
+		
 	}
 
 
@@ -278,6 +343,38 @@ RequestNotificationHandlerI{
 		}
 		
 	}
+	
+	public long getAverageRequestTime(){
+		
+		long average=0 ;
+		
+		for(String reqUri : t1.keySet()){
+			
+			Date r1 = t1.get(reqUri);
+			Date r2 = t2.get(reqUri);
+			
+			average += (r2.getTime()-r1.getTime());
+			
+		}
+		
+		return average/t1.size();
+		
+	}
+
+	@Override
+	public void acceptApplicationVMStaticData(String avmURI, ApplicationVMStaticStateI staticState) throws Exception {
+		logMessage("staticState : "+avmURI+' '+staticState.getTimeStamp());
+		
+	}
+
+	@Override
+	public void acceptApplicationVMDynamicData(String avmURI, ApplicationVMDynamicStateI dynamicState)
+			throws Exception {
+		logMessage("dynamicState : "+avmURI+" "+dynamicState.getTimeStamp());
+		
+	}
+
+
 	
 
 }

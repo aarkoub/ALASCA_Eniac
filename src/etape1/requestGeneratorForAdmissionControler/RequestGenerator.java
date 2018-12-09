@@ -646,6 +646,7 @@ implements	RequestNotificationHandlerI
 
 	public void freeAdmissionControlerRessources() {
 		try {
+		
 			requestAdmissionNotificationOutboundPort.acceptRequestTerminationNotification(requestAdmission);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

@@ -41,6 +41,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import etape2.capteurs.implementation.ApplicationVMDynamicState;
+import etape2.capteurs.implementation.ApplicationVMStaticState;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
@@ -264,6 +267,83 @@ implements	ProcessorServicesNotificationConsumerI,
 		this.toggleLogging();
 		this.toggleTracing();
 	}
+	
+	
+	public				ApplicationVM(
+			String vmURI,
+			String applicationVMManagementInboundPortURI,
+			String requestSubmissionInboundPortURI,
+			String requestNotificationInboundPortURI,
+			String applicationVMDynamicStateDataInboundPortURI,
+			String applicationVMStaticStateDataInboudPortURI
+			) throws Exception
+		{
+			// The normal thread pool is used to process component services, while
+			// the scheduled one is used to schedule the pushes of dynamic state
+			// when requested.
+			super(vmURI, 1, 1) ;
+
+			// Preconditions
+			assert	vmURI != null ;
+			assert	applicationVMManagementInboundPortURI != null ;
+			assert	requestSubmissionInboundPortURI != null ;
+			assert	requestNotificationInboundPortURI != null ;
+			assert applicationVMDynamicStateDataInboundPortURI != null;
+			assert applicationVMStaticStateDataInboudPortURI != null;
+
+			this.vmURI = vmURI ;
+			// hash map keeping track of the idle status of cores
+			this.allocatedCoresIdleStatus = new HashMap<AllocatedCore,Boolean>() ;
+			// queue of awaiting tasks
+			this.taskQueue = new LinkedList<TaskI>() ;
+			// tasks needing a end of execution notification
+			this.tasksToNotify = new HashSet<String>() ;
+			// tasks currently running on the cores
+			this.runningTasks = new HashMap<String,AllocatedCore>() ;
+			this.requestNotificationInboundPortURI =
+										requestNotificationInboundPortURI ;
+
+			// Interfaces and ports
+			this.addOfferedInterface(ApplicationVMManagementI.class) ;
+			this.applicationVMManagementInboundPort =
+					new ApplicationVMManagementInboundPort(
+							applicationVMManagementInboundPortURI,
+							this) ;
+			this.addPort(this.applicationVMManagementInboundPort) ;
+			this.applicationVMManagementInboundPort.publishPort() ;
+			
+			this.addRequiredInterface(ProcessorServicesI.class) ;
+			this.addOfferedInterface(ProcessorServicesNotificationI.class) ;
+			this.processorServicesPorts =
+					new HashMap<String,ProcessorServicesOutboundPort>() ;
+			this.processorNotificationInboundPorts =
+					new HashMap<String,ProcessorServicesNotificationInboundPort>() ;
+
+			this.addOfferedInterface(RequestSubmissionI.class) ;
+			this.requestSubmissionInboundPort =
+							new RequestSubmissionInboundPort(
+											requestSubmissionInboundPortURI, this) ;
+			this.addPort(this.requestSubmissionInboundPort) ;
+			this.requestSubmissionInboundPort.publishPort() ;
+
+			this.addRequiredInterface(RequestNotificationI.class) ;
+			this.requestNotificationOutboundPort =
+									new RequestNotificationOutboundPort(this) ;
+			this.addPort(this.requestNotificationOutboundPort) ;
+			this.requestNotificationOutboundPort.publishPort() ;
+			
+			this.toggleLogging();
+			this.toggleTracing();
+			
+			this.avmDynamicStateDataInboundPort = new ApplicationVMDynamicStateDataInboundPort(applicationVMDynamicStateDataInboundPortURI, this);
+			avmDynamicStateDataInboundPort.publishPort();
+			addPort(avmDynamicStateDataInboundPort);
+			
+			this.avmStaticStateDataInboundPort = new ApplicationVMStaticStateDataInboundPort(applicationVMStaticStateDataInboudPortURI, this);
+			avmStaticStateDataInboundPort.publishPort();
+			addPort(avmStaticStateDataInboundPort);
+			
+		}
 
 	// ------------------------------------------------------------------------
 	// Component life-cycle
@@ -648,13 +728,13 @@ implements	ProcessorServicesNotificationConsumerI,
 
 	public	ApplicationVMStaticStateI	getStaticState() throws Exception
 	{
-		return null ;
+		return new ApplicationVMStaticState() ;
 	}
 
 	public	ApplicationVMDynamicStateI	getDynamicState()
 	throws Exception
 	{
-		return null ;
+		return new ApplicationVMDynamicState(vmURI) ;
 	}
 
 	// ------------------------------------------------------------------------

@@ -63,6 +63,8 @@ RequestAdmissionNotificationHandlerI{
 	private static final String AVMMANAGEMENTURI = "avm_muri_";
 	private static final String AVMREQUESTSUBMISSIONURI = "avm_rsuri_";
 	private static final String AVMREQUESTNOTIFICATIONURI = "avm_rnuri_";
+	private static final String AVM_DYNAMIC_STATE = "avm_dynamic_state";
+	private static final String AVM_STATIC_STATE = "avm_static_state";
 	
 	private Map<Integer, List<Computer>> nbCoresMap ;
 	
@@ -282,7 +284,11 @@ RequestAdmissionNotificationHandlerI{
 			String appliInPortURI = AVMMANAGEMENTURI+id_avm;
 			String requestSubmissionInboundPortURIVM = AVMREQUESTSUBMISSIONURI+id_avm;
 			String requestNotificationInboundPortURIVM = AVMREQUESTNOTIFICATIONURI+id_avm;
-			uris.add(new AVMUris(requestSubmissionInboundPortURIVM, requestNotificationInboundPortURIVM, appliInPortURI, vmURI));
+			String applicationVMDynamicStateDataInboundPortURI = AVM_DYNAMIC_STATE + id_avm;
+			String applicationVMStaticStateDataInboundPortURI = AVM_STATIC_STATE + id_avm;
+			
+			uris.add(new AVMUris(requestSubmissionInboundPortURIVM, requestNotificationInboundPortURIVM, appliInPortURI, vmURI,
+					applicationVMDynamicStateDataInboundPortURI, applicationVMStaticStateDataInboundPortURI));
 			id_avm++;
 		}
 		//On fournit au generateur l'uri du port de submission de requete du dispatcher 
@@ -324,10 +330,13 @@ RequestAdmissionNotificationHandlerI{
 		 * On cr�e l'application VM via le dynamicComponentCreator
 		 */
 		for(int i = 0; i < DEFAULT_AVM_SIZE; i++) {
-			Object[] argumentsAppVM = {uris.get(i).getAVMUri(), 
-					uris.get(i).getApplicationVMManagementInboundPortVM(),
-					uris.get(i).getRequestSubmissionInboundPortVM(), 
-					uris.get(i).getRequestNotificationInboundPortVM()};
+			AVMUris avmURIS = uris.get(i); 
+			Object[] argumentsAppVM = {avmURIS.getAVMUri(), 
+					avmURIS.getApplicationVMManagementInboundPortVM(),
+					avmURIS.getRequestSubmissionInboundPortVM(), 
+					avmURIS.getRequestNotificationInboundPortVM(),
+					avmURIS.getApplicationVMDynamicStateDataInboundPortURI(),
+					avmURIS.getApplicationVMStaticStateDataInboundPortURI()};
 
 			dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
 					argumentsAppVM);	
@@ -389,7 +398,8 @@ RequestAdmissionNotificationHandlerI{
 		if(alloc == null) return false;
 		AllocatedCore[] ac = alloc.getCores();
 		
-		AVMUris uri = new AVMUris(AVMREQUESTSUBMISSIONURI+id_avm, AVMREQUESTNOTIFICATIONURI+id_avm, AVMMANAGEMENTURI+id_avm, AVMURI+id_avm);
+		AVMUris uri = new AVMUris(AVMREQUESTSUBMISSIONURI+id_avm, AVMREQUESTNOTIFICATIONURI+id_avm, AVMMANAGEMENTURI+id_avm, AVMURI+id_avm,
+				AVM_DYNAMIC_STATE+id_avm, AVM_STATIC_STATE+id_avm);
 		
 		RequestDispatcherMultiVMManagementOutboundPort rsmvmmop = rdmanagementport.get(RequestDispatcherURI);
 		
