@@ -8,8 +8,7 @@ public class AVMData {
 	private AVMUris avmuris;
 	private String avmDynamicStateDataInboundPortURI;
 	private String avmStaticStateDataInboundPortURI;
-	private ApplicationVMDynamicStateDataOutboundPort applicationVMDynamicStateDataOutboundPort;
-	private ApplicationVMStaticStateDataOutboundPort applicationVMStaticStateDataOutboundPort;
+
 	
 	public AVMData(AVMUris avmuris, AVMPorts avmports) {
 		this.avmports = avmports;
@@ -47,29 +46,7 @@ public class AVMData {
 	public String getAvmStaticStateDataInboundPortURI(){
 		return avmStaticStateDataInboundPortURI;
 	}
-	
-	public void setAvmStaticStateDataOutboundPort(
-			ApplicationVMStaticStateDataOutboundPort applicationVMStaticStateDataOutboundPort) {
-		this.applicationVMStaticStateDataOutboundPort = applicationVMStaticStateDataOutboundPort;
-		
-	}
-	
-	public ApplicationVMStaticStateDataOutboundPort getAvmStaticStateDataOutboundPort(){
-		return applicationVMStaticStateDataOutboundPort;
-	}
-	
-	public void setAvmDynamicStateDataOutboundPort(
-			ApplicationVMDynamicStateDataOutboundPort applicationVMDynamicStateDataOutboundPort){
-		this.applicationVMDynamicStateDataOutboundPort = applicationVMDynamicStateDataOutboundPort;
-		
-	}
-	
-	public ApplicationVMDynamicStateDataOutboundPort getAvmDynamicStateDataOutboundPort(){
-		return applicationVMDynamicStateDataOutboundPort;
-	}
-	
-	
-	
+
 	
 	
 	

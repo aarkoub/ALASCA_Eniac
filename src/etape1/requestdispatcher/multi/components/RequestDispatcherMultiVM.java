@@ -139,8 +139,8 @@ ApplicationVMStateDataConsumerI{
 			data.setAvmDynamicStateDataInboundPortURI(avmDynamicStateDataInboundPortURI);
 			data.setAvmStaticStateDataInboundPortURI(avmStaticStateDataInboundPortURI);
 			
-			data.setAvmDynamicStateDataOutboundPort(vmDynamicOutports[i]);
-			data.setAvmStaticStateDataOutboundPort(vmStaticOutports[i]);
+			data.getAvmports().setAvmDynamicStateDataOutboundPort(vmDynamicOutports[i]);
+			data.getAvmports().setAvmStaticStateDataOutboundPort(vmStaticOutports[i]);
 			
 		}
 		
@@ -169,8 +169,8 @@ ApplicationVMStateDataConsumerI{
 						data.getAvmuris().getRequestSubmissionInboundPortVM(),
 						RequestSubmissionConnector.class.getCanonicalName());
 			
-				doPortConnection(data.getAvmStaticStateDataOutboundPort().getPortURI(), data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(), DataConnector.class.getCanonicalName());
-				doPortConnection(data.getAvmDynamicStateDataOutboundPort().getPortURI(),data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(),ControlledDataConnector.class.getCanonicalName());
+				doPortConnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI(), data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(), DataConnector.class.getCanonicalName());
+				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(),ControlledDataConnector.class.getCanonicalName());
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -201,9 +201,11 @@ ApplicationVMStateDataConsumerI{
 			requestSubmissionInboundPort.unpublishPort();
 			requestDispatcherMultiVMManagementInboundPort.unpublishPort();
 			requestNotificationOutboundPort.unpublishPort();
-			for(int i = 0; i < avms.size(); i++) {
-				avms.get(i).getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
-				avms.get(i).getAvmports().getRequestNotificationInboundPort().unpublishPort();
+			for(AVMData data : avms) {
+				data.getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
+				data.getAvmports().getRequestNotificationInboundPort().unpublishPort();
+				data.getAvmports().getAvmStaticStateDataOutboundPort().unpublishPort();
+				data.getAvmports().getAvmDynamicStateDataOutboundPort().unpublishPort();
 			}
 			
 		} catch (Exception e) {
@@ -226,9 +228,11 @@ ApplicationVMStateDataConsumerI{
 			requestSubmissionInboundPort.unpublishPort();
 			requestDispatcherMultiVMManagementInboundPort.unpublishPort();
 			requestNotificationOutboundPort.unpublishPort();
-			for(int i = 0; i < avms.size(); i++) {
-				avms.get(i).getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
-				avms.get(i).getAvmports().getRequestNotificationInboundPort().unpublishPort();
+			for(AVMData data : avms) {
+				data.getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
+				data.getAvmports().getRequestNotificationInboundPort().unpublishPort();
+				data.getAvmports().getAvmStaticStateDataOutboundPort().unpublishPort();
+				data.getAvmports().getAvmDynamicStateDataOutboundPort().unpublishPort();
 			}
 			
 		} catch (Exception e) {
