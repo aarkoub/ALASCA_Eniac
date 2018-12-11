@@ -749,11 +749,17 @@ implements	ProcessorServicesNotificationConsumerI,
 	throws Exception
 	{
 		assert	allocatedCores != null && allocatedCores.length != 0 ;
-
+		
+		int old_size = this.allocatedCoresIdleStatus.size();
+		
 		for(int i = 0 ; i < allocatedCores.length ; i++) {
 			this.allocatedCoresIdleStatus.put(allocatedCores[i], true)  ;
 		}
-
+		
+		int new_size = this.allocatedCoresIdleStatus.size();
+		
+		this.logMessage("Allocated Cores increased by: "+(new_size-old_size));
+		
 		// Link the VM with the newly allocated cores' processors if they are
 		// not yet.
 		for (int i = 0 ; i < allocatedCores.length ; i++) {

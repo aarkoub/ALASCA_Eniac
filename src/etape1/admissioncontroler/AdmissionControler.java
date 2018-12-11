@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.stream.Stream;
 
 import etape1.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import etape1.admissioncontroler.interfaces.RequestAdmissionI;
@@ -57,7 +57,7 @@ RequestAdmissionNotificationHandlerI{
 	private Map<String, RequestDispatcherMultiVMManagementOutboundPort> rdmanagementport;
 	private Map<String, ComputerData> computerdata;
 	private Map<String, ApplicationVMManagementOutboundPort> avmmanagementport;
-	private Map<String, List<AllocationCore>> allocationVMCores;
+	private Map<String, AllocationCore> allocationVMCores;
 	private static int id_avm = 0;
 	private static final String AVMURI = "avm_uri_";
 	private static final String AVMMANAGEMENTURI = "avm_muri_";
@@ -203,7 +203,47 @@ RequestAdmissionNotificationHandlerI{
 
 		super.shutdownNow();
 	}
-
+	
+	
+	
+	//MEH
+	public boolean removeCoreFromAvm(String avm_uri, int nbcores) {
+		AllocationCore alloc = allocationVMCores.get(avm_uri);
+		if(alloc == null) return false;
+		Computer computer = alloc.getComputer();
+		int toRelease = alloc.getCores().length < nbcores?alloc.getCores().length:nbcores;
+		
+		
+		
+		return false;
+	}
+	
+	public boolean addCoreToAvm(String avm_uri, int nbcores) {
+		AllocationCore alloc = allocationVMCores.get(avm_uri);
+		if(alloc == null) return false;
+		Computer computer = alloc.getComputer();
+		try {
+			AllocatedCore[] cores = computer.allocateCores(nbcores);
+			if(cores.length != nbcores) {
+				computer.releaseCores(cores);
+				return false;
+			}
+			
+			AllocatedCore[] alloccores = new AllocatedCore[cores.length+alloc.getCores().length];
+			for(int i = 0; i < alloc.getCores().length; i++) {
+				alloccores[i] = alloc.getCores()[i];
+			}
+			for(int i = alloc.getCores().length; i < alloccores.length; i++) {
+				alloccores[i] = cores[i-alloc.getCores().length];
+			}
+			alloc.setCores(alloccores);
+			avmmanagementport.get(avm_uri).allocateCores(cores);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 	
 	
 	private List<AllocationCore> allocateCoreFromComputers(int nbcores, int nbvm) throws Exception {
@@ -353,7 +393,7 @@ RequestAdmissionNotificationHandlerI{
 		
 		
 		ApplicationVMManagementOutboundPort avmmop;
-		allocationVMCores.put(rd_uri, new ArrayList<>());
+		;
 		
 		
 		for(int i = 0; i < uris.size(); i++) {
@@ -366,12 +406,12 @@ RequestAdmissionNotificationHandlerI{
 			
 			allocation.get(i).setVMUri(auri.getAVMUri());
 			avmmop.allocateCores(allocation.get(i).getCores());
-			allocationVMCores.get(rd_uri).add(allocation.get(i));
+			allocationVMCores.put(auri.getAVMUri(), allocation.get(i));
 			
 		}
 		
 		rsmvmmop.startPortConnection();
-
+		
 		//createAndAddVMToRequestDispatcher(rdmanagementport.keySet().stream().findFirst().get());
 		
 		logMessage("Controleur d'admission : Acceptation de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
@@ -426,14 +466,7 @@ RequestAdmissionNotificationHandlerI{
 
 	@Override
 	public void acceptRequestAdmissionTerminationNotification(RequestAdmissionI requestAdmission) throws Exception {
-		allocationVMCores.get(requestAdmission.getRequestDispatcherURI()).stream().forEach(arg0 -> {
-			try {
-				arg0.freeCores();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		});
+		allocationVMCores.get(requestAdmission.getRequestDispatcherURI()).freeCores();
 		allocationVMCores.remove(requestAdmission.getRequestDispatcherURI());
 		logMessage("Controleur d'admission : Ressources libérées par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
 		
