@@ -56,9 +56,6 @@ ApplicationVMStateDataConsumerI{
 ;
 	private Map<String,Date> t1,t2;
 	
-	private ApplicationVMDynamicStateDataOutboundPort[] vmDynamicOutports;
-	private ApplicationVMStaticStateDataOutboundPort[] vmStaticOutports;
-	
 	
 	public RequestDispatcherMultiVM(String rd_uri,
 			String managementInboundPortURI,
@@ -106,41 +103,37 @@ ApplicationVMStateDataConsumerI{
 		RequestNotificationInboundPort requestNotificationInboundPortVM;
 		AVMData data;
 		
-		vmDynamicOutports = new ApplicationVMDynamicStateDataOutboundPort[uris.size()];
-		vmStaticOutports = new ApplicationVMStaticStateDataOutboundPort[uris.size()];
-		
-		for(int i = 0; i < uris.size(); i++) {
+
+		for(AVMUris uri : uris) {
 			
-			
-			
-			requestNotificationInboundPortVM = new RequestNotificationInboundPort(uris.get(i).getRequestNotificationInboundPortVM(), this);
+			requestNotificationInboundPortVM = new RequestNotificationInboundPort(uri.getRequestNotificationInboundPortVM(), this);
 			addPort(requestNotificationInboundPortVM);
 			requestNotificationInboundPortVM.publishPort();
 			requestSubmissionOutboundPortVM = new RequestSubmissionOutboundPort(this);
 			addPort(requestSubmissionOutboundPortVM);
 			requestSubmissionOutboundPortVM.publishPort();
-			data = new AVMData(uris.get(i), new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM));
+			data = new AVMData(uri, new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM));
 			avms.add(data);
 			
 			String avmDynamicStateDataInboundPortURI = data.getAvmuris().getAVMUri() + "-avmdsdibp" ; 
 			String avmStaticStateDataInboundPortURI = data.getAvmuris().getAVMUri() + "-avmssdibp" ; 
 						
-			vmStaticOutports[i] = new ApplicationVMStaticStateDataOutboundPort(this, data.getAvmuris().getAVMUri());
-			addPort(vmStaticOutports[i]);
-			vmStaticOutports[i].publishPort();
+			ApplicationVMStaticStateDataOutboundPort vmStaticOutports = new ApplicationVMStaticStateDataOutboundPort(this, data.getAvmuris().getAVMUri());
+			addPort(vmStaticOutports);
+			vmStaticOutports.publishPort();
 		
 			
 			
-			vmDynamicOutports[i] = new ApplicationVMDynamicStateDataOutboundPort(this, data.getAvmuris().getAVMUri());
-			addPort(vmDynamicOutports[i]);
-			vmDynamicOutports[i].publishPort();
+			ApplicationVMDynamicStateDataOutboundPort vmDynamicOutports = new ApplicationVMDynamicStateDataOutboundPort(this, data.getAvmuris().getAVMUri());
+			addPort(vmDynamicOutports);
+			vmDynamicOutports.publishPort();
 			
 			
 			data.setAvmDynamicStateDataInboundPortURI(avmDynamicStateDataInboundPortURI);
 			data.setAvmStaticStateDataInboundPortURI(avmStaticStateDataInboundPortURI);
 			
-			data.getAvmports().setAvmDynamicStateDataOutboundPort(vmDynamicOutports[i]);
-			data.getAvmports().setAvmStaticStateDataOutboundPort(vmStaticOutports[i]);
+			data.getAvmports().setAvmDynamicStateDataOutboundPort(vmDynamicOutports);
+			data.getAvmports().setAvmStaticStateDataOutboundPort(vmStaticOutports);
 			
 		}
 		
@@ -171,6 +164,9 @@ ApplicationVMStateDataConsumerI{
 			
 				doPortConnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI(), data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(), DataConnector.class.getCanonicalName());
 				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(),ControlledDataConnector.class.getCanonicalName());
+				
+				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(100);
+			
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -336,8 +332,7 @@ ApplicationVMStateDataConsumerI{
 
 	@Override
 	public void connectAVM(String uri) throws Exception {
-		for(int i = 0; i < avms.size(); i++) {
-			AVMData data = avms.get(i); 
+		for(AVMData data : avms) {
 			if(data.getAvmuris().getAVMUri() == uri) {
 				doPortConnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
 						data.getAvmuris().getRequestSubmissionInboundPortVM(),
@@ -375,6 +370,7 @@ ApplicationVMStateDataConsumerI{
 	public void acceptApplicationVMDynamicData(String avmURI, ApplicationVMDynamicStateI dynamicState)
 			throws Exception {
 		logMessage("dynamicState : "+avmURI+" "+dynamicState.getTimeStamp());
+		logMessage("isIdle : "+dynamicState.isIdle());
 		
 	}
 

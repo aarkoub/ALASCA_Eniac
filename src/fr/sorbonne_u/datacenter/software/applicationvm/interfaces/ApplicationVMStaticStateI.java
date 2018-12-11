@@ -1,5 +1,8 @@
 package fr.sorbonne_u.datacenter.software.applicationvm.interfaces;
 
+import java.util.List;
+import java.util.Map;
+
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -61,4 +64,6 @@ extends		DataOfferedI.DataI,
 			TimeStampingI
 {
 
+	public Map<Integer, Integer> getIdCores();
+	
 }

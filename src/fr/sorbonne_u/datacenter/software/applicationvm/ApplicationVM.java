@@ -619,6 +619,7 @@ implements	ProcessorServicesNotificationConsumerI,
 	public void				startUnlimitedPushing(int interval)
 	throws Exception
 	{
+		
 		// first, send the static state if the corresponding port is connected
 		this.sendStaticState() ;
 		
@@ -728,13 +729,13 @@ implements	ProcessorServicesNotificationConsumerI,
 
 	public	ApplicationVMStaticStateI	getStaticState() throws Exception
 	{
-		return new ApplicationVMStaticState() ;
+		return new ApplicationVMStaticState(allocatedCoresIdleStatus.keySet()) ;
 	}
 
 	public	ApplicationVMDynamicStateI	getDynamicState()
 	throws Exception
 	{
-		return new ApplicationVMDynamicState(vmURI) ;
+		return new ApplicationVMDynamicState(vmURI, allocatedCoresIdleStatus) ;
 	}
 
 	// ------------------------------------------------------------------------
