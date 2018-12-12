@@ -20,6 +20,7 @@ import etape1.requestdispatcher.multi.connectors.RequestDispatcherMultiVMManagem
 import etape1.requestdispatcher.multi.data.AVMUris;
 import etape1.requestdispatcher.multi.interfaces.RequestDispatcherMultiVMManagementI;
 import etape1.requestdispatcher.multi.ports.RequestDispatcherMultiVMManagementOutboundPort;
+import etape2.capteurs.interfaces.RequestDispatcherStateDataConsumerI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
@@ -42,7 +43,8 @@ import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManage
 
 public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI, 
 RequestAdmissionSubmissionHandlerI,
-RequestAdmissionNotificationHandlerI{
+RequestAdmissionNotificationHandlerI,
+RequestDispatcherStateDataConsumerI{
 	
 	private String uri;
 	

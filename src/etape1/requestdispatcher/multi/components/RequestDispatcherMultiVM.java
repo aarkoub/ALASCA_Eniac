@@ -57,6 +57,8 @@ ApplicationVMStateDataConsumerI{
 	private Map<String,Date> t1,t2;
 	
 	
+	
+	
 	public RequestDispatcherMultiVM(String rd_uri,
 			String managementInboundPortURI,
 			String requestSubmissionInboundPortURI,
@@ -362,7 +364,7 @@ ApplicationVMStateDataConsumerI{
 
 	@Override
 	public void acceptApplicationVMStaticData(String avmURI, ApplicationVMStaticStateI staticState) throws Exception {
-		logMessage("staticState : "+avmURI+' '+staticState.getTimeStamp());
+		logMessage("staticState : "+avmURI);
 		
 		for(Integer idCore : staticState.getIdCores().keySet()){
 			
@@ -376,7 +378,7 @@ ApplicationVMStateDataConsumerI{
 	@Override
 	public void acceptApplicationVMDynamicData(String avmURI, ApplicationVMDynamicStateI dynamicState)
 			throws Exception {
-		logMessage("dynamicState : "+avmURI+" "+dynamicState.getTimeStamp());
+		logMessage("dynamicState : "+avmURI);
 		logMessage("isIdle : "+dynamicState.isIdle());
 		
 	}
