@@ -165,7 +165,7 @@ ApplicationVMStateDataConsumerI{
 				doPortConnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI(), data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(), DataConnector.class.getCanonicalName());
 				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(),ControlledDataConnector.class.getCanonicalName());
 				
-				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(100);
+				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(500);
 			
 			}
 		} catch (Exception e) {
@@ -363,6 +363,13 @@ ApplicationVMStateDataConsumerI{
 	@Override
 	public void acceptApplicationVMStaticData(String avmURI, ApplicationVMStaticStateI staticState) throws Exception {
 		logMessage("staticState : "+avmURI+' '+staticState.getTimeStamp());
+		
+		for(Integer idCore : staticState.getIdCores().keySet()){
+			
+			logMessage("core_"+idCore+" on processor_"+staticState.getIdCores().get(idCore));
+			
+		}
+
 		
 	}
 
