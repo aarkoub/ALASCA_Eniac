@@ -20,7 +20,9 @@ import etape1.requestdispatcher.multi.connectors.RequestDispatcherMultiVMManagem
 import etape1.requestdispatcher.multi.data.AVMUris;
 import etape1.requestdispatcher.multi.interfaces.RequestDispatcherMultiVMManagementI;
 import etape1.requestdispatcher.multi.ports.RequestDispatcherMultiVMManagementOutboundPort;
+import etape2.capteurs.interfaces.RequestDispatcherDynamicStateI;
 import etape2.capteurs.interfaces.RequestDispatcherStateDataConsumerI;
+import etape2.capteurs.interfaces.RequestDispatcherStaticStateI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
@@ -471,6 +473,26 @@ RequestDispatcherStateDataConsumerI{
 		allocationVMCores.get(requestAdmission.getRequestDispatcherURI()).freeCores();
 		allocationVMCores.remove(requestAdmission.getRequestDispatcherURI());
 		logMessage("Controleur d'admission : Ressources libérées par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
+		
+	}
+
+
+
+
+	@Override
+	public void acceptRequestDispatcherStaticData(String requestDisptacherURI,
+			RequestDispatcherStaticStateI staticState) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+
+	@Override
+	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
+			RequestDispatcherDynamicStateI dynamicState) throws Exception {
+		// TODO Auto-generated method stub
 		
 	}
 
