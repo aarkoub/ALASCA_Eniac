@@ -62,6 +62,7 @@ RequestDispatcherStateDataConsumerI{
 	private Map<String, ComputerData> computerdata;
 	private Map<String, ApplicationVMManagementOutboundPort> avmmanagementport;
 	private Map<String, AllocationCore> allocationVMCores;
+	private Map<String, List<String>> reqDispAvms;
 	private static int id_avm = 0;
 	private static final String AVMURI = "avm_uri_";
 	private static final String AVMMANAGEMENTURI = "avm_muri_";
@@ -124,6 +125,7 @@ RequestDispatcherStateDataConsumerI{
 		avmmanagementport = new HashMap<>();
 		allocationVMCores = new HashMap<>();
 		nbCoresMap = new HashMap<>();
+		reqDispAvms = new HashMap<>();
 		
 		ComputerServicesOutboundPort csop;
 		for (int i = 0; i < computers.size(); i++) {
@@ -323,6 +325,7 @@ RequestDispatcherStateDataConsumerI{
 	
 		id++;
 		List<AVMUris> uris = new ArrayList<>();
+		List<String> avms_uri = new ArrayList<>();
 		for(int i = 0; i < DEFAULT_AVM_SIZE; i++) {
 			String vmURI = AVMURI+id_avm;
 			String appliInPortURI = AVMMANAGEMENTURI+id_avm;
@@ -334,7 +337,12 @@ RequestDispatcherStateDataConsumerI{
 			uris.add(new AVMUris(requestSubmissionInboundPortURIVM, requestNotificationInboundPortURIVM, appliInPortURI, vmURI,
 					applicationVMDynamicStateDataInboundPortURI, applicationVMStaticStateDataInboundPortURI));
 			id_avm++;
+			avms_uri.add(vmURI);
+			
 		}
+
+		reqDispAvms.put(rd_uri, avms_uri);
+		
 		//On fournit au generateur l'uri du port de submission de requete du dispatcher 
 		newRequestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
 		
@@ -440,6 +448,10 @@ RequestDispatcherStateDataConsumerI{
 		
 		AllocationCore alloc = allocateCoreFromComputers(1, AVMURI+id_avm);
 		if(alloc == null) return false;
+		List<String> l = reqDispAvms.get(RequestDispatcherURI);
+		if(l == null) return false;
+		l.add(AVMURI+id_avm);
+		
 		AllocatedCore[] ac = alloc.getCores();
 		
 		AVMUris uri = new AVMUris(AVMREQUESTSUBMISSIONURI+id_avm, AVMREQUESTNOTIFICATIONURI+id_avm, AVMMANAGEMENTURI+id_avm, AVMURI+id_avm,
@@ -466,12 +478,33 @@ RequestDispatcherStateDataConsumerI{
 		rsmvmmop.connectAVM(uri.getAVMUri());
 		return true;
 	}
-
+	
+	public boolean removeAVMFromRequestDispatcher(String RequestDispatcherURI, String avmURI) {
+		List<String> l = reqDispAvms.get(RequestDispatcherURI);
+		if(l == null) return false;
+		l.remove(avmURI);
+		RequestDispatcherMultiVMManagementOutboundPort rqout = rdmanagementport.get(RequestDispatcherURI);
+		try {
+			rqout.removeAVM(avmURI);
+			allocationVMCores.get(avmURI).freeCores();
+			allocationVMCores.remove(avmURI);
+			avmmanagementport.remove(avmURI).doDisconnection();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+		return true;
+	}
 
 	@Override
 	public void acceptRequestAdmissionTerminationNotification(RequestAdmissionI requestAdmission) throws Exception {
-		allocationVMCores.get(requestAdmission.getRequestDispatcherURI()).freeCores();
-		allocationVMCores.remove(requestAdmission.getRequestDispatcherURI());
+		String rqdispURI = requestAdmission.getRequestDispatcherURI();
+		for(String avmURI: reqDispAvms.remove(rqdispURI)) {
+			System.out.println("REMOVE FROM DISP "+rqdispURI+" THE AVM "+avmURI);
+			removeAVMFromRequestDispatcher(rqdispURI, avmURI);
+		}
+		rdmanagementport.remove(rqdispURI).doDisconnection();
 		logMessage("Controleur d'admission : Ressources libérées par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
 		
 	}
