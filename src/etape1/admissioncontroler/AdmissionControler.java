@@ -212,16 +212,39 @@ RequestDispatcherStateDataConsumerI{
 	
 	
 	
-	//MEH
-	public boolean removeCoreFromAvm(String avm_uri, int nbcores) {
+	public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) {
 		AllocationCore alloc = allocationVMCores.get(avm_uri);
 		if(alloc == null) return false;
 		Computer computer = alloc.getComputer();
-		int toRelease = alloc.getCores().length < nbcores?alloc.getCores().length:nbcores;
-		
-		
-		
-		return false;
+		try {
+			
+			int core = -1;
+			for(int i = 0; i < alloc.getCores().length; i++) {
+				if(alloc.getCores()[i].coreNo == allocatedCore.coreNo &&
+						alloc.getCores()[i].processorNo == allocatedCore.processorNo &&
+						alloc.getCores()[i].processorInboundPortURI == allocatedCore.processorInboundPortURI &&
+						alloc.getCores()[i].processorURI == allocatedCore.processorURI) {
+					core = i;
+					break;
+				}
+			}
+			if(core == -1) return false;
+			computer.releaseCore(allocatedCore);
+			AllocatedCore[] newAlloc = new AllocatedCore[alloc.getCores().length-1];
+			int j = 0;
+			for(int i = 0; i < alloc.getCores().length; i++) {
+				if(i != core) {
+					newAlloc[j] = alloc.getCores()[i];
+					j++;
+				}
+			}
+			alloc.setCores(newAlloc);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 	
 	public boolean addCoreToAvm(String avm_uri, int nbcores) {
