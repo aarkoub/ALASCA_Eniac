@@ -10,6 +10,8 @@ import java.util.Set;
 
 import eniac.admissioncontroler.AdmissionControler;
 import eniac.admissioncontroler.ComputerURI;
+import eniac.automatichandler.AutomaticHandler;
+import eniac.automatichandler.ports.AutomaticHandlerManagementOutboundPort;
 import eniac.requestgenarator.RequestGenerator;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
@@ -31,13 +33,13 @@ public class CVM extends AbstractCVM {
 	protected Integrator integrator;
 	protected ComputerMonitor computerMonitor;
 	protected AdmissionControler admissionControler;
+	protected AutomaticHandler automaticHandler;
 	
 	
 	protected static final String requestSubmissionInboundPortURI = "request_sub_inbound_port";
 	protected static final String requestNotificationInboundPortURI = "request_notification_inbound_port";
 	
-	
-	
+		
 	protected static final String admissionControlerURI = "admission_controler";
 	protected static final String admissionControlerManagementInboundURI = "admission_controler_management_inbound_uri";
 	protected static final List<String> requestAdmissionSubmissionInboundPortURIS = new ArrayList<>();
@@ -52,16 +54,15 @@ public class CVM extends AbstractCVM {
 	protected List<Integrator> integrators = new ArrayList<>();
 
 
-	final String requestAdmissionSubmissionInboundPortURI ="request_admission_submission_inbound_port_uri";
-
-
-	final String requestAdmissionNotificationInboundPortURI = "request_admission_notification_inbound_port_uri";
-
-
-
-
-	private static final String dynamicComponentCreationInboundPortURI = "dynamicComponentCreationInboundPortURI";
-		
+	protected final String requestAdmissionSubmissionInboundPortURI ="request_admission_submission_inbound_port_uri";
+	protected final String requestAdmissionNotificationInboundPortURI = "request_admission_notification_inbound_port_uri";
+	protected static final String dynamicComponentCreationInboundPortURI = "dynamicComponentCreationInboundPortURI";
+	
+	protected String requestDispatcherListenerInboundPortURI = "req_disp_listener_inport";
+	
+	protected String automaticHandlerURI = "automatic_handler";
+	protected String automaticHandlerManagementInboundPortURI = "automatic_handler_managament_inport";
+	
 	public CVM(boolean isDistributed) throws Exception {
 		super(isDistributed);
 	}
@@ -150,6 +151,7 @@ public class CVM extends AbstractCVM {
 				dynamicComponentCreationInboundPortURI,
 				requestAdmissionSubmissionInboundPortURI,
 				requestAdmissionNotificationInboundPortURI,
+				requestDispatcherListenerInboundPortURI,
 				computers,
 				computeruris,
 				computerMonitors);
@@ -184,7 +186,13 @@ public class CVM extends AbstractCVM {
 			
 			integrators.add(integrator);
 		}
+		
+		automaticHandler = new AutomaticHandler(automaticHandlerURI,
+				automaticHandlerManagementInboundPortURI,
+				requestDispatcherListenerInboundPortURI);
 			
+		automaticHandler.toggleLogging();
+		automaticHandler.toggleTracing();
 		
 		
 		/*

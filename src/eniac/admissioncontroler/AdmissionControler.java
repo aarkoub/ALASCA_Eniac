@@ -13,6 +13,10 @@ import eniac.admissioncontroler.interfaces.RequestAdmissionNotificationI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
 import eniac.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
+import eniac.automatichandler.connectors.RequestDispatcherListenerConnector;
+import eniac.automatichandler.interfaces.RequestDispatcherListenerI;
+import eniac.automatichandler.ports.RequestDispatcherListenerInboundPort;
+import eniac.automatichandler.ports.RequestDispatcherListenerOutboundPort;
 import eniac.requestadmission.ports.RequestAdmissionNotificationInboundPort;
 import eniac.requestadmission.ports.RequestAdmissionSubmissionInboundPort;
 import eniac.requestdispatcher.RequestDispatcher;
@@ -49,8 +53,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManage
 
 public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI, 
 RequestAdmissionSubmissionHandlerI,
-RequestAdmissionNotificationHandlerI,
-RequestDispatcherStateDataConsumerI{
+RequestAdmissionNotificationHandlerI{
 	
 	protected String uri;
 	
@@ -59,7 +62,9 @@ RequestDispatcherStateDataConsumerI{
 	protected DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
 	protected RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
 	protected RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
+	protected RequestDispatcherListenerOutboundPort requestDispatcherListenerOutboundPort;
 	
+	protected String requestDispatcherListenerInboundPortURI;
 	
 	protected static final int DEFAULT_AVM_SIZE = 2;
 	protected Map<String, RequestDispatcherManagementOutboundPort> rdmanagementport;
@@ -76,17 +81,17 @@ RequestDispatcherStateDataConsumerI{
 	protected static final String AVM_STATIC_STATE = "avm_static_state";
 	
 	protected Map<Integer, List<Computer>> nbCoresMap ;
+
 	
-	protected Map<String, RequestDispatcherDynamicStateDataOutboundPort> disp_dynamic_outports;
-	protected Map<String, RequestDispatcherStaticStateDataOutboundPort> disp_static_outports;
 	
 	
 	public AdmissionControler(String uri, 
 			int nbComputers,
-			String AdmissionControlerManagementInboundURI,
+			String admissionControlerManagementInboundURI,
 			String dynamicComponentCreationInboundPortURI,
-			String RequestAdmissionSubmissionInboundPortURI,
-			String RequestAdmissionNotificationInboundPortURI,
+			String requestAdmissionSubmissionInboundPortURI,
+			String requestAdmissionNotificationInboundPortURI,
+			String requestDispatcherListenerInboundPortURI,
 			List<Computer> computers,
 			List<ComputerURI> computeruris,
 			List<ComputerMonitor> computerMonitors) throws Exception{
@@ -94,38 +99,41 @@ RequestDispatcherStateDataConsumerI{
 		super(uri, 1, 1);
 		assert nbComputers > 0;
 		assert uri != null;
-		assert AdmissionControlerManagementInboundURI != null;
-		assert RequestAdmissionSubmissionInboundPortURI != null;
-		assert RequestAdmissionNotificationInboundPortURI != null;
+		assert admissionControlerManagementInboundURI != null;
+		assert requestAdmissionSubmissionInboundPortURI != null;
+		assert requestAdmissionNotificationInboundPortURI != null;
 		assert dynamicComponentCreationInboundPortURI != null;
+		assert requestDispatcherListenerInboundPortURI != null;
 		
+		this.requestDispatcherListenerInboundPortURI = requestDispatcherListenerInboundPortURI;
 
 		this.uri = uri;
 		
-		admissionControlerManagementInboundPort = new AdmissionControlerManagementInboundPort(AdmissionControlerManagementInboundURI, this);
+		addOfferedInterface(AdmissionControlerManagementI.class);
+		admissionControlerManagementInboundPort = new AdmissionControlerManagementInboundPort(admissionControlerManagementInboundURI, this);
 		addPort(admissionControlerManagementInboundPort);
 		admissionControlerManagementInboundPort.publishPort();
 		
 		
 		addOfferedInterface(RequestAdmissionSubmissionI.class);
-		requestAdmissionSubmissionInboundPort = new RequestAdmissionSubmissionInboundPort(RequestAdmissionSubmissionInboundPortURI, this);
+		requestAdmissionSubmissionInboundPort = new RequestAdmissionSubmissionInboundPort(requestAdmissionSubmissionInboundPortURI, this);
 		addPort(requestAdmissionSubmissionInboundPort);
 		requestAdmissionSubmissionInboundPort.publishPort();
-		//requestAdmissionSubmissionInboundPorts.add(sub_port);
-		
 		
 		addOfferedInterface(RequestAdmissionNotificationI.class);
-		requestAdmissionNotificationInboundPort = new RequestAdmissionNotificationInboundPort(RequestAdmissionNotificationInboundPortURI, this);
+		requestAdmissionNotificationInboundPort = new RequestAdmissionNotificationInboundPort(requestAdmissionNotificationInboundPortURI, this);
 		addPort(requestAdmissionNotificationInboundPort);
 		requestAdmissionNotificationInboundPort.publishPort();
-		//requestAdmissionNotificationInboundPorts.add(notif_port);	
-		
-
 		
 		addRequiredInterface(DynamicComponentCreationI.class);
 		dynamicComponentCreationOutboundPort = new DynamicComponentCreationOutboundPort(this);
 		addPort(dynamicComponentCreationOutboundPort);
 		dynamicComponentCreationOutboundPort.publishPort();
+		
+		addRequiredInterface(RequestDispatcherListenerI.class);
+		requestDispatcherListenerOutboundPort = new RequestDispatcherListenerOutboundPort(this);
+		addPort(requestDispatcherListenerOutboundPort);
+		requestDispatcherListenerOutboundPort.publishPort();
 		
 		rdmanagementport = new HashMap<>();
 		computerdata = new HashMap<>();
@@ -133,8 +141,7 @@ RequestDispatcherStateDataConsumerI{
 		allocationVMCores = new HashMap<>();
 		nbCoresMap = new HashMap<>();
 		reqDispAvms = new HashMap<>();
-		disp_dynamic_outports = new HashMap<>();
-		disp_static_outports = new HashMap<>();
+		
 		
 		ComputerServicesOutboundPort csop;
 		for (int i = 0; i < computers.size(); i++) {
@@ -167,6 +174,16 @@ RequestDispatcherStateDataConsumerI{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			try {
+				doPortConnection(
+						requestDispatcherListenerOutboundPort.getPortURI(),
+						requestDispatcherListenerInboundPortURI,
+						RequestDispatcherListenerConnector.class.getCanonicalName());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		
 	}
 	
@@ -177,7 +194,9 @@ RequestDispatcherStateDataConsumerI{
 	{
 		this.doPortDisconnection(
 							dynamicComponentCreationOutboundPort.getPortURI()) ;
-
+		
+		doPortDisconnection(requestDispatcherListenerOutboundPort.getPortURI());
+		
 		super.finalise() ;
 	}
 	
@@ -193,10 +212,12 @@ RequestDispatcherStateDataConsumerI{
 				requestAdmissionNotificationInboundPort.unpublishPort();
 
 				this.dynamicComponentCreationOutboundPort.unpublishPort() ;
+				requestDispatcherListenerOutboundPort.unpublishPort();
 			} catch (Exception e) {
 				throw new ComponentShutdownException("Error when shutdown admission controler");
 			}
 			
+		
 
 		super.shutdown();
 	}
@@ -414,20 +435,7 @@ RequestDispatcherStateDataConsumerI{
 			e.printStackTrace();
 		}
 		
-		rdmanagementport.put(rd_uri, rsmvmmop);
-		
-		RequestDispatcherDynamicStateDataOutboundPort disp_dynamic_outport =
-					new RequestDispatcherDynamicStateDataOutboundPort(this, rd_uri);
-		addPort(disp_dynamic_outport);
-		disp_dynamic_outport.publishPort();
-		disp_dynamic_outports.put(rd_uri, disp_dynamic_outport);
-		
-		RequestDispatcherStaticStateDataOutboundPort disp_static_outport =
-				new RequestDispatcherStaticStateDataOutboundPort(this, rd_uri);
-		addPort(disp_static_outport);
-		disp_static_outport.publishPort();
-		disp_static_outports.put(rd_uri, disp_static_outport);
-		
+		rdmanagementport.put(rd_uri, rsmvmmop);		
 		
 		/*
 		 * On cr�e l'application VM via le dynamicComponentCreator
@@ -474,20 +482,13 @@ RequestDispatcherStateDataConsumerI{
 		
 		rsmvmmop.startPortConnection();
 		
-
-		doPortConnection(disp_dynamic_outport.getPortURI(), 
-			requestDispatcherDynamicStateDataInboundPortURI, 
-			ControlledDataConnector.class.getCanonicalName()
-		);
 		
-		doPortConnection(disp_static_outport.getPortURI(),
-				requestDispatcherStaticStateDataInboundPortURI,
-				DataConnector.class.getCanonicalName()
-				);
+		requestDispatcherListenerOutboundPort.receiveNewRequestDispatcherURI(rd_uri, requestDispatcherDynamicStateDataInboundPortURI, requestDispatcherStaticStateDataInboundPortURI);
+		
 				
 		logMessage("Controleur d'admission : Acceptation de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
 
-		disp_dynamic_outport.startUnlimitedPushing(500);
+		
 		
 		/*
 		 * On retourne l'uri du port de soumission de requetes
@@ -528,31 +529,10 @@ RequestDispatcherStateDataConsumerI{
 		}
 		rdmanagementport.remove(rqdispURI).doDisconnection();
 		logMessage("Controleur d'admission : Ressources libérées par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
-		disp_dynamic_outports.remove(rqdispURI).doDisconnection();
-		disp_static_outports.remove(rqdispURI).doDisconnection();
-	}
-
-
-
-
-	@Override
-	public void acceptRequestDispatcherStaticData(String requestDisptacherURI,
-			RequestDispatcherStaticStateI staticState) throws Exception {
-		// TODO Auto-generated method stub
 		
 	}
 
 
-
-
-	@Override
-	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
-			RequestDispatcherDynamicStateI dynamicState) throws Exception {
-		
-		logMessage("Average request time for "+requestDisptacherURI+
-				" = "+dynamicState.getAverageRequestTime());
-		
-	}
 
 
 }

@@ -29,16 +29,5 @@ public class RequestAdmissionSubmissionOutboundPort extends AbstractOutboundPort
 		return ((RequestAdmissionSubmissionI)this.connector).getRequestAdmissionFromAdmissionController(requestAdmission);
 	}
 
-	/*@Override
-	public void acceptRequestAdmissionSubmission(RequestAdmissionI requestai) throws Exception {
-		((RequestAdmissionSubmissionI)this.connector).acceptRequestAdmissionSubmission(requestai);
-
-	}
-
-	@Override
-	public void acceptRequestAdmissionSubmissionAndNotify(RequestAdmissionI requestai) throws Exception {
-		((RequestAdmissionSubmissionI)this.connector).acceptRequestAdmissionSubmissionAndNotify(requestai);
-
-	}*/
 
 }

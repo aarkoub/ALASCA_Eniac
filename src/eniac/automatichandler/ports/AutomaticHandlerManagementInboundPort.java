@@ -1,7 +1,5 @@
 package eniac.automatichandler.ports;
 
-import eniac.admissioncontroler.AdmissionControler;
-import eniac.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import eniac.automatichandler.AutomaticHandler;
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
 import fr.sorbonne_u.components.ComponentI;

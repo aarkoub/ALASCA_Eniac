@@ -24,12 +24,8 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
-import fr.sorbonne_u.components.interfaces.DataOfferedI.DataI;
 import fr.sorbonne_u.datacenter.TimeManagement;
 import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
-import fr.sorbonne_u.datacenter.hardware.computers.Computer;
-import fr.sorbonne_u.datacenter.hardware.computers.interfaces.ComputerDynamicStateI;
-import fr.sorbonne_u.datacenter.hardware.computers.interfaces.ComputerStaticStateI;
 import fr.sorbonne_u.datacenter.interfaces.PushModeControllingI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMDynamicStateI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateI;
@@ -131,9 +127,11 @@ PushModeControllingI{
 			requestNotificationInboundPortVM = new RequestNotificationInboundPort(uri.getRequestNotificationInboundPortVM(), this);
 			addPort(requestNotificationInboundPortVM);
 			requestNotificationInboundPortVM.publishPort();
+			
 			requestSubmissionOutboundPortVM = new RequestSubmissionOutboundPort(this);
 			addPort(requestSubmissionOutboundPortVM);
 			requestSubmissionOutboundPortVM.publishPort();
+			
 			data = new AVMData(uri, new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM));
 			avms.add(data);
 			
