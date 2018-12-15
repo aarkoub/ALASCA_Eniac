@@ -7,12 +7,12 @@ public interface RequestDispatcherStateDataConsumerI {
 	
 	public void			acceptRequestDispatcherStaticData(
 			String					requestDisptacherURI,
-			RequestDispatcherStaticStateI	staticState
+			RequestDispatcherStaticStateDataI	staticState
 			) throws Exception ;
 	
 	public void			acceptRequestDispatcherDynamicData(
 			String					requestDisptacherURI,
-			RequestDispatcherDynamicStateI	dynamicState
+			RequestDispatcherDynamicStateDataI	dynamicState
 			) throws Exception ;
 
 }

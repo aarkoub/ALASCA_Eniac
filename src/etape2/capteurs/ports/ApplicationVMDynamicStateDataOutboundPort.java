@@ -8,8 +8,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMD
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateDataI;
 
 public class ApplicationVMDynamicStateDataOutboundPort extends	
-AbstractControlledDataOutboundPort
-implements ApplicationVMStaticStateDataI{
+AbstractControlledDataOutboundPort{
 
 	
 	private String avmUri;

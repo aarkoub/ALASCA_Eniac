@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import etape1.requestdispatcher.interfaces.RequestDispatcherManagementI;
 import etape1.requestdispatcher.multi.data.AVMData;
@@ -12,14 +14,26 @@ import etape1.requestdispatcher.multi.data.AVMPorts;
 import etape1.requestdispatcher.multi.data.AVMUris;
 import etape1.requestdispatcher.multi.interfaces.RequestDispatcherMultiVMManagementI;
 import etape1.requestdispatcher.multi.ports.RequestDispatcherMultiVMManagementInboundPort;
+import etape2.capteurs.implementation.RequestDispatcherDynamicState;
+import etape2.capteurs.implementation.RequestDispatcherStaticState;
 import etape2.capteurs.interfaces.ApplicationVMStateDataConsumerI;
+import etape2.capteurs.interfaces.RequestDispatcherDynamicStateDataI;
+import etape2.capteurs.interfaces.RequestDispatcherStaticStateDataI;
 import etape2.capteurs.ports.ApplicationVMDynamicStateDataOutboundPort;
 import etape2.capteurs.ports.ApplicationVMStaticStateDataOutboundPort;
+import etape2.capteurs.ports.RequestDispatcherDynamicStateDataInboundPort;
+import etape2.capteurs.ports.RequestDispatcherStaticStateDataInboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
+import fr.sorbonne_u.components.interfaces.DataOfferedI.DataI;
+import fr.sorbonne_u.datacenter.TimeManagement;
 import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
+import fr.sorbonne_u.datacenter.hardware.computers.Computer;
+import fr.sorbonne_u.datacenter.hardware.computers.interfaces.ComputerDynamicStateI;
+import fr.sorbonne_u.datacenter.hardware.computers.interfaces.ComputerStaticStateI;
+import fr.sorbonne_u.datacenter.interfaces.PushModeControllingI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMDynamicStateI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateI;
 import fr.sorbonne_u.datacenter.software.connectors.RequestNotificationConnector;
@@ -40,21 +54,26 @@ import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
 public class RequestDispatcherMultiVM extends AbstractComponent implements RequestDispatcherMultiVMManagementI,
 RequestSubmissionHandlerI,
 RequestNotificationHandlerI,
-ApplicationVMStateDataConsumerI{
+ApplicationVMStateDataConsumerI,
+PushModeControllingI{
 
-	private String rd_uri;
-	private RequestDispatcherMultiVMManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
-	private String requestNotificationInboundPortURI;
+	protected String rd_uri;
+	protected RequestDispatcherMultiVMManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
+	protected String requestNotificationInboundPortURI;
 	
 	//connecteur pour le generateur
-	private RequestSubmissionInboundPort requestSubmissionInboundPort;
-	private RequestNotificationOutboundPort requestNotificationOutboundPort;
+	protected RequestSubmissionInboundPort requestSubmissionInboundPort;
+	protected RequestNotificationOutboundPort requestNotificationOutboundPort;
 	
 	//connecteur pour la VM
-	private List<AVMData> avms;
-	private int chooser;
-;
-	private Map<String,Date> t1,t2;
+	protected List<AVMData> avms;
+	protected int chooser;
+
+	protected Map<String,Date> t1,t2;
+	protected ScheduledFuture<?> pushingFuture;
+	
+	protected RequestDispatcherDynamicStateDataInboundPort requestDispatcherDynamicStateDataInboundPort;
+	protected RequestDispatcherStaticStateDataInboundPort requestDispatcherStaticStateDataInboundPort;
 	
 	
 	
@@ -63,6 +82,8 @@ ApplicationVMStateDataConsumerI{
 			String managementInboundPortURI,
 			String requestSubmissionInboundPortURI,
 			String requestNotificationInboundPortURI,
+			String requestDispatcherDynamicStateDataInboundPortURI,
+			String requestDispatcherStaticStateDataInboundPortURI,
 			ArrayList<AVMUris> uris) throws Exception {
 		
 
@@ -73,6 +94,8 @@ ApplicationVMStateDataConsumerI{
 		assert	requestSubmissionInboundPortURI != null ;
 		assert	requestNotificationInboundPortURI != null ;
 		assert uris != null;
+		assert requestDispatcherDynamicStateDataInboundPortURI!=null;
+		assert requestDispatcherStaticStateDataInboundPortURI!=null;
 
 		
 		this.rd_uri = rd_uri;
@@ -144,9 +167,23 @@ ApplicationVMStateDataConsumerI{
 		t1 = new HashMap<>();
 		t2 = new HashMap<>();
 		
+		requestDispatcherStaticStateDataInboundPort = new RequestDispatcherStaticStateDataInboundPort(
+				requestDispatcherStaticStateDataInboundPortURI, this);
+		requestDispatcherStaticStateDataInboundPort.publishPort();
+		addPort(requestDispatcherStaticStateDataInboundPort);
+		
+		requestDispatcherDynamicStateDataInboundPort = new RequestDispatcherDynamicStateDataInboundPort(
+				requestDispatcherStaticStateDataInboundPortURI, this);
+		requestDispatcherDynamicStateDataInboundPort.publishPort();
+		addPort(requestDispatcherDynamicStateDataInboundPort);
+		
+		
+		
 		
 		
 	}
+	
+	
 	
 	@Override
 	public void start() throws ComponentStartException {
@@ -380,6 +417,99 @@ ApplicationVMStateDataConsumerI{
 			throws Exception {
 		logMessage("dynamicState : "+avmURI);
 		logMessage("isIdle : "+dynamicState.isIdle());
+		
+	}
+
+	public RequestDispatcherDynamicStateDataI getDynamicState() {
+		
+		return new RequestDispatcherDynamicState();
+	}
+	
+	public RequestDispatcherStaticStateDataI getStaticState() {
+		return new RequestDispatcherStaticState();
+	}
+
+	@Override
+	public void startUnlimitedPushing(int interval) throws Exception {
+
+		// first, send the static state if the corresponding port is connected
+		this.sendStaticState() ;
+
+		this.pushingFuture =
+			this.scheduleTaskAtFixedRate(
+					new AbstractComponent.AbstractTask() {
+						@Override
+						public void run() {
+							try {
+								((RequestDispatcherMultiVM)this.getOwner()).
+											sendDynamicState() ;
+							} catch (Exception e) {
+								throw new RuntimeException(e) ;
+							}
+						}
+					},
+					TimeManagement.acceleratedDelay(interval),
+					TimeManagement.acceleratedDelay(interval),
+					TimeUnit.MILLISECONDS) ;
+		
+	}
+
+	protected void sendDynamicState() throws Exception {
+		if (this.requestDispatcherDynamicStateDataInboundPort.connected()) {
+			RequestDispatcherDynamicStateDataI rdds = this.getDynamicState() ;
+			this.requestDispatcherDynamicStateDataInboundPort.send(rdds) ;
+		}
+		
+	}
+
+	@Override
+	public void startLimitedPushing(int interval, int n) throws Exception {
+		assert	n > 0 ;
+
+		this.logMessage(this.rd_uri + " startLimitedPushing with interval "
+									+ interval + " ms for " + n + " times.") ;
+
+		// first, send the static state if the corresponding port is connected
+		this.sendStaticState() ;
+
+		this.pushingFuture =
+			this.scheduleTask(
+					new AbstractComponent.AbstractTask() {
+						@Override
+						public void run() {
+							try {
+								((RequestDispatcherMultiVM)this.getOwner()).
+									sendDynamicState(interval, n) ;
+							} catch (Exception e) {
+								throw new RuntimeException(e) ;
+							}
+						}
+					},
+					TimeManagement.acceleratedDelay(interval),
+					TimeUnit.MILLISECONDS) ;
+		
+	}
+
+	protected void sendDynamicState(int interval, int n) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void sendStaticState() throws Exception {
+		if (this.requestDispatcherStaticStateDataInboundPort.connected()) {
+			RequestDispatcherStaticStateDataI rdds = this.getStaticState() ;
+			this.requestDispatcherStaticStateDataInboundPort.send(rdds) ;
+		}
+		
+	}
+
+	@Override
+	public void stopPushing() throws Exception {
+		if (this.pushingFuture != null &&
+				!(this.pushingFuture.isCancelled() ||
+									this.pushingFuture.isDone())) {
+			this.pushingFuture.cancel(false) ;
+		}
 		
 	}
 
