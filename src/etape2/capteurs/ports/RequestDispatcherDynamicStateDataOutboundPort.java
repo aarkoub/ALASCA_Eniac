@@ -7,13 +7,13 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.interfaces.DataRequiredI.DataI;
 import fr.sorbonne_u.datacenter.ports.AbstractControlledDataOutboundPort;
 
-public class RequestDispatcherDynamicStateOutboundPort extends	
+public class RequestDispatcherDynamicStateDataOutboundPort extends	
 AbstractControlledDataOutboundPort{
 	
 	private String reqDispUri ;
 
 
-	public RequestDispatcherDynamicStateOutboundPort(ComponentI owner, String reqDispUri) throws Exception {
+	public RequestDispatcherDynamicStateDataOutboundPort(ComponentI owner, String reqDispUri) throws Exception {
 		super(owner);
 		
 		this.reqDispUri = reqDispUri;
@@ -21,7 +21,7 @@ AbstractControlledDataOutboundPort{
 		assert owner instanceof RequestDispatcherStateDataConsumerI;
 	}
 
-	public RequestDispatcherDynamicStateOutboundPort(String uri, ComponentI owner, String reqDispUri) throws Exception {
+	public RequestDispatcherDynamicStateDataOutboundPort(String uri, ComponentI owner, String reqDispUri) throws Exception {
 		super(uri, owner);
 
 		this.reqDispUri = reqDispUri;

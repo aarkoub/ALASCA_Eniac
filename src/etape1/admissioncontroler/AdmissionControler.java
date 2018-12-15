@@ -23,7 +23,10 @@ import etape1.requestdispatcher.multi.ports.RequestDispatcherMultiVMManagementOu
 import etape2.capteurs.interfaces.RequestDispatcherDynamicStateDataI;
 import etape2.capteurs.interfaces.RequestDispatcherStateDataConsumerI;
 import etape2.capteurs.interfaces.RequestDispatcherStaticStateDataI;
+import etape2.capteurs.ports.RequestDispatcherDynamicStateDataOutboundPort;
+import etape2.capteurs.ports.RequestDispatcherStaticStateDataOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
+import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
@@ -33,6 +36,7 @@ import fr.sorbonne_u.components.pre.dcc.ports.DynamicComponentCreationOutboundPo
 import fr.sorbonne_u.components.reflection.connectors.ReflectionConnector;
 import fr.sorbonne_u.components.reflection.interfaces.ReflectionI;
 import fr.sorbonne_u.components.reflection.ports.ReflectionOutboundPort;
+import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.computers.connectors.ComputerServicesConnector;
@@ -48,30 +52,33 @@ RequestAdmissionSubmissionHandlerI,
 RequestAdmissionNotificationHandlerI,
 RequestDispatcherStateDataConsumerI{
 	
-	private String uri;
+	protected String uri;
 	
-	private int id=0;
-	private AdmissionControlerManagementInboundPort admissionControlerManagementInboundPort;
-	private DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
-	private RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
-	private RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
+	protected int id=0;
+	protected AdmissionControlerManagementInboundPort admissionControlerManagementInboundPort;
+	protected DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
+	protected RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
+	protected RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
 	
 	
-	private static final int DEFAULT_AVM_SIZE = 2;
-	private Map<String, RequestDispatcherMultiVMManagementOutboundPort> rdmanagementport;
-	private Map<String, ComputerData> computerdata;
-	private Map<String, ApplicationVMManagementOutboundPort> avmmanagementport;
-	private Map<String, AllocationCore> allocationVMCores;
-	private Map<String, List<String>> reqDispAvms;
-	private static int id_avm = 0;
-	private static final String AVMURI = "avm_uri_";
-	private static final String AVMMANAGEMENTURI = "avm_muri_";
-	private static final String AVMREQUESTSUBMISSIONURI = "avm_rsuri_";
-	private static final String AVMREQUESTNOTIFICATIONURI = "avm_rnuri_";
-	private static final String AVM_DYNAMIC_STATE = "avm_dynamic_state";
-	private static final String AVM_STATIC_STATE = "avm_static_state";
+	protected static final int DEFAULT_AVM_SIZE = 2;
+	protected Map<String, RequestDispatcherMultiVMManagementOutboundPort> rdmanagementport;
+	protected Map<String, ComputerData> computerdata;
+	protected Map<String, ApplicationVMManagementOutboundPort> avmmanagementport;
+	protected Map<String, AllocationCore> allocationVMCores;
+	protected Map<String, List<String>> reqDispAvms;
+	protected static int id_avm = 0;
+	protected static final String AVMURI = "avm_uri_";
+	protected static final String AVMMANAGEMENTURI = "avm_muri_";
+	protected static final String AVMREQUESTSUBMISSIONURI = "avm_rsuri_";
+	protected static final String AVMREQUESTNOTIFICATIONURI = "avm_rnuri_";
+	protected static final String AVM_DYNAMIC_STATE = "avm_dynamic_state";
+	protected static final String AVM_STATIC_STATE = "avm_static_state";
 	
-	private Map<Integer, List<Computer>> nbCoresMap ;
+	protected Map<Integer, List<Computer>> nbCoresMap ;
+	
+	protected Map<String, RequestDispatcherDynamicStateDataOutboundPort> disp_dynamic_outports;
+	protected Map<String, RequestDispatcherStaticStateDataOutboundPort> disp_static_outports;
 	
 	
 	public AdmissionControler(String uri, 
@@ -126,6 +133,8 @@ RequestDispatcherStateDataConsumerI{
 		allocationVMCores = new HashMap<>();
 		nbCoresMap = new HashMap<>();
 		reqDispAvms = new HashMap<>();
+		disp_dynamic_outports = new HashMap<>();
+		disp_static_outports = new HashMap<>();
 		
 		ComputerServicesOutboundPort csop;
 		for (int i = 0; i < computers.size(); i++) {
@@ -345,6 +354,8 @@ RequestDispatcherStateDataConsumerI{
 		String requestSubmissionInboundPortURI = "dispatcher_submission_inboud_port_URI_"+id;
 		String requestNotificationInboundPortURI = requestAdmission.getRequestNotificationPortURI();
 		newRequestAdmission.setRequestDispatcherURI(rd_uri);
+		String requestDispatcherDynamicStateDataInboundPortURI = "dispatcher_dynamic_uri_"+id;
+		String requestDispatcherStaticStateDataInboundPortURI = "dispatcher_static_uri_"+id;
 	
 		id++;
 		List<AVMUris> uris = new ArrayList<>();
@@ -380,7 +391,9 @@ RequestDispatcherStateDataConsumerI{
 		Object[] argumentsDispatcher = {rd_uri,
 				distribInPortURI, 
 				requestSubmissionInboundPortURI, 
-				requestNotificationInboundPortURI, 
+				requestNotificationInboundPortURI,
+				requestDispatcherDynamicStateDataInboundPortURI,
+				requestDispatcherStaticStateDataInboundPortURI,
 				uris};
 
 
@@ -400,6 +413,19 @@ RequestDispatcherStateDataConsumerI{
 		}
 		
 		rdmanagementport.put(rd_uri, rsmvmmop);
+		
+		RequestDispatcherDynamicStateDataOutboundPort disp_dynamic_outport =
+					new RequestDispatcherDynamicStateDataOutboundPort(this, rd_uri);
+		addPort(disp_dynamic_outport);
+		disp_dynamic_outport.publishPort();
+		disp_dynamic_outports.put(rd_uri, disp_dynamic_outport);
+		
+		RequestDispatcherStaticStateDataOutboundPort disp_static_outport =
+				new RequestDispatcherStaticStateDataOutboundPort(this, rd_uri);
+		addPort(disp_static_outport);
+		disp_static_outport.publishPort();
+		disp_static_outports.put(rd_uri, disp_static_outport);
+		
 		
 		/*
 		 * On cr�e l'application VM via le dynamicComponentCreator
@@ -428,7 +454,6 @@ RequestDispatcherStateDataConsumerI{
 		
 		
 		ApplicationVMManagementOutboundPort avmmop;
-		;
 		
 		
 		for(int i = 0; i < uris.size(); i++) {
@@ -447,8 +472,17 @@ RequestDispatcherStateDataConsumerI{
 		
 		rsmvmmop.startPortConnection();
 		
-		//createAndAddVMToRequestDispatcher(rdmanagementport.keySet().stream().findFirst().get());
+
+		doPortConnection(disp_dynamic_outport.getPortURI(), 
+			requestDispatcherDynamicStateDataInboundPortURI, 
+			ControlledDataConnector.class.getCanonicalName()
+		);
 		
+		doPortConnection(disp_static_outport.getPortURI(),
+				requestDispatcherStaticStateDataInboundPortURI,
+				DataConnector.class.getCanonicalName()
+				);
+				
 		logMessage("Controleur d'admission : Acceptation de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
 
 		/*
@@ -461,46 +495,7 @@ RequestDispatcherStateDataConsumerI{
 	}
 	
 	
-	private boolean createAndAddVMToRequestDispatcher(String RequestDispatcherURI) throws Exception {
-		Object[] args = {
-				AVMURI+id_avm,
-				AVMMANAGEMENTURI+id_avm,
-				AVMREQUESTSUBMISSIONURI+id_avm,
-				AVMREQUESTNOTIFICATIONURI+id_avm
-		};
-		
-		AllocationCore alloc = allocateCoreFromComputers(1, AVMURI+id_avm);
-		if(alloc == null) return false;
-		List<String> l = reqDispAvms.get(RequestDispatcherURI);
-		if(l == null) return false;
-		l.add(AVMURI+id_avm);
-		
-		AllocatedCore[] ac = alloc.getCores();
-		
-		AVMUris uri = new AVMUris(AVMREQUESTSUBMISSIONURI+id_avm, AVMREQUESTNOTIFICATIONURI+id_avm, AVMMANAGEMENTURI+id_avm, AVMURI+id_avm,
-				AVM_DYNAMIC_STATE+id_avm, AVM_STATIC_STATE+id_avm);
-		
-		RequestDispatcherMultiVMManagementOutboundPort rsmvmmop = rdmanagementport.get(RequestDispatcherURI);
-		
-		rsmvmmop.addAVM(uri);
-		dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
-				args);
-		
-		
-		id_avm++;
-		
-		
-		ApplicationVMManagementOutboundPort avmmop = new ApplicationVMManagementOutboundPort(this);
-		addPort(avmmop);
-		avmmop.publishPort();
-		doPortConnection(avmmop.getPortURI(), uri.getApplicationVMManagementInboundPortVM(), ApplicationVMManagementConnector.class.getCanonicalName());
-		avmmanagementport.put(uri.getAVMUri(), avmmop);
-		avmmop.allocateCores(ac);
-		
-		
-		rsmvmmop.connectAVM(uri.getAVMUri());
-		return true;
-	}
+	
 	
 	public boolean removeAVMFromRequestDispatcher(String RequestDispatcherURI, String avmURI) {
 		List<String> l = reqDispAvms.get(RequestDispatcherURI);
@@ -529,7 +524,8 @@ RequestDispatcherStateDataConsumerI{
 		}
 		rdmanagementport.remove(rqdispURI).doDisconnection();
 		logMessage("Controleur d'admission : Ressources libérées par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
-		
+		disp_dynamic_outports.remove(rqdispURI).doDisconnection();
+		disp_static_outports.remove(rqdispURI).doDisconnection();
 	}
 
 

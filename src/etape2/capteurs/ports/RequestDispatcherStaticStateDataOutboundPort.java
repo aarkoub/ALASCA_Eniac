@@ -6,20 +6,20 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.interfaces.DataRequiredI.DataI;
 import fr.sorbonne_u.datacenter.ports.AbstractControlledDataOutboundPort;
 
-public class RequestDispatcherStaticStateOutboundPort extends	
+public class RequestDispatcherStaticStateDataOutboundPort extends	
 AbstractControlledDataOutboundPort
 implements RequestDispatcherStaticStateDataI{
 	
 	private String reqDispUri ;
 
-	public RequestDispatcherStaticStateOutboundPort(ComponentI owner, String reqDispUri) throws Exception {
+	public RequestDispatcherStaticStateDataOutboundPort(ComponentI owner, String reqDispUri) throws Exception {
 		super(owner);
 		this.reqDispUri = reqDispUri;
 		assert owner instanceof RequestDispatcherStateDataConsumerI;
 	}
 
 	
-	public RequestDispatcherStaticStateOutboundPort(String uri, ComponentI owner, String reqDispUri) throws Exception {
+	public RequestDispatcherStaticStateDataOutboundPort(String uri, ComponentI owner, String reqDispUri) throws Exception {
 		super(uri, owner);
 		this.reqDispUri = reqDispUri;
 		

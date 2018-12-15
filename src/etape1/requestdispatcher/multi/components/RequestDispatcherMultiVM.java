@@ -167,13 +167,16 @@ PushModeControllingI{
 		t1 = new HashMap<>();
 		t2 = new HashMap<>();
 		
+		addOfferedInterface(RequestDispatcherStaticStateDataI.class);
 		requestDispatcherStaticStateDataInboundPort = new RequestDispatcherStaticStateDataInboundPort(
 				requestDispatcherStaticStateDataInboundPortURI, this);
 		requestDispatcherStaticStateDataInboundPort.publishPort();
 		addPort(requestDispatcherStaticStateDataInboundPort);
 		
+		
+		addOfferedInterface(RequestDispatcherDynamicStateDataI.class);
 		requestDispatcherDynamicStateDataInboundPort = new RequestDispatcherDynamicStateDataInboundPort(
-				requestDispatcherStaticStateDataInboundPortURI, this);
+				requestDispatcherDynamicStateDataInboundPortURI, this);
 		requestDispatcherDynamicStateDataInboundPort.publishPort();
 		addPort(requestDispatcherDynamicStateDataInboundPort);
 		
@@ -202,7 +205,7 @@ PushModeControllingI{
 						RequestSubmissionConnector.class.getCanonicalName());
 			
 				doPortConnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI(), data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(), DataConnector.class.getCanonicalName());
-				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(),ControlledDataConnector.class.getCanonicalName());
+				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(), ControlledDataConnector.class.getCanonicalName());
 				
 				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(500);
 			
@@ -454,7 +457,7 @@ PushModeControllingI{
 		
 	}
 
-	protected void sendDynamicState() throws Exception {
+	public void sendDynamicState() throws Exception {
 		if (this.requestDispatcherDynamicStateDataInboundPort.connected()) {
 			RequestDispatcherDynamicStateDataI rdds = this.getDynamicState() ;
 			this.requestDispatcherDynamicStateDataInboundPort.send(rdds) ;
@@ -490,12 +493,34 @@ PushModeControllingI{
 		
 	}
 
-	protected void sendDynamicState(int interval, int n) {
-		// TODO Auto-generated method stub
+	public void sendDynamicState(int interval, final int numberOfRemainingPushes
+			) throws Exception
+		{
+			this.sendDynamicState() ;
+			final int fNumberOfRemainingPushes = numberOfRemainingPushes - 1 ;
+			if (fNumberOfRemainingPushes > 0) {
+				this.pushingFuture =
+						this.scheduleTask(
+								new AbstractComponent.AbstractTask() {
+									@Override
+									public void run() {
+										try {
+											((RequestDispatcherMultiVM)this.getOwner()).
+												sendDynamicState(
+													interval,
+													fNumberOfRemainingPushes) ;
+										} catch (Exception e) {
+											throw new RuntimeException(e) ;
+										}
+									}
+								},
+								TimeManagement.acceleratedDelay(interval),
+								TimeUnit.MILLISECONDS) ;
+			}
 		
 	}
 
-	private void sendStaticState() throws Exception {
+	public void sendStaticState() throws Exception {
 		if (this.requestDispatcherStaticStateDataInboundPort.connected()) {
 			RequestDispatcherStaticStateDataI rdds = this.getStaticState() ;
 			this.requestDispatcherStaticStateDataInboundPort.send(rdds) ;
