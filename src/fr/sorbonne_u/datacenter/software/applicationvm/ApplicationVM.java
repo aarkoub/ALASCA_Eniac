@@ -42,8 +42,8 @@ import java.util.Queue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import etape2.capteurs.implementation.ApplicationVMDynamicState;
-import etape2.capteurs.implementation.ApplicationVMStaticState;
+import eniac.applicationvm.ApplicationVMDynamicState;
+import eniac.applicationvm.ApplicationVMStaticState;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;

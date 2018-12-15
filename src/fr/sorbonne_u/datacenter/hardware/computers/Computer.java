@@ -65,6 +65,7 @@ import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorStateDat
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorStaticStateI;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorDynamicStateDataOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorStaticStateDataOutboundPort;
+import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 import fr.sorbonne_u.datacenter.interfaces.ControlledDataOfferedI;
 import fr.sorbonne_u.datacenter.interfaces.ControlledDataRequiredI;
 import fr.sorbonne_u.datacenter.interfaces.PushModeControllingI;
@@ -576,6 +577,7 @@ implements	ProcessorStateDataConsumerI,
 	 */
 	public ComputerStaticStateI		getStaticState() throws Exception
 	{
+
 		Map<Integer,String> pURIs =
 			new HashMap<Integer,String>(this.processorsURI.size()) ;
 		Map<String,Map<Processor.ProcessorPortTypes, String>> pPortsURI =
