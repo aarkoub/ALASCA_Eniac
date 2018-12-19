@@ -1,26 +1,29 @@
 package eniac.requestdispatcher.ports;
 
 import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
+import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateDataI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
 import fr.sorbonne_u.components.ComponentI;
-import fr.sorbonne_u.components.interfaces.DataRequiredI.DataI;
-import fr.sorbonne_u.datacenter.ports.AbstractControlledDataOutboundPort;
+import fr.sorbonne_u.components.interfaces.DataRequiredI;
+import fr.sorbonne_u.components.ports.AbstractDataOutboundPort;
 
-public class RequestDispatcherStaticStateDataOutboundPort extends	
-AbstractControlledDataOutboundPort
-implements RequestDispatcherStaticStateI{
+public class RequestDispatcherStaticStateDataOutboundPort	
+extends		AbstractDataOutboundPort
+implements RequestDispatcherStaticStateDataI{
 	
 	private String reqDispUri ;
 
 	public RequestDispatcherStaticStateDataOutboundPort(ComponentI owner, String reqDispUri) throws Exception {
-		super(owner);
+		super(DataRequiredI.PullI.class, DataRequiredI.PushI.class, owner) ;
 		this.reqDispUri = reqDispUri;
+		
+		
 		assert owner instanceof RequestDispatcherStateDataConsumerI;
 	}
 
 	
 	public RequestDispatcherStaticStateDataOutboundPort(String uri, ComponentI owner, String reqDispUri) throws Exception {
-		super(uri, owner);
+		super(uri, DataRequiredI.PullI.class, DataRequiredI.PushI.class, owner) ;
 		this.reqDispUri = reqDispUri;
 		
 		assert owner instanceof RequestDispatcherStateDataConsumerI;
@@ -32,7 +35,7 @@ implements RequestDispatcherStaticStateI{
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public void receive(DataI d) throws Exception {
+	public void receive(DataRequiredI.DataI d) throws Exception {
 		((RequestDispatcherStateDataConsumerI)this.owner).
 		acceptRequestDispatcherStaticData(reqDispUri,
 								  ((RequestDispatcherStaticStateI)d)) ;

@@ -68,7 +68,8 @@ PushModeControllingI{
 	protected RequestDispatcherDynamicStateDataInboundPort requestDispatcherDynamicStateDataInboundPort;
 	protected RequestDispatcherStaticStateDataInboundPort requestDispatcherStaticStateDataInboundPort;
 	
-	
+	protected Map<String, ApplicationVMDynamicStateI> avmDynamicStateMap;
+	protected Map<String, ApplicationVMStaticStateI> avmStaticStateMap;
 	
 	
 	public RequestDispatcher(String rd_uri,
@@ -176,7 +177,8 @@ PushModeControllingI{
 		addPort(requestDispatcherDynamicStateDataInboundPort);
 		
 		
-		
+		avmDynamicStateMap = new HashMap<>();
+		avmStaticStateMap = new HashMap<>();
 		
 		
 	}
@@ -397,6 +399,9 @@ PushModeControllingI{
 	@Override
 	public void acceptApplicationVMDynamicData(String avmURI, ApplicationVMDynamicStateI dynamicState)
 			throws Exception {
+		
+		avmDynamicStateMap.put(avmURI, dynamicState);
+		
 		logMessage("dynamicState : "+avmURI);
 		logMessage("isIdle : "+dynamicState.isIdle());
 		
@@ -404,11 +409,11 @@ PushModeControllingI{
 
 	public RequestDispatcherDynamicStateI getDynamicState() {
 		
-		return new RequestDispatcherDynamicState(t1,t2);
+		return new RequestDispatcherDynamicState(t1,t2, avmDynamicStateMap);
 	}
 	
 	public RequestDispatcherStaticStateI getStaticState() {
-		return new RequestDispatcherStaticState();
+		return new RequestDispatcherStaticState(avmStaticStateMap);
 	}
 
 	@Override
@@ -476,7 +481,7 @@ PushModeControllingI{
 			) throws Exception
 		{
 	
-			this.sendDynamicState() ;
+			this.sendStaticState() ;
 			final int fNumberOfRemainingPushes = numberOfRemainingPushes - 1 ;
 			if (fNumberOfRemainingPushes > 0) {
 				this.pushingFuture =

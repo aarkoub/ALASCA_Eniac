@@ -1,5 +1,8 @@
 package eniac.automatichandler;
 
+import java.util.Map;
+
+import eniac.applicationvm.ApplicationVMDynamicState;
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
@@ -11,6 +14,8 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
+import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMDynamicStateI;
+import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateI;
 
 public class AutomaticHandler extends AbstractComponent
 implements
@@ -116,7 +121,19 @@ RequestDispatcherStateDataConsumerI{
 	@Override
 	public void acceptRequestDispatcherStaticData(String requestDisptacherURI,
 			RequestDispatcherStaticStateI staticState) throws Exception {
-		// TODO Auto-generated method stub
+		Map<String, ApplicationVMStaticStateI > avmStaticStateMap = 
+				staticState.getAVMStaticStateMap();
+		
+		for(String avmUri : avmStaticStateMap.keySet()){
+			ApplicationVMStaticStateI avmStaticState = avmStaticStateMap.get(avmUri);
+			
+			Map<Integer, Integer> coreMap = avmStaticState.getIdCores();
+			for(Integer core : coreMap.keySet()){
+				logMessage(avmUri+" : core number "+core+" ; processor number "+String.valueOf(coreMap.get(core)));
+			}
+			
+			
+		}
 		
 	}
 
@@ -130,6 +147,13 @@ RequestDispatcherStateDataConsumerI{
 		logMessage("Average request time for "+requestDisptacherURI+
 				" = "+dynamicState.getAverageRequestTime());
 		
+		Map<String, ApplicationVMDynamicStateI > avmDynamicStateMap = 
+				dynamicState.getAVMDynamicStateMap();
+		
+		for(String avmUri : avmDynamicStateMap.keySet()){
+			ApplicationVMDynamicStateI avmDynamicState = avmDynamicStateMap.get(avmUri);
+			logMessage(avmDynamicState.getApplicationVMURI()+" "+String.valueOf(avmDynamicState.isIdle()));
+		}
 	}
 
 }
