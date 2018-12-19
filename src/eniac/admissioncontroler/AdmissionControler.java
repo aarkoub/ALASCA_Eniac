@@ -13,6 +13,7 @@ import eniac.admissioncontroler.interfaces.RequestAdmissionNotificationI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
 import eniac.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
+import eniac.automatichandler.AutomaticHandler;
 import eniac.automatichandler.connectors.RequestDispatcherListenerConnector;
 import eniac.automatichandler.interfaces.RequestDispatcherListenerI;
 import eniac.automatichandler.ports.RequestDispatcherListenerInboundPort;
@@ -62,7 +63,6 @@ RequestAdmissionNotificationHandlerI{
 	protected DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
 	protected RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
 	protected RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
-	protected RequestDispatcherListenerOutboundPort requestDispatcherListenerOutboundPort;
 	
 	protected String requestDispatcherListenerInboundPortURI;
 	
@@ -91,7 +91,6 @@ RequestAdmissionNotificationHandlerI{
 			String dynamicComponentCreationInboundPortURI,
 			String requestAdmissionSubmissionInboundPortURI,
 			String requestAdmissionNotificationInboundPortURI,
-			String requestDispatcherListenerInboundPortURI,
 			List<Computer> computers,
 			List<ComputerURI> computeruris,
 			List<ComputerMonitor> computerMonitors) throws Exception{
@@ -103,7 +102,6 @@ RequestAdmissionNotificationHandlerI{
 		assert requestAdmissionSubmissionInboundPortURI != null;
 		assert requestAdmissionNotificationInboundPortURI != null;
 		assert dynamicComponentCreationInboundPortURI != null;
-		assert requestDispatcherListenerInboundPortURI != null;
 		
 		this.requestDispatcherListenerInboundPortURI = requestDispatcherListenerInboundPortURI;
 
@@ -129,11 +127,7 @@ RequestAdmissionNotificationHandlerI{
 		dynamicComponentCreationOutboundPort = new DynamicComponentCreationOutboundPort(this);
 		addPort(dynamicComponentCreationOutboundPort);
 		dynamicComponentCreationOutboundPort.publishPort();
-		
-		addRequiredInterface(RequestDispatcherListenerI.class);
-		requestDispatcherListenerOutboundPort = new RequestDispatcherListenerOutboundPort(this);
-		addPort(requestDispatcherListenerOutboundPort);
-		requestDispatcherListenerOutboundPort.publishPort();
+	
 		
 		rdmanagementport = new HashMap<>();
 		computerdata = new HashMap<>();
@@ -175,15 +169,6 @@ RequestAdmissionNotificationHandlerI{
 				e.printStackTrace();
 			}
 			
-			try {
-				doPortConnection(
-						requestDispatcherListenerOutboundPort.getPortURI(),
-						requestDispatcherListenerInboundPortURI,
-						RequestDispatcherListenerConnector.class.getCanonicalName());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		
 	}
 	
@@ -195,7 +180,6 @@ RequestAdmissionNotificationHandlerI{
 		this.doPortDisconnection(
 							dynamicComponentCreationOutboundPort.getPortURI()) ;
 		
-		doPortDisconnection(requestDispatcherListenerOutboundPort.getPortURI());
 		
 		super.finalise() ;
 	}
@@ -212,7 +196,6 @@ RequestAdmissionNotificationHandlerI{
 				requestAdmissionNotificationInboundPort.unpublishPort();
 
 				this.dynamicComponentCreationOutboundPort.unpublishPort() ;
-				requestDispatcherListenerOutboundPort.unpublishPort();
 			} catch (Exception e) {
 				throw new ComponentShutdownException("Error when shutdown admission controler");
 			}
@@ -482,8 +465,20 @@ RequestAdmissionNotificationHandlerI{
 		
 		rsmvmmop.startPortConnection();
 		
+		String ah_uri = "automatic_handler_uri"+id;
+		String ah_management_inport_uri = "automatic_handler_management_inport_uri";
 		
-		requestDispatcherListenerOutboundPort.receiveNewRequestDispatcherURI(rd_uri, requestDispatcherDynamicStateDataInboundPortURI, requestDispatcherStaticStateDataInboundPortURI);
+		Object[] argumentsAutomaticHandler = {ah_uri,
+				ah_management_inport_uri, 
+				rd_uri,
+				requestDispatcherDynamicStateDataInboundPortURI,
+				requestDispatcherStaticStateDataInboundPortURI
+				};
+
+
+		dynamicComponentCreationOutboundPort.createComponent(AutomaticHandler.class.getCanonicalName(),
+				argumentsAutomaticHandler);
+		
 		
 				
 		logMessage("Controleur d'admission : Acceptation de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());

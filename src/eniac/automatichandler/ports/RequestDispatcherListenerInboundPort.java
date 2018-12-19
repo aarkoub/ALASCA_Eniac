@@ -37,7 +37,7 @@ implements RequestDispatcherListenerI{
 		@Override
 		public void receiveNewRequestDispatcherURI(String rd_uri, String requestDispatcherDynamicStateDataInboundPortURI,
 				String requestDispatcherStaticStateDataInboundPortURI)throws Exception {
-			this.getOwner().handleRequestAsync(
+			/*this.getOwner().handleRequestAsync(
 					new AbstractComponent.AbstractService<Void>() {
 						@Override
 						public Void call() throws Exception {
@@ -46,7 +46,7 @@ implements RequestDispatcherListenerI{
 									requestDispatcherStaticStateDataInboundPortURI);
 							return null;
 						}
-					}) ;
+					}) ;*/
 			
 		}
 

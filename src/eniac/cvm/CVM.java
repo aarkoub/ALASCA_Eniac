@@ -151,7 +151,6 @@ public class CVM extends AbstractCVM {
 				dynamicComponentCreationInboundPortURI,
 				requestAdmissionSubmissionInboundPortURI,
 				requestAdmissionNotificationInboundPortURI,
-				requestDispatcherListenerInboundPortURI,
 				computers,
 				computeruris,
 				computerMonitors);
@@ -186,14 +185,7 @@ public class CVM extends AbstractCVM {
 			
 			integrators.add(integrator);
 		}
-		
-		automaticHandler = new AutomaticHandler(automaticHandlerURI,
-				automaticHandlerManagementInboundPortURI,
-				requestDispatcherListenerInboundPortURI);
-			
-		automaticHandler.toggleLogging();
-		automaticHandler.toggleTracing();
-		
+				
 		
 		/*
 		 * D�ploiement

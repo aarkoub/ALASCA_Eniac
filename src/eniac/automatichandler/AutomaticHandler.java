@@ -1,14 +1,7 @@
 package eniac.automatichandler;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import eniac.automatichandler.connectors.RequestDispatcherListenerConnector;
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
-import eniac.automatichandler.interfaces.RequestDispatcherListenerI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
-import eniac.automatichandler.ports.RequestDispatcherListenerInboundPort;
-import eniac.automatichandler.ports.RequestDispatcherListenerOutboundPort;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
@@ -17,48 +10,55 @@ import eniac.requestdispatcher.ports.RequestDispatcherStaticStateDataOutboundPor
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
-import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
 
 public class AutomaticHandler extends AbstractComponent
-implements RequestDispatcherListenerI,
+implements
 RequestDispatcherStateDataConsumerI{
 	
 	protected String autoHand_uri;
-	protected String requestDispatcherListenerInboundPortURI;
-	protected AutomaticHandlerManagementInboundPort automaticHandlerManagementInboundPort;
-	protected RequestDispatcherListenerInboundPort requestDispatcherListenerInboundPort;
 	
-	protected Map<String, RequestDispatcherDynamicStateDataOutboundPort> disp_dynamic_outports;
-	protected Map<String, RequestDispatcherStaticStateDataOutboundPort> disp_static_outports;
+	protected AutomaticHandlerManagementInboundPort automaticHandlerManagementInboundPort;
+	
+	protected RequestDispatcherDynamicStateDataOutboundPort requestDispatcherDynamicStateDataOutboundPort;
+	protected RequestDispatcherStaticStateDataOutboundPort requestDispatcherStaticStateDataOutboundPort;
+	
+	protected String requestDispatcherDynamicStateDataInboundPortURI;
+	protected String requestDispatcherStaticStateDataInboundPortURI;
 	
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
-			String requestDispatcherListenerInboundPortURI) throws Exception{
+			String requestDispatcherUri,
+			String requestDispatcherDynamicStateDataInboundPortURI,
+			String requestDispatcherStaticStateDataInboundPortURI) throws Exception{
 		super(autoHand_uri,1,1);
 		
 		assert autoHand_uri!=null;
 		assert managementInboundPortURI!=null;
-		assert requestDispatcherListenerInboundPortURI != null;
+		assert requestDispatcherDynamicStateDataInboundPortURI != null;
+		assert requestDispatcherStaticStateDataInboundPortURI != null;
 		
-		disp_dynamic_outports = new HashMap<>();
-		disp_static_outports = new HashMap<>();
-		
-		this.requestDispatcherListenerInboundPortURI = requestDispatcherListenerInboundPortURI;
-		
+		this.requestDispatcherDynamicStateDataInboundPortURI = requestDispatcherDynamicStateDataInboundPortURI;
+		this.requestDispatcherStaticStateDataInboundPortURI = requestDispatcherStaticStateDataInboundPortURI;
+
 		addOfferedInterface(AutomaticHandlerManagementI.class);
 		automaticHandlerManagementInboundPort = new AutomaticHandlerManagementInboundPort(autoHand_uri, this);		
 		addPort(automaticHandlerManagementInboundPort);
 		automaticHandlerManagementInboundPort.publishPort();
 		
-		addOfferedInterface(RequestDispatcherListenerI.class);
-		requestDispatcherListenerInboundPort = new RequestDispatcherListenerInboundPort(
-				requestDispatcherListenerInboundPortURI,
-				this);
-		addPort(requestDispatcherListenerInboundPort);
-		requestDispatcherListenerInboundPort.publishPort();
+		addRequiredInterface(RequestDispatcherDynamicStateI.class);
+		requestDispatcherDynamicStateDataOutboundPort = new RequestDispatcherDynamicStateDataOutboundPort(this, requestDispatcherUri);
+		addPort(requestDispatcherDynamicStateDataOutboundPort);
+		requestDispatcherDynamicStateDataOutboundPort.publishPort();
 		
+		addRequiredInterface(RequestDispatcherStaticStateI.class);
+		requestDispatcherStaticStateDataOutboundPort = new RequestDispatcherStaticStateDataOutboundPort(this, requestDispatcherUri);
+		addPort(requestDispatcherStaticStateDataOutboundPort);
+		requestDispatcherStaticStateDataOutboundPort.publishPort();
+		
+		toggleLogging();
+		toggleTracing();
 		
 	}
 		
@@ -66,73 +66,51 @@ RequestDispatcherStateDataConsumerI{
 	@Override
 	public void finalise() throws Exception {
 		
-		for(String rd_uri : disp_dynamic_outports.keySet()){
-			try {
-				disp_dynamic_outports.get(rd_uri).doDisconnection();
-				disp_static_outports.get(rd_uri).doDisconnection();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
+		requestDispatcherDynamicStateDataOutboundPort.doDisconnection();
+		requestDispatcherStaticStateDataOutboundPort.doDisconnection();
+
 		super.finalise();
 	}
 	
 	@Override
 	public void shutdown() throws ComponentShutdownException{
-				
-		for(String rd_uri : disp_dynamic_outports.keySet()){
-			try {
-				disp_dynamic_outports.get(rd_uri).unpublishPort();
-				disp_static_outports.get(rd_uri).unpublishPort();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+
+		try {
+			requestDispatcherDynamicStateDataOutboundPort.unpublishPort();
+			requestDispatcherStaticStateDataOutboundPort.unpublishPort();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+
 		super.shutdown();
 	}
 	
-
-
-
-
-
 	@Override
-	public void receiveNewRequestDispatcherURI(String rd_uri, String requestDispatcherDynamicStateDataInboundPortURI,
-		String requestDispatcherStaticStateDataInboundPortURI) throws Exception {
-	
-		RequestDispatcherDynamicStateDataOutboundPort disp_dynamic_outport =
-		new RequestDispatcherDynamicStateDataOutboundPort(this, rd_uri);
-		addPort(disp_dynamic_outport);
-		disp_dynamic_outport.publishPort();
+	public void start()  {
 		
-		
-		RequestDispatcherStaticStateDataOutboundPort disp_static_outport =
-			new RequestDispatcherStaticStateDataOutboundPort(this, rd_uri);
-		addPort(disp_static_outport);
-		disp_static_outport.publishPort();
-		
-		disp_dynamic_outports.put(rd_uri, disp_dynamic_outport);
-		disp_static_outports.put(rd_uri, disp_static_outport);
-
-				
-		doPortConnection(disp_dynamic_outport.getPortURI(), 
-				requestDispatcherDynamicStateDataInboundPortURI, 
-				ControlledDataConnector.class.getCanonicalName()
+		try {
+			
+			doPortConnection(requestDispatcherDynamicStateDataOutboundPort.getPortURI(), 
+			requestDispatcherDynamicStateDataInboundPortURI, 
+			ControlledDataConnector.class.getCanonicalName()
 			);
 			
-			doPortConnection(disp_static_outport.getPortURI(),
+			doPortConnection(requestDispatcherStaticStateDataOutboundPort.getPortURI(),
 					requestDispatcherStaticStateDataInboundPortURI,
 					DataConnector.class.getCanonicalName()
 					);
-				
-		disp_dynamic_outport.startUnlimitedPushing(500);
+			
+
 		
-		
-		
+		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(500);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	@Override
