@@ -2,9 +2,12 @@ package eniac.automatichandler;
 
 import java.util.Map;
 
-import eniac.applicationvm.ApplicationVMDynamicState;
+import eniac.automatichandler.connectors.RequestDispatcherHandlerConnector;
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
+import eniac.automatichandler.interfaces.RequestDispatcherHandlerI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
+import eniac.automatichandler.ports.RequestDispatcherHandlerOutboundPort;
+import eniac.requestdispatcher.connectors.RequestDispatcherManagementConnector;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
@@ -27,30 +30,46 @@ RequestDispatcherStateDataConsumerI{
 	
 	protected RequestDispatcherDynamicStateDataOutboundPort requestDispatcherDynamicStateDataOutboundPort;
 	protected RequestDispatcherStaticStateDataOutboundPort requestDispatcherStaticStateDataOutboundPort;
+	protected RequestDispatcherHandlerOutboundPort requestDispatcherHandlerOutboundPort;
 	
+	protected String requestDispatcherHandlerInboundPortURI;
 	protected String requestDispatcherDynamicStateDataInboundPortURI;
 	protected String requestDispatcherStaticStateDataInboundPortURI;
+	protected String requestDispatcherURI;
 	
+	protected double borne_inf = 10;
+	protected double borne_sup = 12;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
 			String requestDispatcherUri,
+			String requestDispatcherHandlerInboundPortURI,
 			String requestDispatcherDynamicStateDataInboundPortURI,
 			String requestDispatcherStaticStateDataInboundPortURI) throws Exception{
 		super(autoHand_uri,1,1);
 		
 		assert autoHand_uri!=null;
 		assert managementInboundPortURI!=null;
+		assert requestDispatcherHandlerInboundPortURI != null;
 		assert requestDispatcherDynamicStateDataInboundPortURI != null;
 		assert requestDispatcherStaticStateDataInboundPortURI != null;
+		assert requestDispatcherUri != null;
+		
+		this.requestDispatcherURI = requestDispatcherUri;
 		
 		this.requestDispatcherDynamicStateDataInboundPortURI = requestDispatcherDynamicStateDataInboundPortURI;
 		this.requestDispatcherStaticStateDataInboundPortURI = requestDispatcherStaticStateDataInboundPortURI;
+		this.requestDispatcherHandlerInboundPortURI = requestDispatcherHandlerInboundPortURI;
 
 		addOfferedInterface(AutomaticHandlerManagementI.class);
 		automaticHandlerManagementInboundPort = new AutomaticHandlerManagementInboundPort(autoHand_uri, this);		
 		addPort(automaticHandlerManagementInboundPort);
 		automaticHandlerManagementInboundPort.publishPort();
+		
+		addRequiredInterface(RequestDispatcherHandlerI.class);
+		requestDispatcherHandlerOutboundPort = new RequestDispatcherHandlerOutboundPort(this);
+		addPort(requestDispatcherHandlerOutboundPort);
+		requestDispatcherHandlerOutboundPort.publishPort();
 		
 		addRequiredInterface(RequestDispatcherDynamicStateI.class);
 		requestDispatcherDynamicStateDataOutboundPort = new RequestDispatcherDynamicStateDataOutboundPort(this, requestDispatcherUri);
@@ -71,6 +90,7 @@ RequestDispatcherStateDataConsumerI{
 	@Override
 	public void finalise() throws Exception {
 		
+		requestDispatcherHandlerOutboundPort.doDisconnection();
 		requestDispatcherDynamicStateDataOutboundPort.doDisconnection();
 		requestDispatcherStaticStateDataOutboundPort.doDisconnection();
 
@@ -81,6 +101,7 @@ RequestDispatcherStateDataConsumerI{
 	public void shutdown() throws ComponentShutdownException{
 
 		try {
+			requestDispatcherHandlerOutboundPort.unpublishPort();
 			requestDispatcherDynamicStateDataOutboundPort.unpublishPort();
 			requestDispatcherStaticStateDataOutboundPort.unpublishPort();
 		} catch (Exception e) {
@@ -96,6 +117,11 @@ RequestDispatcherStateDataConsumerI{
 	public void start()  {
 		
 		try {
+			
+			doPortConnection(requestDispatcherHandlerOutboundPort.getPortURI(),
+					requestDispatcherHandlerInboundPortURI,
+					RequestDispatcherHandlerConnector.class.getCanonicalName()
+				);
 			
 			doPortConnection(requestDispatcherDynamicStateDataOutboundPort.getPortURI(), 
 			requestDispatcherDynamicStateDataInboundPortURI, 
@@ -147,6 +173,8 @@ RequestDispatcherStateDataConsumerI{
 		logMessage("Average request time for "+requestDisptacherURI+
 				" = "+dynamicState.getAverageRequestTime());
 		
+		modulateAVM(dynamicState.getAverageRequestTime());
+		
 		Map<String, ApplicationVMDynamicStateI > avmDynamicStateMap = 
 				dynamicState.getAVMDynamicStateMap();
 		
@@ -155,5 +183,29 @@ RequestDispatcherStateDataConsumerI{
 			logMessage(avmDynamicState.getApplicationVMURI()+" "+String.valueOf(avmDynamicState.isIdle()));
 		}
 	}
+	
+	
+	public void modulateAVM(double averageTime) throws Exception {
+		
+		if(averageTime > borne_sup) {
+			
+			requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI);
+			System.out.println("one avm added");
+			logMessage("one avm added");
+		}
+		else {
+			if(averageTime<borne_inf) {
+				requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI);
+				logMessage("one avm removed");
+				System.out.println("one avm removed");
+			}
+			
+		}
+		
+		
+	
+	}
+	
+	
 
 }

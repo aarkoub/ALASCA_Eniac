@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import eniac.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionI;
@@ -14,34 +13,22 @@ import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
 import eniac.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
 import eniac.automatichandler.AutomaticHandler;
-import eniac.automatichandler.connectors.RequestDispatcherListenerConnector;
-import eniac.automatichandler.interfaces.RequestDispatcherListenerI;
-import eniac.automatichandler.ports.RequestDispatcherListenerInboundPort;
-import eniac.automatichandler.ports.RequestDispatcherListenerOutboundPort;
+import eniac.automatichandler.interfaces.RequestDispatcherHandlerI;
+import eniac.automatichandler.ports.RequestDispatcherHandlerInboundPort;
 import eniac.requestadmission.ports.RequestAdmissionNotificationInboundPort;
 import eniac.requestadmission.ports.RequestAdmissionSubmissionInboundPort;
 import eniac.requestdispatcher.RequestDispatcher;
 import eniac.requestdispatcher.connectors.RequestDispatcherManagementConnector;
 import eniac.requestdispatcher.data.AVMUris;
-import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherManagementI;
-import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
-import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
-import eniac.requestdispatcher.ports.RequestDispatcherDynamicStateDataOutboundPort;
 import eniac.requestdispatcher.ports.RequestDispatcherManagementOutboundPort;
-import eniac.requestdispatcher.ports.RequestDispatcherStaticStateDataOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
-import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.pre.dcc.connectors.DynamicComponentCreationConnector;
 import fr.sorbonne_u.components.pre.dcc.interfaces.DynamicComponentCreationI;
 import fr.sorbonne_u.components.pre.dcc.ports.DynamicComponentCreationOutboundPort;
-import fr.sorbonne_u.components.reflection.connectors.ReflectionConnector;
-import fr.sorbonne_u.components.reflection.interfaces.ReflectionI;
-import fr.sorbonne_u.components.reflection.ports.ReflectionOutboundPort;
-import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.computers.connectors.ComputerServicesConnector;
@@ -54,7 +41,8 @@ import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManage
 
 public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI, 
 RequestAdmissionSubmissionHandlerI,
-RequestAdmissionNotificationHandlerI{
+RequestAdmissionNotificationHandlerI,
+RequestDispatcherHandlerI{
 	
 	protected String uri;
 	
@@ -63,8 +51,7 @@ RequestAdmissionNotificationHandlerI{
 	protected DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
 	protected RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
 	protected RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
-	
-	protected String requestDispatcherListenerInboundPortURI;
+	protected Map<String,RequestDispatcherHandlerInboundPort> requestDispatcherHandlerInboundPortMap;
 	
 	protected static final int DEFAULT_AVM_SIZE = 2;
 	protected Map<String, RequestDispatcherManagementOutboundPort> rdmanagementport;
@@ -103,8 +90,7 @@ RequestAdmissionNotificationHandlerI{
 		assert requestAdmissionNotificationInboundPortURI != null;
 		assert dynamicComponentCreationInboundPortURI != null;
 		
-		this.requestDispatcherListenerInboundPortURI = requestDispatcherListenerInboundPortURI;
-
+		
 		this.uri = uri;
 		
 		addOfferedInterface(AdmissionControlerManagementI.class);
@@ -117,6 +103,7 @@ RequestAdmissionNotificationHandlerI{
 		requestAdmissionSubmissionInboundPort = new RequestAdmissionSubmissionInboundPort(requestAdmissionSubmissionInboundPortURI, this);
 		addPort(requestAdmissionSubmissionInboundPort);
 		requestAdmissionSubmissionInboundPort.publishPort();
+		
 		
 		addOfferedInterface(RequestAdmissionNotificationI.class);
 		requestAdmissionNotificationInboundPort = new RequestAdmissionNotificationInboundPort(requestAdmissionNotificationInboundPortURI, this);
@@ -135,6 +122,7 @@ RequestAdmissionNotificationHandlerI{
 		allocationVMCores = new HashMap<>();
 		nbCoresMap = new HashMap<>();
 		reqDispAvms = new HashMap<>();
+		requestDispatcherHandlerInboundPortMap = new HashMap<>();
 		
 		
 		ComputerServicesOutboundPort csop;
@@ -194,8 +182,13 @@ RequestAdmissionNotificationHandlerI{
 				admissionControlerManagementInboundPort.unpublishPort();
 				requestAdmissionSubmissionInboundPort.unpublishPort();
 				requestAdmissionNotificationInboundPort.unpublishPort();
-
-				this.dynamicComponentCreationOutboundPort.unpublishPort() ;
+				dynamicComponentCreationOutboundPort.unpublishPort() ;
+				
+				for(String uri : requestDispatcherHandlerInboundPortMap.keySet()) {
+					requestDispatcherHandlerInboundPortMap.get(uri).unpublishPort();
+				}
+				
+				
 			} catch (Exception e) {
 				throw new ComponentShutdownException("Error when shutdown admission controler");
 			}
@@ -216,7 +209,10 @@ RequestAdmissionNotificationHandlerI{
 				admissionControlerManagementInboundPort.unpublishPort();
 				requestAdmissionSubmissionInboundPort.unpublishPort();
 				requestAdmissionNotificationInboundPort.unpublishPort();
-				this.dynamicComponentCreationOutboundPort.unpublishPort() ;
+				dynamicComponentCreationOutboundPort.unpublishPort() ;
+				for(String uri : requestDispatcherHandlerInboundPortMap.keySet()) {
+					requestDispatcherHandlerInboundPortMap.get(uri).unpublishPort();
+				}
 			} catch (Exception e) {
 				throw new ComponentShutdownException("Error when shutdown admission controler");
 			}
@@ -362,7 +358,8 @@ RequestAdmissionNotificationHandlerI{
 		newRequestAdmission.setRequestDispatcherURI(rd_uri);
 		String requestDispatcherDynamicStateDataInboundPortURI = "dispatcher_dynamic_uri_"+id;
 		String requestDispatcherStaticStateDataInboundPortURI = "dispatcher_static_uri_"+id;
-	
+		String requestDispatcherHandlerInboundPortURI = "dispatcher_handler_uri_"+id;
+		
 		id++;
 		List<AVMUris> uris = new ArrayList<>();
 		List<String> avms_uri = new ArrayList<>();
@@ -471,10 +468,18 @@ RequestAdmissionNotificationHandlerI{
 		Object[] argumentsAutomaticHandler = {ah_uri,
 				ah_management_inport_uri, 
 				rd_uri,
+				requestDispatcherHandlerInboundPortURI,
 				requestDispatcherDynamicStateDataInboundPortURI,
 				requestDispatcherStaticStateDataInboundPortURI
 				};
-
+		
+		addOfferedInterface(RequestDispatcherHandlerI.class);
+		RequestDispatcherHandlerInboundPort req_disp_hand_inport = new RequestDispatcherHandlerInboundPort(requestDispatcherHandlerInboundPortURI, this);
+		addPort(req_disp_hand_inport);
+		req_disp_hand_inport.publishPort();
+		
+		requestDispatcherHandlerInboundPortMap.put(requestDispatcherDynamicStateDataInboundPortURI, req_disp_hand_inport);
+		
 
 		dynamicComponentCreationOutboundPort.createComponent(AutomaticHandler.class.getCanonicalName(),
 				argumentsAutomaticHandler);
@@ -518,12 +523,42 @@ RequestAdmissionNotificationHandlerI{
 	@Override
 	public void acceptRequestAdmissionTerminationNotification(RequestAdmissionI requestAdmission) throws Exception {
 		String rqdispURI = requestAdmission.getRequestDispatcherURI();
-		for(String avmURI: reqDispAvms.remove(rqdispURI)) {
-			System.out.println("REMOVE FROM DISP "+rqdispURI+" THE AVM "+avmURI);
-			removeAVMFromRequestDispatcher(rqdispURI, avmURI);
-		}
+		
 		rdmanagementport.remove(rqdispURI).doDisconnection();
 		logMessage("Controleur d'admission : Ressources libérées par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
+		
+	}
+
+
+
+
+	@Override
+	public void addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+
+	@Override
+	public void removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
+		System.out.println(requestDispatcherURI);
+		List<String> l = reqDispAvms.get(requestDispatcherURI);
+		if(l == null || l.size()<=1) return ;
+		String avmURI = l.remove(0);
+		
+		RequestDispatcherManagementOutboundPort rqout = rdmanagementport.get(requestDispatcherURI);
+		try {
+			rqout.removeAVM(avmURI);
+			allocationVMCores.get(avmURI).freeCores();
+			allocationVMCores.remove(avmURI);
+			avmmanagementport.remove(avmURI).doDisconnection();
+		} catch (Exception e) {
+			e.printStackTrace();
+		
+		}
+
 		
 	}
 
