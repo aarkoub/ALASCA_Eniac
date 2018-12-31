@@ -37,29 +37,28 @@ implements RequestDispatcherHandlerI{
 
 
 		@Override
-		public void addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
-			this.getOwner().handleRequestAsync(
-			new AbstractComponent.AbstractService<Void>() {
+		public String addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
+			return this.getOwner().handleRequestSync(
+			new AbstractComponent.AbstractService<String>() {
 				@Override
-				public Void call() throws Exception {
+				public String call() throws Exception {
 				
-					((AdmissionControler)this.getOwner()).addAVMToRequestDispatcher(requestDispatcherURI);
-					return null;
+					return ((AdmissionControler)this.getOwner()).addAVMToRequestDispatcher(requestDispatcherURI);
+			
 				}
 			}) ;
 			
 		}
 
 		@Override
-		public void removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
+		public String removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
 			
-			this.getOwner().handleRequestAsync(
-					new AbstractComponent.AbstractService<Void>() {
+			return this.getOwner().handleRequestSync(
+					new AbstractComponent.AbstractService<String>() {
 						@Override
-						public Void call() throws Exception {
+						public String call() throws Exception {
 						
-							((AdmissionControler)this.getOwner()).removeAVMFromRequestDispatcher(requestDispatcherURI);
-							return null;
+							return ((AdmissionControler)this.getOwner()).removeAVMFromRequestDispatcher(requestDispatcherURI);
 						}
 					}) ;
 			

@@ -37,8 +37,8 @@ RequestDispatcherStateDataConsumerI{
 	protected String requestDispatcherStaticStateDataInboundPortURI;
 	protected String requestDispatcherURI;
 	
-	protected double borne_inf = 10;
-	protected double borne_sup = 12;
+	protected double borne_inf = 20;
+	protected double borne_sup = 30;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
@@ -56,6 +56,7 @@ RequestDispatcherStateDataConsumerI{
 		assert requestDispatcherUri != null;
 		
 		this.requestDispatcherURI = requestDispatcherUri;
+		this.autoHand_uri = autoHand_uri;
 		
 		this.requestDispatcherDynamicStateDataInboundPortURI = requestDispatcherDynamicStateDataInboundPortURI;
 		this.requestDispatcherStaticStateDataInboundPortURI = requestDispatcherStaticStateDataInboundPortURI;
@@ -133,7 +134,6 @@ RequestDispatcherStateDataConsumerI{
 					DataConnector.class.getCanonicalName()
 					);
 			
-
 		
 		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(500);
 			
@@ -186,23 +186,24 @@ RequestDispatcherStateDataConsumerI{
 	
 	
 	public void modulateAVM(double averageTime) throws Exception {
-		
+		String avmUri;
 		if(averageTime > borne_sup) {
 			
-			requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI);
-			System.out.println("one avm added");
-			logMessage("one avm added");
+			if((avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
+				logMessage(avmUri+" added");
+			}
 		}
 		else {
 			if(averageTime<borne_inf) {
-				requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI);
-				logMessage("one avm removed");
-				System.out.println("one avm removed");
+				
+				if((avmUri=requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI))!=null){
+					
+					logMessage(avmUri+" removed");
+				}
 			}
 			
 		}
-		
-		
+				
 	
 	}
 	

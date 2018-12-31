@@ -237,6 +237,7 @@ PushModeControllingI{
 			requestDispatcherMultiVMManagementInboundPort.unpublishPort();
 			requestNotificationOutboundPort.unpublishPort();
 			for(AVMData data : avms) {
+				
 				data.getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
 				data.getAvmports().getRequestNotificationInboundPort().unpublishPort();
 				data.getAvmports().getAvmStaticStateDataOutboundPort().unpublishPort();
@@ -336,7 +337,17 @@ PushModeControllingI{
 		if(data == null) return false;
 		try {
 			doPortDisconnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI());
+			data.getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
+			
+			doPortDisconnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI());
+			data.getAvmports().getAvmDynamicStateDataOutboundPort().unpublishPort();
+			
+			doPortDisconnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI());
+			data.getAvmports().getAvmStaticStateDataOutboundPort().unpublishPort();
+			
 			avms.remove(data);
+			avmDynamicStateMap.remove(uri);
+			avmStaticStateMap.remove(uri);
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -363,7 +374,20 @@ PushModeControllingI{
 		requestSubmissionOutboundPortVM = new RequestSubmissionOutboundPort(this);
 		addPort(requestSubmissionOutboundPortVM);
 		requestSubmissionOutboundPortVM.publishPort();
-		data = new AVMData(avmuris, new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM));
+		
+		ApplicationVMDynamicStateDataOutboundPort app_dynamic_outport =
+				new ApplicationVMDynamicStateDataOutboundPort(this, avmuris.getAVMUri());
+		addPort(app_dynamic_outport);
+		app_dynamic_outport.publishPort();
+		
+		ApplicationVMStaticStateDataOutboundPort app_static_outport = 
+				new ApplicationVMStaticStateDataOutboundPort(this, avmuris.getAVMUri());
+		addPort(app_static_outport);
+		app_static_outport.publishPort();
+		
+		AVMPorts ports=new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM,
+				app_dynamic_outport, app_static_outport);
+		data = new AVMData(avmuris, ports);
 		avms.add(data);
 		
 	}
@@ -375,6 +399,17 @@ PushModeControllingI{
 				doPortConnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
 						data.getAvmuris().getRequestSubmissionInboundPortVM(),
 						RequestSubmissionConnector.class.getCanonicalName());
+				
+				doPortConnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI(), 
+						data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(),
+						DataConnector.class.getCanonicalName());
+				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),
+						data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(), 
+						ControlledDataConnector.class.getCanonicalName());
+				
+				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(500);
+			
+				
 				return;
 			}
 		}

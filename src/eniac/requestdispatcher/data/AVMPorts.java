@@ -17,6 +17,16 @@ public class AVMPorts {
 		
 	}
 	
+	public AVMPorts(RequestSubmissionOutboundPort rsopvm, RequestNotificationInboundPort rnipvm,
+			ApplicationVMDynamicStateDataOutboundPort applicationVMDynamicStateDataOutboundPort,
+			ApplicationVMStaticStateDataOutboundPort applicationVMStaticStateDataOutboundPort) {
+		this.rsopvm = rsopvm;
+		this.rnipvm = rnipvm;
+		this.applicationVMDynamicStateDataOutboundPort = applicationVMDynamicStateDataOutboundPort;
+		this.applicationVMStaticStateDataOutboundPort = applicationVMStaticStateDataOutboundPort;
+		
+	}
+	
 	public RequestSubmissionOutboundPort getRequestSubmissionOutboundPort() {
 		return rsopvm;
 	}

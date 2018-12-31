@@ -26,14 +26,14 @@ implements RequestDispatcherHandlerI{
 
 
 	@Override
-	public void addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
-		((RequestDispatcherHandlerI)this.connector).addAVMToRequestDispatcher(requestDispatcherURI);
+	public String addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
+		return ((RequestDispatcherHandlerI)this.connector).addAVMToRequestDispatcher(requestDispatcherURI);
 		
 	}
 
 	@Override
-	public void removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
-		((RequestDispatcherHandlerI)this.connector).removeAVMFromRequestDispatcher(requestDispatcherURI);
+	public String removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
+		return ((RequestDispatcherHandlerI)this.connector).removeAVMFromRequestDispatcher(requestDispatcherURI);
 		
 	}
 

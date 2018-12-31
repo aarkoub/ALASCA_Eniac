@@ -54,11 +54,12 @@ RequestDispatcherHandlerI{
 	protected Map<String,RequestDispatcherHandlerInboundPort> requestDispatcherHandlerInboundPortMap;
 	
 	protected static final int DEFAULT_AVM_SIZE = 2;
-	protected Map<String, RequestDispatcherManagementOutboundPort> rdmanagementport;
-	protected Map<String, ComputerData> computerdata;
-	protected Map<String, ApplicationVMManagementOutboundPort> avmmanagementport;
-	protected Map<String, AllocationCore> allocationVMCores;
-	protected Map<String, List<String>> reqDispAvms;
+	protected Map<String, RequestDispatcherManagementOutboundPort> rd_management_port_map;
+	protected Map<String, String> rd_notification_inport_map;
+	protected Map<String, ComputerData> computerdata_map;
+	protected Map<String, ApplicationVMManagementOutboundPort> avm_management_port_map;
+	protected Map<String, AllocationCore> allocationVMCores_map;
+	protected Map<String, List<String>> reqDispAvms_map;
 	protected static int id_avm = 0;
 	protected static final String AVMURI = "avm_uri_";
 	protected static final String AVMMANAGEMENTURI = "avm_muri_";
@@ -116,13 +117,14 @@ RequestDispatcherHandlerI{
 		dynamicComponentCreationOutboundPort.publishPort();
 	
 		
-		rdmanagementport = new HashMap<>();
-		computerdata = new HashMap<>();
-		avmmanagementport = new HashMap<>();
-		allocationVMCores = new HashMap<>();
+		rd_management_port_map = new HashMap<>();
+		computerdata_map = new HashMap<>();
+		avm_management_port_map = new HashMap<>();
+		allocationVMCores_map = new HashMap<>();
 		nbCoresMap = new HashMap<>();
-		reqDispAvms = new HashMap<>();
+		reqDispAvms_map = new HashMap<>();
 		requestDispatcherHandlerInboundPortMap = new HashMap<>();
+		rd_notification_inport_map = new HashMap<>();
 		
 		
 		ComputerServicesOutboundPort csop;
@@ -133,7 +135,7 @@ RequestDispatcherHandlerI{
 			addPort(csop);
 			csop.publishPort();
 			ComputerData computerData =  new ComputerData(cUri,c, csop);
-			computerdata.put(cUri.getComputerUri(), computerData);
+			computerdata_map.put(cUri.getComputerUri(), computerData);
 			doPortConnection(csop.getPortURI(),cUri.getComputerServicesInboundPortURI(), ComputerServicesConnector.class.getCanonicalName());
 			
 		}
@@ -224,7 +226,7 @@ RequestDispatcherHandlerI{
 	
 	
 	public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) {
-		AllocationCore alloc = allocationVMCores.get(avm_uri);
+		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
 		if(alloc == null) return false;
 		Computer computer = alloc.getComputer();
 		try {
@@ -259,7 +261,7 @@ RequestDispatcherHandlerI{
 	}
 	
 	public boolean addCoreToAvm(String avm_uri, int nbcores) {
-		AllocationCore alloc = allocationVMCores.get(avm_uri);
+		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
 		if(alloc == null) return false;
 		Computer computer = alloc.getComputer();
 		try {
@@ -277,7 +279,7 @@ RequestDispatcherHandlerI{
 				alloccores[i] = cores[i-alloc.getCores().length];
 			}
 			alloc.setCores(alloccores);
-			avmmanagementport.get(avm_uri).allocateCores(cores);
+			avm_management_port_map.get(avm_uri).allocateCores(cores);
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -290,7 +292,7 @@ RequestDispatcherHandlerI{
 		List<AllocationCore> allocores = new ArrayList<>();
 		AllocatedCore[] cores;
 		for(int k = 0; k < nbvm; k++) {
-			for(ComputerData cd: computerdata.values()) {
+			for(ComputerData cd: computerdata_map.values()) {
 				cores = cd.getCsop().allocateCores(nbcores);
 				if(cores.length == nbcores) {
 					allocores.add(new AllocationCore(cd.getComputer(), cores, ""));
@@ -315,7 +317,7 @@ RequestDispatcherHandlerI{
 	
 	private AllocationCore allocateCoreFromComputers(int nbcores) throws Exception {
 		AllocatedCore[] cores;
-		for(ComputerData cd: computerdata.values()) {
+		for(ComputerData cd: computerdata_map.values()) {
 			cores = cd.getCsop().allocateCores(nbcores);
 			if(cores.length == nbcores) return new AllocationCore(cd.getComputer(), cores, "");
 			for(AllocatedCore alloc: cores) {
@@ -327,7 +329,7 @@ RequestDispatcherHandlerI{
 	
 	private AllocationCore allocateCoreFromComputers(int nbcores, String VMuri) throws Exception {
 		AllocatedCore[] cores;
-		for(ComputerData cd: computerdata.values()) {
+		for(ComputerData cd: computerdata_map.values()) {
 			cores = cd.getCsop().allocateCores(nbcores);
 			if(cores.length == nbcores) return new AllocationCore(cd.getComputer(), cores, VMuri);
 			for(AllocatedCore alloc: cores) {
@@ -360,6 +362,8 @@ RequestDispatcherHandlerI{
 		String requestDispatcherStaticStateDataInboundPortURI = "dispatcher_static_uri_"+id;
 		String requestDispatcherHandlerInboundPortURI = "dispatcher_handler_uri_"+id;
 		
+		rd_notification_inport_map.put(rd_uri, requestNotificationInboundPortURI);
+		
 		id++;
 		List<AVMUris> uris = new ArrayList<>();
 		List<String> avms_uri = new ArrayList<>();
@@ -378,7 +382,7 @@ RequestDispatcherHandlerI{
 			
 		}
 
-		reqDispAvms.put(rd_uri, avms_uri);
+		reqDispAvms_map.put(rd_uri, avms_uri);
 		
 		//On fournit au generateur l'uri du port de submission de requete du dispatcher 
 		newRequestAdmission.setRequestSubmissionPortURI(requestSubmissionInboundPortURI);
@@ -415,7 +419,7 @@ RequestDispatcherHandlerI{
 			e.printStackTrace();
 		}
 		
-		rdmanagementport.put(rd_uri, rsmvmmop);		
+		rd_management_port_map.put(rd_uri, rsmvmmop);		
 		
 		/*
 		 * On cr�e l'application VM via le dynamicComponentCreator
@@ -452,11 +456,11 @@ RequestDispatcherHandlerI{
 			addPort(avmmop);
 			avmmop.publishPort();
 			doPortConnection(avmmop.getPortURI(), auri.getApplicationVMManagementInboundPortVM(), ApplicationVMManagementConnector.class.getCanonicalName());
-			avmmanagementport.put(auri.getAVMUri(), avmmop);
+			avm_management_port_map.put(auri.getAVMUri(), avmmop);
 			
 			allocation.get(i).setVMUri(auri.getAVMUri());
 			avmmop.allocateCores(allocation.get(i).getCores());
-			allocationVMCores.put(auri.getAVMUri(), allocation.get(i));
+			allocationVMCores_map.put(auri.getAVMUri(), allocation.get(i));
 			
 		}
 		
@@ -503,15 +507,15 @@ RequestDispatcherHandlerI{
 	
 	
 	public boolean removeAVMFromRequestDispatcher(String RequestDispatcherURI, String avmURI) {
-		List<String> l = reqDispAvms.get(RequestDispatcherURI);
+		List<String> l = reqDispAvms_map.get(RequestDispatcherURI);
 		if(l == null) return false;
 		l.remove(avmURI);
-		RequestDispatcherManagementOutboundPort rqout = rdmanagementport.get(RequestDispatcherURI);
+		RequestDispatcherManagementOutboundPort rqout = rd_management_port_map.get(RequestDispatcherURI);
 		try {
 			rqout.removeAVM(avmURI);
-			allocationVMCores.get(avmURI).freeCores();
-			allocationVMCores.remove(avmURI);
-			avmmanagementport.remove(avmURI).doDisconnection();
+			allocationVMCores_map.get(avmURI).freeCores();
+			allocationVMCores_map.remove(avmURI);
+			avm_management_port_map.remove(avmURI).doDisconnection();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -524,7 +528,7 @@ RequestDispatcherHandlerI{
 	public void acceptRequestAdmissionTerminationNotification(RequestAdmissionI requestAdmission) throws Exception {
 		String rqdispURI = requestAdmission.getRequestDispatcherURI();
 		
-		rdmanagementport.remove(rqdispURI).doDisconnection();
+		rd_management_port_map.remove(rqdispURI).doDisconnection();
 		logMessage("Controleur d'admission : Ressources libérées par le Request Generator "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
 		
 	}
@@ -533,31 +537,69 @@ RequestDispatcherHandlerI{
 
 
 	@Override
-	public void addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
-		// TODO Auto-generated method stub
+	public String addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
+		List<AllocationCore> cores = allocateCoreFromComputers(1, 1);
+		if(cores==null){
 		
+			return null;
+		}
+		
+		String vmURI = AVMURI+id_avm;
+		String appliInPortURI = AVMMANAGEMENTURI+id_avm;
+		String requestSubmissionInboundPortURIVM = AVMREQUESTSUBMISSIONURI+id_avm;
+		String requestNotificationInboundPortURIVM = rd_notification_inport_map.get(requestDispatcherURI);
+		String applicationVMDynamicStateDataInboundPortURI = AVM_DYNAMIC_STATE + id_avm;
+		String applicationVMStaticStateDataInboundPortURI = AVM_STATIC_STATE + id_avm;
+		id_avm++;
+		
+		Object[] argumentsAppVM = {vmURI, 
+				appliInPortURI,
+				requestSubmissionInboundPortURIVM, 
+				requestNotificationInboundPortURIVM,
+				applicationVMDynamicStateDataInboundPortURI,
+				applicationVMStaticStateDataInboundPortURI};
+
+		
+		dynamicComponentCreationOutboundPort.createComponent(ApplicationVM.class.getCanonicalName(),
+				argumentsAppVM);
+		
+		AVMUris avmUris = new AVMUris(requestSubmissionInboundPortURIVM, 
+				requestNotificationInboundPortURIVM,
+				appliInPortURI,
+				vmURI, 
+				applicationVMDynamicStateDataInboundPortURI, 
+				applicationVMStaticStateDataInboundPortURI);
+		
+		RequestDispatcherManagementOutboundPort req_disp_management_outport 
+		= rd_management_port_map.get(requestDispatcherURI);
+		
+		req_disp_management_outport.addAVM(avmUris);
+		req_disp_management_outport.connectAVM(vmURI);
+		
+		return vmURI;
 	}
 
 
 
 
 	@Override
-	public void removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
-		System.out.println(requestDispatcherURI);
-		List<String> l = reqDispAvms.get(requestDispatcherURI);
-		if(l == null || l.size()<=1) return ;
+	public String removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
+		
+		List<String> l = reqDispAvms_map.get(requestDispatcherURI);
+		if(l == null || l.size()<=1) return null;
 		String avmURI = l.remove(0);
 		
-		RequestDispatcherManagementOutboundPort rqout = rdmanagementport.get(requestDispatcherURI);
+		RequestDispatcherManagementOutboundPort rqout = rd_management_port_map.get(requestDispatcherURI);
 		try {
 			rqout.removeAVM(avmURI);
-			allocationVMCores.get(avmURI).freeCores();
-			allocationVMCores.remove(avmURI);
-			avmmanagementport.remove(avmURI).doDisconnection();
+			allocationVMCores_map.get(avmURI).freeCores();
+			allocationVMCores_map.remove(avmURI);
+			avm_management_port_map.remove(avmURI).doDisconnection();
 		} catch (Exception e) {
 			e.printStackTrace();
 		
 		}
+		return avmURI;
 
 		
 	}

@@ -352,6 +352,7 @@ implements	ProcessorServicesNotificationConsumerI,
 	@Override
 	public void			start() throws ComponentStartException
 	{
+		
 		super.start() ;
 
 		try {
@@ -359,9 +360,13 @@ implements	ProcessorServicesNotificationConsumerI,
 					this.requestNotificationOutboundPort.getPortURI(),
 					this.requestNotificationInboundPortURI,
 					RequestNotificationConnector.class.getCanonicalName()) ;
+		
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new ComponentStartException(e) ;
 		}
+		
+		
 	}
 
 	@Override
