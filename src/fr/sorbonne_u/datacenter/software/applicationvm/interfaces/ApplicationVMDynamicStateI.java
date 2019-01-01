@@ -1,5 +1,8 @@
 package fr.sorbonne_u.datacenter.software.applicationvm.interfaces;
 
+import java.util.List;
+import java.util.Set;
+
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -36,6 +39,7 @@ package fr.sorbonne_u.datacenter.software.applicationvm.interfaces;
 
 import fr.sorbonne_u.components.interfaces.DataOfferedI;
 import fr.sorbonne_u.components.interfaces.DataRequiredI;
+import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.interfaces.TimeStampingI;
 
 /**
@@ -87,4 +91,8 @@ extends		DataOfferedI.DataI,
 	 * @return	true if the application virtual machine is idle.
 	 */
 	public boolean		isIdle() ;
+
+	public List<AllocatedCore> getIdleAllocatedCores();
+
+	public int getTotalNumberOfCores();
 }

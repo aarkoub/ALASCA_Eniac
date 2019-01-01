@@ -114,4 +114,14 @@ implements	ProcessorServicesI
 		((ProcessorServicesI)this.connector).
 				executeTaskOnCoreAndNotify(t, coreNo, notificationPortURI) ;
 	}
+	
+	@Override
+	public String getProcessorDynamicStateDataURI() throws Exception{
+		return ((ProcessorServicesI)this.connector).getProcessorDynamicStateDataURI();
+	}
+	
+	@Override
+	public String getProcessorStaticStateDataURI() throws Exception{
+		return ((ProcessorServicesI)this.connector).getProcessorStaticStateDataURI();
+	}
 }

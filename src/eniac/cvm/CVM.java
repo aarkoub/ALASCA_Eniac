@@ -166,7 +166,7 @@ public class CVM extends AbstractCVM {
 			 * Creation du g�n�rateur de requetes
 			 */
 		
-			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 100, 5000, 
+			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 100, 50, 
 					RequestGeneratorManagementInboundPortURI+i, requestSubmissionInboundPortURI+i,
 					requestNotificationInboundPortURI+i, requestAdmissionSubmissionInboundPortURI,
 					requestAdmissionNotificationInboundPortURI);
@@ -217,9 +217,9 @@ public class CVM extends AbstractCVM {
 			// Create an instance of the defined component virtual machine.
 			CVM a = new CVM() ;
 			// Execute the application.
-			a.startStandardLifeCycle(18000L) ;
+			a.startStandardLifeCycle(50000L) ;
 			// Give some time to see the traces (convenience).
-			Thread.sleep(10000000L) ;
+			Thread.sleep(100000L) ;
 			// Simplifies the termination (termination has yet to be treated
 			// properly in BCM).
 			System.exit(0) ;

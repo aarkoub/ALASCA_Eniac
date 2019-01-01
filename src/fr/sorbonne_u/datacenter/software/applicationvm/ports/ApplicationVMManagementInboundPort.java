@@ -1,5 +1,7 @@
 package fr.sorbonne_u.datacenter.software.applicationvm.ports;
 
+import java.util.Map;
+
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -134,6 +136,21 @@ implements	ApplicationVMManagementI
 	@Override
 	public void			connectWithRequestSubmissioner() throws Exception {
 		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addPortConnectionProcessorStateData(AllocatedCore[] allocatedCore,
+			Map<String, String> dynamicStateDataMap, Map<String, String> staticStateDataMap) throws Exception {
+		this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService<Void>() {
+					@Override
+					public Void call() throws Exception {
+						((ApplicationVMManagementI)this.getOwner()).
+						addPortConnectionProcessorStateData(allocatedCore, dynamicStateDataMap, staticStateDataMap);
+						return null;
+					}
+				}) ;
 		
 	}
 }

@@ -1,5 +1,7 @@
 package fr.sorbonne_u.datacenter.software.applicationvm.interfaces;
 
+import java.util.Map;
+
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -76,4 +78,7 @@ extends		OfferedI,
 
 	public void			connectWithRequestSubmissioner()
 	throws Exception ;
+
+	public void addPortConnectionProcessorStateData(AllocatedCore[] allocatedCore, Map<String, String> dynamicStateDataMap,
+			Map<String, String> staticStateDataMap) throws Exception;
 }

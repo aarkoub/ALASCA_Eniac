@@ -224,7 +224,7 @@ RequestDispatcherHandlerI{
 	}
 	
 	
-	
+	@Override
 	public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) {
 		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
 		if(alloc == null) return false;
@@ -260,6 +260,7 @@ RequestDispatcherHandlerI{
 		return true;
 	}
 	
+	@Override
 	public boolean addCoreToAvm(String avm_uri, int nbcores) {
 		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
 		if(alloc == null) return false;

@@ -86,4 +86,14 @@ implements	ProcessorServicesI
 		((ProcessorServicesI)this.offering).
 					executeTaskOnCoreAndNotify(t, coreNo, notificationPortURI) ;
 	}
+
+	@Override
+	public String getProcessorDynamicStateDataURI() throws Exception {
+		return ((ProcessorServicesI)this.offering).getProcessorDynamicStateDataURI();
+	}
+	
+	@Override
+	public String getProcessorStaticStateDataURI() throws Exception {
+		return ((ProcessorServicesI)this.offering).getProcessorStaticStateDataURI();
+	}
 }

@@ -1,5 +1,6 @@
 package eniac.automatichandler;
 
+import java.util.List;
 import java.util.Map;
 
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
@@ -17,6 +18,7 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
+import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMDynamicStateI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateI;
 
@@ -134,7 +136,7 @@ RequestDispatcherStateDataConsumerI{
 					DataConnector.class.getCanonicalName()
 					);
 			
-		
+		System.out.println(this.autoHand_uri+" "+requestDispatcherURI);
 		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(500);
 			
 		} catch (Exception e) {
@@ -181,6 +183,27 @@ RequestDispatcherStateDataConsumerI{
 		for(String avmUri : avmDynamicStateMap.keySet()){
 			ApplicationVMDynamicStateI avmDynamicState = avmDynamicStateMap.get(avmUri);
 			logMessage(avmDynamicState.getApplicationVMURI()+" "+String.valueOf(avmDynamicState.isIdle()));
+			
+			if( !avmDynamicState.isIdle()){
+				if(requestDispatcherHandlerOutboundPort.addCoreToAvm(avmUri, 1)){
+					logMessage("1 core added to "+avmUri);
+				}
+			}
+			else{
+				
+				if(avmDynamicState.getTotalNumberOfCores()>1){
+				
+					List<AllocatedCore> allocatedCoresList = avmDynamicState.getIdleAllocatedCores();
+					for(AllocatedCore ac : allocatedCoresList){
+						
+						if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(avmUri,ac)){
+							logMessage("1 core removed from "+avmUri);
+						}
+					}
+				}
+				
+			}
+			
 		}
 	}
 	

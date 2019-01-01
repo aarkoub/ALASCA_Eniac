@@ -6,6 +6,7 @@ import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
+import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 
 public class RequestDispatcherHandlerInboundPort
 extends AbstractInboundPort
@@ -62,6 +63,30 @@ implements RequestDispatcherHandlerI{
 						}
 					}) ;
 			
+		}
+
+		@Override
+		public boolean addCoreToAvm(String avm_uri, int nbcores) throws Exception {
+			return this.getOwner().handleRequestSync(
+					new AbstractComponent.AbstractService<Boolean>() {
+						@Override
+						public Boolean call() throws Exception {
+						
+							return ((AdmissionControler)this.getOwner()).addCoreToAvm(avm_uri, nbcores);
+						}
+					}) ;
+		}
+
+		@Override
+		public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) throws Exception {
+			return this.getOwner().handleRequestSync(
+					new AbstractComponent.AbstractService<Boolean>() {
+						@Override
+						public Boolean call() throws Exception {
+						
+							return ((AdmissionControler)this.getOwner()).removeCoreFromAvm(avm_uri, allocatedCore);
+						}
+					}) ;
 		}
 
 }

@@ -167,6 +167,9 @@ implements	PushModeControllingI
 	/**	URI of the port where to notify the end of currently executing
 	 *  tasks.															*/
 	protected Map<TaskI,String>			notificationInboundPortURIs ;
+	
+	protected String processorDynamicStateDataInboundPortURI;
+	protected String processorStaticStateDataInboundPortURI;
 
 	// ------------------------------------------------------------------------
 	// Component constructor
@@ -242,6 +245,9 @@ implements	PushModeControllingI
 		assert	numberOfCores > 0 ;
 
 		this.processorURI = processorURI ;
+		this.processorDynamicStateDataInboundPortURI = processorDynamicStateDataInboundPortURI;
+		this.processorStaticStateDataInboundPortURI = processorStaticStateDataInboundPortURI;
+		
 		this.admissibleFrequencies =
 							new HashSet<Integer>(admissibleFrequencies.size()) ;
 		for(int f : admissibleFrequencies) {
@@ -873,4 +879,13 @@ implements	PushModeControllingI
 
 		this.cores[coreNo].setFrequency(frequency) ;
 	}
+	
+	public String getProcessorDynamicStateDataURI() throws Exception{
+		return processorDynamicStateDataInboundPortURI;
+	}
+	
+	public String getProcessorStaticStateDataURI() throws Exception{
+		return processorStaticStateDataInboundPortURI;
+	}
+	
 }

@@ -101,4 +101,8 @@ extends		OfferedI,
 		final int coreNo,
 		final String notificationPortURI
 		) throws Exception ;
+
+	public String getProcessorDynamicStateDataURI() throws Exception;
+
+	public String getProcessorStaticStateDataURI() throws Exception;
 }

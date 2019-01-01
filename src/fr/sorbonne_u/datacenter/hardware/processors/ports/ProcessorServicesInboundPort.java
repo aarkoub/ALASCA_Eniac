@@ -121,4 +121,28 @@ implements	ProcessorServicesI
 					}
 				}) ;
 	}
+
+	@Override
+	public String getProcessorDynamicStateDataURI() throws Exception {
+		return this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService<String>() {
+					@Override
+					public String call() throws Exception {
+						return ((Processor)this.getOwner()).getProcessorDynamicStateDataURI();
+					
+					}
+				}) ;
+	}
+	
+	@Override
+	public String getProcessorStaticStateDataURI() throws Exception {
+		return this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService<String>() {
+					@Override
+					public String call() throws Exception {
+						return ((Processor)this.getOwner()).getProcessorStaticStateDataURI();
+						
+					}
+				}) ;
+	}
 }

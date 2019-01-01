@@ -1,6 +1,9 @@
 package eniac.applicationvm;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import fr.sorbonne_u.datacenter.data.AbstractTimeStampedData;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
@@ -26,6 +29,22 @@ public class ApplicationVMDynamicState extends AbstractTimeStampedData implement
 		// TODO Auto-generated method stub
 		return uri;
 	}
+	
+	@Override
+	public List<AllocatedCore> getIdleAllocatedCores(){
+		
+		List<AllocatedCore> idleCoresList = new ArrayList<>();
+		
+		for(AllocatedCore allocatedCore : allocatedCoresIdleStatus.keySet()){
+			
+			if(allocatedCoresIdleStatus.get(allocatedCore)==true){
+				idleCoresList.add(allocatedCore);
+			}
+			
+		}
+		
+		return idleCoresList; 
+	}
 
 	@Override
 	public boolean isIdle() {
@@ -38,6 +57,12 @@ public class ApplicationVMDynamicState extends AbstractTimeStampedData implement
 			
 		}
 		return false;
+	}
+	
+	@Override
+	public int getTotalNumberOfCores(){
+		return allocatedCoresIdleStatus.size();
+	
 	}
 
 }

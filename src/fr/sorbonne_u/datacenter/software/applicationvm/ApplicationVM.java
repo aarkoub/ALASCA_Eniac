@@ -45,17 +45,24 @@ import java.util.concurrent.TimeUnit;
 import eniac.applicationvm.ApplicationVMDynamicState;
 import eniac.applicationvm.ApplicationVMStaticState;
 import fr.sorbonne_u.components.AbstractComponent;
+import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.datacenter.TimeManagement;
+import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.processors.Processor.ProcessorPortTypes;
 import fr.sorbonne_u.datacenter.hardware.processors.connectors.ProcessorServicesConnector;
+import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorDynamicStateI;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesI;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesNotificationConsumerI;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesNotificationI;
+import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorStateDataConsumerI;
+import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorStaticStateI;
+import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorDynamicStateDataOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorServicesNotificationInboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorServicesOutboundPort;
+import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorStaticStateDataOutboundPort;
 import fr.sorbonne_u.datacenter.interfaces.PushModeControllingI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMDynamicStateI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMManagementI;
@@ -126,7 +133,8 @@ extends		AbstractComponent
 implements	ProcessorServicesNotificationConsumerI,
 			RequestSubmissionHandlerI,
 			ApplicationVMManagementI,
-			PushModeControllingI
+			PushModeControllingI,
+			ProcessorStateDataConsumerI
 {
 	public static boolean	DEBUG = false ;
 
@@ -176,6 +184,9 @@ implements	ProcessorServicesNotificationConsumerI,
 											avmDynamicStateDataInboundPort ;
 	/** future of the task scheduled to push dynamic data.					*/
 	protected ScheduledFuture<?>				pushingFuture ;
+	
+	protected Map<String, ProcessorDynamicStateDataOutboundPort> processor_dynamic_outport_map;
+	protected Map<String, ProcessorStaticStateDataOutboundPort> processor_static_outport_map;
 
 
 	// ------------------------------------------------------------------------
@@ -343,6 +354,9 @@ implements	ProcessorServicesNotificationConsumerI,
 			avmStaticStateDataInboundPort.publishPort();
 			addPort(avmStaticStateDataInboundPort);
 			
+			processor_dynamic_outport_map = new HashMap<>();
+			processor_static_outport_map = new HashMap<>();
+			
 		}
 
 	// ------------------------------------------------------------------------
@@ -378,6 +392,15 @@ implements	ProcessorServicesNotificationConsumerI,
 										this.processorServicesPorts.values()) {
 			p.doDisconnection() ;
 		}
+		
+		for(String uri : processor_dynamic_outport_map.keySet()){
+			processor_dynamic_outport_map.get(uri).doDisconnection();
+		}
+		
+		for(String uri : processor_static_outport_map.keySet()){
+			processor_static_outport_map.get(uri).doDisconnection();
+		}
+		
 		super.finalise() ;
 	}
 
@@ -406,6 +429,24 @@ implements	ProcessorServicesNotificationConsumerI,
 			throw new ComponentShutdownException(
 					"processor services outbound port disconnection"
 					+ " error", e) ;
+		}
+		
+		for(String uri : processor_dynamic_outport_map.keySet()){
+			try {
+				processor_dynamic_outport_map.get(uri).unpublishPort();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		for(String uri : processor_static_outport_map.keySet()){
+			try {
+				processor_static_outport_map.get(uri).unpublishPort();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		super.shutdown();
@@ -788,8 +829,75 @@ implements	ProcessorServicesNotificationConsumerI,
 				np.publishPort() ;
 				this.processorNotificationInboundPorts.
 									put(allocatedCores[i].processorURI, np) ;
+				
+				ProcessorDynamicStateDataOutboundPort dynamic_outport = 
+						new ProcessorDynamicStateDataOutboundPort(this, allocatedCores[i].processorURI);
+				addPort(dynamic_outport);
+				dynamic_outport.publishPort();
+				
+				ProcessorStaticStateDataOutboundPort static_outport =
+						new ProcessorStaticStateDataOutboundPort(this, allocatedCores[i].processorURI);
+				addPort(static_outport);
+				static_outport.publishPort();
+				try{
+				doPortConnection(dynamic_outport.getPortURI(),
+						p.getProcessorDynamicStateDataURI(),
+						ControlledDataConnector.class.getCanonicalName());
+				doPortConnection(static_outport.getPortURI(),
+						p.getProcessorStaticStateDataURI(),
+						DataConnector.class.getCanonicalName()
+						);
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+				
+				processor_dynamic_outport_map.put(allocatedCores[i].processorURI, dynamic_outport);
+				processor_static_outport_map.put(allocatedCores[i].processorURI, static_outport);
+				
+				dynamic_outport.startUnlimitedPushing(500);
+				
 			}
 		}
+	}
+	
+	@Override
+	public void addPortConnectionProcessorStateData(AllocatedCore[] allocatedCore,
+			Map<String, String> dynamicStateDataMap,
+			Map<String, String> staticStateDataMap) throws Exception{
+		
+		for(int i=0; i<allocatedCore.length; i++){
+			String proc_uri = allocatedCore[i].processorURI;
+			
+			String dynamic_inport_uri = dynamicStateDataMap.get(proc_uri);
+			String static_inport_uri = staticStateDataMap.get(proc_uri);
+			
+			ProcessorDynamicStateDataOutboundPort dynamic_outport = 
+					new ProcessorDynamicStateDataOutboundPort(this, proc_uri);
+			addPort(dynamic_outport);
+			dynamic_outport.publishPort();
+			
+			ProcessorStaticStateDataOutboundPort static_outport =
+					new ProcessorStaticStateDataOutboundPort(this, proc_uri);
+			addPort(static_outport);
+			static_outport.publishPort();
+			
+			doPortConnection(dynamic_outport.getPortURI(),
+					dynamic_inport_uri,
+					ControlledDataConnector.class.getCanonicalName());
+			doPortConnection(static_outport.getPortURI(),
+					static_inport_uri,
+					DataConnector.class.getCanonicalName()
+					);
+			
+			processor_dynamic_outport_map.put(proc_uri, dynamic_outport);
+			processor_static_outport_map.put(proc_uri, static_outport);
+			
+			dynamic_outport.startUnlimitedPushing(500);
+			
+		}
+		
+		
 	}
 
 	/**
@@ -800,6 +908,25 @@ implements	ProcessorServicesNotificationConsumerI,
 	throws Exception
 	{
 		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void acceptProcessorStaticData(String processorURI, ProcessorStaticStateI staticState) throws Exception {
+	
+	}
+
+
+	@Override
+	public void acceptProcessorDynamicData(String processorURI, ProcessorDynamicStateI currentDynamicState)
+			throws Exception {
+		Map<Integer, Integer> currentFreqCores = new HashMap<>();
+		for(AllocatedCore ac : allocatedCoresIdleStatus.keySet()){
+			currentFreqCores.put(ac.coreNo,currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
+			logMessage(ac.coreNo+" "+currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
+		}
+		
 		
 	}
 }

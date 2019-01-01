@@ -3,6 +3,7 @@ package eniac.requestdispatcherhandler.ports;
 import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
+import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 
 public class RequestDispatcherHandlerOutboundPort
 extends AbstractOutboundPort
@@ -35,6 +36,16 @@ implements RequestDispatcherHandlerI{
 	public String removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
 		return ((RequestDispatcherHandlerI)this.connector).removeAVMFromRequestDispatcher(requestDispatcherURI);
 		
+	}
+
+	@Override
+	public boolean addCoreToAvm(String avm_uri, int nbcores) throws Exception {
+		return ((RequestDispatcherHandlerI)this.connector).addCoreToAvm(avm_uri, nbcores);
+	}
+
+	@Override
+	public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) throws Exception {
+		return ((RequestDispatcherHandlerI)this.connector).removeCoreFromAvm(avm_uri, allocatedCore);
 	}
 
 }
