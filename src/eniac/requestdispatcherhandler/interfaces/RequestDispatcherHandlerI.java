@@ -1,4 +1,4 @@
-package eniac.automatichandler.interfaces;
+package eniac.requestdispatcherhandler.interfaces;
 
 public interface RequestDispatcherHandlerI {
 	

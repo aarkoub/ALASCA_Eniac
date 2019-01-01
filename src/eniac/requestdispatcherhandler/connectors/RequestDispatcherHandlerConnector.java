@@ -1,6 +1,6 @@
-package eniac.automatichandler.connectors;
+package eniac.requestdispatcherhandler.connectors;
 
-import eniac.automatichandler.interfaces.RequestDispatcherHandlerI;
+import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.connectors.AbstractConnector;
 
 public class RequestDispatcherHandlerConnector

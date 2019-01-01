@@ -2,17 +2,17 @@ package eniac.automatichandler;
 
 import java.util.Map;
 
-import eniac.automatichandler.connectors.RequestDispatcherHandlerConnector;
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
-import eniac.automatichandler.interfaces.RequestDispatcherHandlerI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
-import eniac.automatichandler.ports.RequestDispatcherHandlerOutboundPort;
 import eniac.requestdispatcher.connectors.RequestDispatcherManagementConnector;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
 import eniac.requestdispatcher.ports.RequestDispatcherDynamicStateDataOutboundPort;
 import eniac.requestdispatcher.ports.RequestDispatcherStaticStateDataOutboundPort;
+import eniac.requestdispatcherhandler.connectors.RequestDispatcherHandlerConnector;
+import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
+import eniac.requestdispatcherhandler.ports.RequestDispatcherHandlerOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;

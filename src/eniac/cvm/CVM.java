@@ -78,7 +78,7 @@ public class CVM extends AbstractCVM {
 		
 		assert	!this.deploymentDone() ;
 		
-		int max_ressources = 2;
+		int max_ressources = 3;
 		
 		/*
 		 * Cr�ation des computeurs (en ressources du contr�leur d'admission)
@@ -159,14 +159,14 @@ public class CVM extends AbstractCVM {
 		admissionControler.toggleTracing();
 		
 		
-		for(int i=0; i<1; i++){
+		for(int i=0; i<2; i++){
 			
 
 			/*
 			 * Creation du g�n�rateur de requetes
 			 */
 		
-			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 100, 50, 
+			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 100, 5000, 
 					RequestGeneratorManagementInboundPortURI+i, requestSubmissionInboundPortURI+i,
 					requestNotificationInboundPortURI+i, requestAdmissionSubmissionInboundPortURI,
 					requestAdmissionNotificationInboundPortURI);

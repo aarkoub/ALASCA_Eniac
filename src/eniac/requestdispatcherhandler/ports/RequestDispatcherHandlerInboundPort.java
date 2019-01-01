@@ -1,8 +1,8 @@
-package eniac.automatichandler.ports;
+package eniac.requestdispatcherhandler.ports;
 
 import eniac.admissioncontroler.AdmissionControler;
 import eniac.automatichandler.AutomaticHandler;
-import eniac.automatichandler.interfaces.RequestDispatcherHandlerI;
+import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
