@@ -188,7 +188,8 @@ implements	ProcessorServicesNotificationConsumerI,
 	protected Map<String, ProcessorDynamicStateDataOutboundPort> processor_dynamic_outport_map;
 	protected Map<String, ProcessorStaticStateDataOutboundPort> processor_static_outport_map;
 	
-	protected Map<Integer, Integer> currentFreqCores;
+	
+	protected Map<String, Map<Integer, Integer>> procCurrentFreqCoresMap;
 
 
 	// ------------------------------------------------------------------------
@@ -358,6 +359,7 @@ implements	ProcessorServicesNotificationConsumerI,
 			
 			processor_dynamic_outport_map = new HashMap<>();
 			processor_static_outport_map = new HashMap<>();
+			procCurrentFreqCoresMap = new HashMap<>();
 			
 		}
 
@@ -787,7 +789,7 @@ implements	ProcessorServicesNotificationConsumerI,
 	public	ApplicationVMDynamicStateI	getDynamicState()
 	throws Exception
 	{
-		return new ApplicationVMDynamicState(vmURI, allocatedCoresIdleStatus, currentFreqCores) ;
+		return new ApplicationVMDynamicState(vmURI, allocatedCoresIdleStatus, procCurrentFreqCoresMap) ;
 	}
 
 	// ------------------------------------------------------------------------
@@ -920,19 +922,21 @@ implements	ProcessorServicesNotificationConsumerI,
 
 	@Override
 	public void acceptProcessorStaticData(String processorURI, ProcessorStaticStateI staticState) throws Exception {
-	
+		for(Integer freq : staticState.getAdmissibleFrequencies())
+			System.out.println(freq);
 	}
 
 
 	@Override
 	public void acceptProcessorDynamicData(String processorURI, ProcessorDynamicStateI currentDynamicState)
 			throws Exception {
-		currentFreqCores = new HashMap<>();
+		Map<Integer, Integer>currentFreqCores = new HashMap<>();
 		for(AllocatedCore ac : allocatedCoresIdleStatus.keySet()){
 			currentFreqCores.put(ac.coreNo,currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
 			logMessage("core number "+ac.coreNo+" ; current freq : "+currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
 			
 		}
+		procCurrentFreqCoresMap.put(processorURI, currentFreqCores);
 		
 		
 	}

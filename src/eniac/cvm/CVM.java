@@ -92,7 +92,7 @@ public class CVM extends AbstractCVM {
 			String ComputerServicesInboundPortURI = "computer_in_port_"+i;
 			String computerURI = "computer_"+i ;
 			int numberOfProcessors = 1 ;
-			int numberOfCores = 2 ;
+			int numberOfCores = 4 ;
 			Set<Integer> admissibleFrequencies = new HashSet<Integer>() ;
 			admissibleFrequencies.add(1500) ;	// Cores can run at 1,5 GHz
 			admissibleFrequencies.add(3000) ;	// and at 3 GHz
@@ -166,7 +166,7 @@ public class CVM extends AbstractCVM {
 			 * Creation du g�n�rateur de requetes
 			 */
 		
-			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 100, 50, 
+			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 10000, 5000, 
 					RequestGeneratorManagementInboundPortURI+i, requestSubmissionInboundPortURI+i,
 					requestNotificationInboundPortURI+i, requestAdmissionSubmissionInboundPortURI,
 					requestAdmissionNotificationInboundPortURI);

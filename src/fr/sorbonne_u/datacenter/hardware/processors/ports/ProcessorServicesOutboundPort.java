@@ -127,11 +127,6 @@ implements	ProcessorServicesI
 		return ((ProcessorServicesI)this.connector).getProcessorStaticStateDataURI();
 	}
 
-	@Override
-	public void setCoreFrequency(int coreNo, int frequency)
-			throws UnavailableFrequencyException, UnacceptableFrequencyException, Exception {
-		((ProcessorServicesI)this.connector).setCoreFrequency(coreNo, frequency);
-	}
-	
+
 	
 }

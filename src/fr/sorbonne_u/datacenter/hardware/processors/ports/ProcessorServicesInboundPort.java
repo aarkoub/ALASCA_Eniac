@@ -150,24 +150,4 @@ implements	ProcessorServicesI
 				}) ;
 	}
 
-	@Override
-	public void setCoreFrequency(int coreNo, int frequency)
-			throws UnavailableFrequencyException, UnacceptableFrequencyException, Exception {
-		if (AbstractCVM.DEBUG_MODE.contains(CVMDebugModes.CALLING)) {
-			System.out.println(
-					"ProcessorServicesInboundPort>>setCoreFrequency(" +
-					coreNo + ", " + frequency + ")") ;
-		}
-
-		this.getOwner().handleRequestAsync(
-				new AbstractComponent.AbstractService<Void>() {
-					@Override
-					public Void call() throws Exception {
-						((Processor)this.getOwner()).
-								setCoreFrequency(coreNo, frequency) ;
-						return null;
-					}
-				});
-		
-	}
 }

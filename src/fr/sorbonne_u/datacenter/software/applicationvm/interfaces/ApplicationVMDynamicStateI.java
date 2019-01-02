@@ -97,5 +97,5 @@ extends		DataOfferedI.DataI,
 
 	public int getTotalNumberOfCores();
 
-	Map<Integer, Integer> getCurrentFreqCores();
+	public Map<String, Map<Integer, Integer>> getProcCurrentFreqCoresMap();
 }

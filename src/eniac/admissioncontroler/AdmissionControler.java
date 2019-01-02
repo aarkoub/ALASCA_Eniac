@@ -33,6 +33,11 @@ import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.computers.connectors.ComputerServicesConnector;
 import fr.sorbonne_u.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
+import fr.sorbonne_u.datacenter.hardware.processors.Processor.ProcessorPortTypes;
+import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
+import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
+import fr.sorbonne_u.datacenter.hardware.processors.connectors.ProcessorManagementConnector;
+import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorManagementOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
 import fr.sorbonne_u.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
@@ -69,6 +74,7 @@ RequestDispatcherHandlerI{
 	protected static final String AVM_STATIC_STATE = "avm_static_state";
 	
 	protected Map<Integer, List<Computer>> nbCoresMap ;
+	protected Map<String, ProcessorManagementOutboundPort> proc_management ;
 
 	
 	
@@ -126,10 +132,29 @@ RequestDispatcherHandlerI{
 		requestDispatcherHandlerInboundPortMap = new HashMap<>();
 		rd_notification_inport_map = new HashMap<>();
 		
+		proc_management = new HashMap<>();
 		
 		ComputerServicesOutboundPort csop;
 		for (int i = 0; i < computers.size(); i++) {
 			Computer c =  computers.get(i);
+			
+			for(String proc_uri : c.getStaticState().getProcessorPortMap().keySet() ){
+				
+				
+				ProcessorManagementOutboundPort p = new ProcessorManagementOutboundPort(this);
+				addPort(p);
+				p.publishPort();
+				
+				doPortConnection(p.getPortURI(),
+						c.getStaticState().getProcessorPortMap().get(proc_uri).get(ProcessorPortTypes.MANAGEMENT),
+						ProcessorManagementConnector.class.getCanonicalName());
+				
+				proc_management.put(proc_uri, p
+						);
+				
+			}
+			
+			
 			ComputerURI cUri = computeruris.get(i);
 			csop = new ComputerServicesOutboundPort(this);
 			addPort(csop);
@@ -225,6 +250,19 @@ RequestDispatcherHandlerI{
 	
 	
 	@Override
+	
+	public void			setCoreFrequency(String processor_uri, int coreNo, int frequency)
+			throws	UnavailableFrequencyException,
+					UnacceptableFrequencyException,
+					Exception
+			{
+			ProcessorManagementOutboundPort p = proc_management.get(processor_uri);
+			p.setCoreFrequency(coreNo, frequency);
+		 
+			}
+	
+	
+	@Override
 	public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) {
 		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
 		if(alloc == null) return false;
@@ -265,6 +303,7 @@ RequestDispatcherHandlerI{
 		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
 		if(alloc == null) return false;
 		Computer computer = alloc.getComputer();
+		
 		try {
 			AllocatedCore[] cores = computer.allocateCores(nbcores);
 			if(cores.length != nbcores) {

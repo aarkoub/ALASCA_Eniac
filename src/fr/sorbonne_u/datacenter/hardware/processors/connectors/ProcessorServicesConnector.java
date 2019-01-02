@@ -102,19 +102,5 @@ implements	ProcessorServicesI
 		return ((ProcessorServicesI)this.offering).getProcessorStaticStateDataURI();
 	}
 	
-	@Override
-	public void			setCoreFrequency(final int coreNo, final int frequency)
-	throws	UnavailableFrequencyException,
-			UnacceptableFrequencyException,
-			Exception
-	{
-		if (AbstractCVM.DEBUG_MODE.contains(CVMDebugModes.CALLING)) {
-			System.out.println(
-					"ProcessorServicesConnector>>setCoreFrequency(" +
-					coreNo + ", " + frequency + ")") ;
-		}
-
-		((ProcessorServicesI)this.offering).
-										setCoreFrequency(coreNo, frequency) ;
-	}
+	
 }

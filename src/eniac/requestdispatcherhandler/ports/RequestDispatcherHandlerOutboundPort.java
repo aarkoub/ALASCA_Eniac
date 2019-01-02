@@ -4,6 +4,8 @@ import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
+import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
+import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 
 public class RequestDispatcherHandlerOutboundPort
 extends AbstractOutboundPort
@@ -46,6 +48,13 @@ implements RequestDispatcherHandlerI{
 	@Override
 	public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) throws Exception {
 		return ((RequestDispatcherHandlerI)this.connector).removeCoreFromAvm(avm_uri, allocatedCore);
+	}
+
+	@Override
+	public void setCoreFrequency(String processor_uri, int coreNo, int frequency)
+			throws UnavailableFrequencyException,
+			UnacceptableFrequencyException, Exception {
+		((RequestDispatcherHandlerI)this.connector).setCoreFrequency(processor_uri, coreNo, frequency);		
 	}
 
 }

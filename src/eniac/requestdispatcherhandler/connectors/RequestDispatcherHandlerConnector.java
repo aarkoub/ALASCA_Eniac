@@ -3,6 +3,8 @@ package eniac.requestdispatcherhandler.connectors;
 import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.connectors.AbstractConnector;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
+import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
+import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 
 public class RequestDispatcherHandlerConnector
 extends AbstractConnector
@@ -29,6 +31,14 @@ implements RequestDispatcherHandlerI{
 	@Override
 	public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) throws Exception {
 		return ((RequestDispatcherHandlerI)this.offering).removeCoreFromAvm(avm_uri, allocatedCore);
+	}
+
+	@Override
+	public void setCoreFrequency(String processor_uri, int coreNo, int frequency)
+			throws UnavailableFrequencyException,
+			UnacceptableFrequencyException, Exception {
+		((RequestDispatcherHandlerI)this.offering).setCoreFrequency(processor_uri, coreNo, frequency);
+		
 	}
 
 }

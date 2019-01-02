@@ -21,12 +21,12 @@ public class ApplicationVMDynamicState extends AbstractTimeStampedData implement
 	private static final long serialVersionUID = 1L;
 	private String uri;
 	private Map<AllocatedCore, Boolean> allocatedCoresIdleStatus;
-	private Map<Integer, Integer> currentFreqCores;
+	private Map<String, Map<Integer, Integer>> procCurrentFreqCoresMap;
 	
-	public ApplicationVMDynamicState(String avmUri, Map<AllocatedCore, Boolean> allocatedCoresIdleStatus, Map<Integer, Integer> currentFreqCores) {
+	public ApplicationVMDynamicState(String avmUri, Map<AllocatedCore, Boolean> allocatedCoresIdleStatus, Map<String, Map<Integer, Integer>> procCurrentFreqCoresMap) {
 		this.uri = avmUri;
 		this.allocatedCoresIdleStatus = allocatedCoresIdleStatus;
-		this.currentFreqCores = currentFreqCores;
+		this.procCurrentFreqCoresMap = procCurrentFreqCoresMap;
 		
 	}
 	
@@ -73,8 +73,8 @@ public class ApplicationVMDynamicState extends AbstractTimeStampedData implement
 	
 	
 	@Override
-	public Map<Integer, Integer> getCurrentFreqCores() {
-		return currentFreqCores;
+	public Map<String, Map<Integer, Integer>> getProcCurrentFreqCoresMap() {
+		return procCurrentFreqCoresMap;
 	}
 	
 

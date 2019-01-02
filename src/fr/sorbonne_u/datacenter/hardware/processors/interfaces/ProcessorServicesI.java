@@ -108,7 +108,5 @@ extends		OfferedI,
 
 	public String getProcessorStaticStateDataURI() throws Exception;
 
-	public void setCoreFrequency(int coreNo, int frequency) throws	UnavailableFrequencyException,
-	UnacceptableFrequencyException,
-	Exception;
+	
 }

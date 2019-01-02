@@ -192,13 +192,25 @@ RequestDispatcherStateDataConsumerI{
 			else{
 				
 				if(avmDynamicState.getTotalNumberOfCores()>1){
-				
+					
+					
 					List<AllocatedCore> allocatedCoresList = avmDynamicState.getIdleAllocatedCores();
 					for(AllocatedCore ac : allocatedCoresList){
 						
 						if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(avmUri,ac)){
 							logMessage("1 core removed from "+avmUri);
 						}
+					}
+				}
+				else{
+					for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
+						
+						for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
+							requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
+									core, 0);
+						}
+						
+						
 					}
 				}
 				
