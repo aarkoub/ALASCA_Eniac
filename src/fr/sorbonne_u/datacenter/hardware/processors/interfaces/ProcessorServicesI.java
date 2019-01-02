@@ -36,6 +36,8 @@ package fr.sorbonne_u.datacenter.hardware.processors.interfaces;
 
 import fr.sorbonne_u.components.interfaces.OfferedI;
 import fr.sorbonne_u.components.interfaces.RequiredI;
+import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
+import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.TaskI;
 
 /**
@@ -105,4 +107,8 @@ extends		OfferedI,
 	public String getProcessorDynamicStateDataURI() throws Exception;
 
 	public String getProcessorStaticStateDataURI() throws Exception;
+
+	public void setCoreFrequency(int coreNo, int frequency) throws	UnavailableFrequencyException,
+	UnacceptableFrequencyException,
+	Exception;
 }

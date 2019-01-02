@@ -187,6 +187,8 @@ implements	ProcessorServicesNotificationConsumerI,
 	
 	protected Map<String, ProcessorDynamicStateDataOutboundPort> processor_dynamic_outport_map;
 	protected Map<String, ProcessorStaticStateDataOutboundPort> processor_static_outport_map;
+	
+	protected Map<Integer, Integer> currentFreqCores;
 
 
 	// ------------------------------------------------------------------------
@@ -393,13 +395,16 @@ implements	ProcessorServicesNotificationConsumerI,
 			p.doDisconnection() ;
 		}
 		
-		for(String uri : processor_dynamic_outport_map.keySet()){
-			processor_dynamic_outport_map.get(uri).doDisconnection();
+		/*for(String uri : processor_dynamic_outport_map.keySet()){
+			
+			if(processor_dynamic_outport_map.get(uri).connected())
+				processor_dynamic_outport_map.get(uri).doDisconnection();
 		}
 		
 		for(String uri : processor_static_outport_map.keySet()){
-			processor_static_outport_map.get(uri).doDisconnection();
-		}
+			if(processor_static_outport_map.get(uri).connected())
+				processor_static_outport_map.get(uri).doDisconnection();
+		}*/
 		
 		super.finalise() ;
 	}
@@ -416,6 +421,7 @@ implements	ProcessorServicesNotificationConsumerI,
 			this.requestNotificationOutboundPort.unpublishPort() ;
 			for (ProcessorServicesOutboundPort p :
 									this.processorServicesPorts.values()) {
+				
 				p.unpublishPort() ;
 			}
 			this.requestSubmissionInboundPort.unpublishPort() ;
@@ -781,7 +787,7 @@ implements	ProcessorServicesNotificationConsumerI,
 	public	ApplicationVMDynamicStateI	getDynamicState()
 	throws Exception
 	{
-		return new ApplicationVMDynamicState(vmURI, allocatedCoresIdleStatus) ;
+		return new ApplicationVMDynamicState(vmURI, allocatedCoresIdleStatus, currentFreqCores) ;
 	}
 
 	// ------------------------------------------------------------------------
@@ -921,10 +927,11 @@ implements	ProcessorServicesNotificationConsumerI,
 	@Override
 	public void acceptProcessorDynamicData(String processorURI, ProcessorDynamicStateI currentDynamicState)
 			throws Exception {
-		Map<Integer, Integer> currentFreqCores = new HashMap<>();
+		currentFreqCores = new HashMap<>();
 		for(AllocatedCore ac : allocatedCoresIdleStatus.keySet()){
 			currentFreqCores.put(ac.coreNo,currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
-			logMessage(ac.coreNo+" "+currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
+			logMessage("core number "+ac.coreNo+" ; current freq : "+currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
+			
 		}
 		
 		

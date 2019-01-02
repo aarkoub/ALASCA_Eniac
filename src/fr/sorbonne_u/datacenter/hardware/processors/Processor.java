@@ -151,6 +151,12 @@ implements	PushModeControllingI
 										processorDynamicStateDataInboundPort ;
 	protected ProcessorStaticStateDataInboundPort
 										processorStaticStateDataInboundPort ;
+	
+	protected ProcessorDynamicStateDataInboundPort
+		processorDynamicStateDataInboundPortAVM ;
+	protected ProcessorStaticStateDataInboundPort
+		processorStaticStateDataInboundPortAVM ;
+	
 	/** Possible frequencies in MHz.										*/
 	protected final Set<Integer>			admissibleFrequencies ;
 	/** Default frequency of the cores, when powering up the processor.	*/
@@ -168,8 +174,9 @@ implements	PushModeControllingI
 	 *  tasks.															*/
 	protected Map<TaskI,String>			notificationInboundPortURIs ;
 	
-	protected String processorDynamicStateDataInboundPortURI;
-	protected String processorStaticStateDataInboundPortURI;
+	protected String processorDynamicStateDataInboundPortURIForAVM;
+	protected String processorStaticStateDataInboundPortURIForAVM;
+	protected String processorManagementInboundPortURI;
 
 	// ------------------------------------------------------------------------
 	// Component constructor
@@ -245,8 +252,9 @@ implements	PushModeControllingI
 		assert	numberOfCores > 0 ;
 
 		this.processorURI = processorURI ;
-		this.processorDynamicStateDataInboundPortURI = processorDynamicStateDataInboundPortURI;
-		this.processorStaticStateDataInboundPortURI = processorStaticStateDataInboundPortURI;
+		this.processorDynamicStateDataInboundPortURIForAVM = processorDynamicStateDataInboundPortURI+"_avm";
+		this.processorStaticStateDataInboundPortURIForAVM = processorStaticStateDataInboundPortURI+"_avm";
+		this.processorManagementInboundPortURI = managementInboundPortURI;
 		
 		this.admissibleFrequencies =
 							new HashSet<Integer>(admissibleFrequencies.size()) ;
@@ -304,6 +312,25 @@ implements	PushModeControllingI
 								processorDynamicStateDataInboundPortURI, this) ;
 		this.addPort(this.processorDynamicStateDataInboundPort) ;
 		this.processorDynamicStateDataInboundPort.publishPort() ;
+		
+		
+		
+		this.addOfferedInterface(DataOfferedI.PullI.class) ;
+		this.addRequiredInterface(DataOfferedI.PushI.class) ;
+		this.processorStaticStateDataInboundPortAVM =
+			new ProcessorStaticStateDataInboundPort(
+								processorStaticStateDataInboundPortURIForAVM, this) ;
+		this.addPort(this.processorStaticStateDataInboundPortAVM) ;
+		this.processorStaticStateDataInboundPortAVM.publishPort() ;
+
+		this.addOfferedInterface(ControlledDataOfferedI.ControlledPullI.class) ;
+		this.processorDynamicStateDataInboundPortAVM =
+			new ProcessorDynamicStateDataInboundPort(
+								processorDynamicStateDataInboundPortURIForAVM, this) ;
+		this.addPort(this.processorDynamicStateDataInboundPortAVM) ;
+		this.processorDynamicStateDataInboundPortAVM.publishPort() ;
+		
+		
 
 		this.pushingFuture = null ;
 		this.notificationInboundPortURIs = new HashMap<TaskI,String>() ;
@@ -325,6 +352,13 @@ implements	PushModeControllingI
 		if (this.processorDynamicStateDataInboundPort.connected()) {
 			this.processorDynamicStateDataInboundPort.doDisconnection() ;
 		}
+		
+		if (this.processorStaticStateDataInboundPortAVM.connected()) {
+			this.processorStaticStateDataInboundPortAVM.doDisconnection() ;
+		}
+		if (this.processorDynamicStateDataInboundPortAVM.connected()) {
+			this.processorDynamicStateDataInboundPortAVM.doDisconnection() ;
+		}
 
 		super.finalise() ;
 	}
@@ -341,6 +375,10 @@ implements	PushModeControllingI
 			this.processorManagementInboundPort.unpublishPort() ;
 			this.processorStaticStateDataInboundPort.unpublishPort() ;
 			this.processorDynamicStateDataInboundPort.unpublishPort() ;
+			
+			this.processorStaticStateDataInboundPortAVM.unpublishPort() ;
+			this.processorDynamicStateDataInboundPortAVM.unpublishPort() ;
+			
 		} catch (Exception e) {
 			throw new ComponentShutdownException(
 								"processor ports unpublishing error.", e) ;
@@ -532,7 +570,15 @@ implements	PushModeControllingI
 		if (this.processorStaticStateDataInboundPort.connected()) {
 			ProcessorStaticStateI pss = this.getStaticState() ;
 			this.processorStaticStateDataInboundPort.send(pss) ;
+			
 		}
+		
+		if (this.processorStaticStateDataInboundPortAVM.connected()) {
+			ProcessorStaticStateI pss = this.getStaticState() ;
+			this.processorStaticStateDataInboundPortAVM.send(pss) ;
+			
+		}
+		
 	}
 
 	// ------------------------------------------------------------------------
@@ -583,6 +629,7 @@ implements	PushModeControllingI
 	{
 		ProcessorDynamicStateI pds = this.getDynamicState() ;
 		this.processorDynamicStateDataInboundPort.send(pds) ;
+		this.processorDynamicStateDataInboundPortAVM.send(pds) ;
 	}
 
 	/**
@@ -881,11 +928,15 @@ implements	PushModeControllingI
 	}
 	
 	public String getProcessorDynamicStateDataURI() throws Exception{
-		return processorDynamicStateDataInboundPortURI;
+		return processorDynamicStateDataInboundPortURIForAVM;
 	}
 	
 	public String getProcessorStaticStateDataURI() throws Exception{
-		return processorStaticStateDataInboundPortURI;
+		return processorStaticStateDataInboundPortURIForAVM;
+	}
+	
+	public String getProcessorManagementInboundPortURI() throws Exception{
+		return processorManagementInboundPortURI;
 	}
 	
 }

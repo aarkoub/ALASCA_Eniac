@@ -36,6 +36,8 @@ package fr.sorbonne_u.datacenter.hardware.processors.ports;
 
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
+import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
+import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.TaskI;
 
@@ -124,4 +126,12 @@ implements	ProcessorServicesI
 	public String getProcessorStaticStateDataURI() throws Exception{
 		return ((ProcessorServicesI)this.connector).getProcessorStaticStateDataURI();
 	}
+
+	@Override
+	public void setCoreFrequency(int coreNo, int frequency)
+			throws UnavailableFrequencyException, UnacceptableFrequencyException, Exception {
+		((ProcessorServicesI)this.connector).setCoreFrequency(coreNo, frequency);
+	}
+	
+	
 }

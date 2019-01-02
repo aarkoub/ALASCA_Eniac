@@ -36,8 +36,12 @@ package fr.sorbonne_u.datacenter.hardware.processors.ports;
 
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
+import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.components.helpers.CVMDebugModes;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.Processor;
+import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
+import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.TaskI;
 
@@ -144,5 +148,26 @@ implements	ProcessorServicesI
 						
 					}
 				}) ;
+	}
+
+	@Override
+	public void setCoreFrequency(int coreNo, int frequency)
+			throws UnavailableFrequencyException, UnacceptableFrequencyException, Exception {
+		if (AbstractCVM.DEBUG_MODE.contains(CVMDebugModes.CALLING)) {
+			System.out.println(
+					"ProcessorServicesInboundPort>>setCoreFrequency(" +
+					coreNo + ", " + frequency + ")") ;
+		}
+
+		this.getOwner().handleRequestAsync(
+				new AbstractComponent.AbstractService<Void>() {
+					@Override
+					public Void call() throws Exception {
+						((Processor)this.getOwner()).
+								setCoreFrequency(coreNo, frequency) ;
+						return null;
+					}
+				});
+		
 	}
 }

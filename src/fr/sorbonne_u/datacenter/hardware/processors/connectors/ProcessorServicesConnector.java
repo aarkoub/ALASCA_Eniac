@@ -35,6 +35,11 @@ package fr.sorbonne_u.datacenter.hardware.processors.connectors;
 //knowledge of the CeCILL-C license and that you accept its terms.
 
 import fr.sorbonne_u.components.connectors.AbstractConnector;
+import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.components.helpers.CVMDebugModes;
+import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
+import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
+import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorManagementI;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.TaskI;
 
@@ -95,5 +100,21 @@ implements	ProcessorServicesI
 	@Override
 	public String getProcessorStaticStateDataURI() throws Exception {
 		return ((ProcessorServicesI)this.offering).getProcessorStaticStateDataURI();
+	}
+	
+	@Override
+	public void			setCoreFrequency(final int coreNo, final int frequency)
+	throws	UnavailableFrequencyException,
+			UnacceptableFrequencyException,
+			Exception
+	{
+		if (AbstractCVM.DEBUG_MODE.contains(CVMDebugModes.CALLING)) {
+			System.out.println(
+					"ProcessorServicesConnector>>setCoreFrequency(" +
+					coreNo + ", " + frequency + ")") ;
+		}
+
+		((ProcessorServicesI)this.offering).
+										setCoreFrequency(coreNo, frequency) ;
 	}
 }

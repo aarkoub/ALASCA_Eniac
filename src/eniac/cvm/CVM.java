@@ -219,7 +219,7 @@ public class CVM extends AbstractCVM {
 			// Execute the application.
 			a.startStandardLifeCycle(50000L) ;
 			// Give some time to see the traces (convenience).
-			Thread.sleep(100000L) ;
+			//Thread.sleep(100000L) ;
 			// Simplifies the termination (termination has yet to be treated
 			// properly in BCM).
 			System.exit(0) ;
