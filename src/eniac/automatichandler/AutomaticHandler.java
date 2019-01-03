@@ -2,6 +2,7 @@ package eniac.automatichandler;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
@@ -41,6 +42,8 @@ RequestDispatcherStateDataConsumerI{
 	
 	protected double borne_inf = 20;
 	protected double borne_sup = 30;
+	
+	protected Map<String, Set<Integer>> admissibleFreqCores;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
@@ -158,6 +161,7 @@ RequestDispatcherStateDataConsumerI{
 			Map<Integer, Integer> coreMap = avmStaticState.getIdCores();
 			for(Integer core : coreMap.keySet()){
 				logMessage(avmUri+" : core number "+core+" ; processor number "+String.valueOf(coreMap.get(core)));
+				admissibleFreqCores = avmStaticState.getAdmissibleFreqCores();
 			}
 			
 			
@@ -188,6 +192,27 @@ RequestDispatcherStateDataConsumerI{
 				if(requestDispatcherHandlerOutboundPort.addCoreToAvm(avmUri, 1)){
 					logMessage("1 core added to "+avmUri);
 				}
+				else {
+					
+					for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
+						
+						
+						Set<Integer> admissibleFreq = admissibleFreqCores.get(proc_uri);
+						
+						
+						for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
+							
+							int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
+							int freq = getNextFreq(currentFreq, admissibleFreq);
+							
+							requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
+									core, freq);
+						}
+						
+						
+					}
+					
+				}
 			}
 			else{
 				
@@ -205,9 +230,17 @@ RequestDispatcherStateDataConsumerI{
 				else{
 					for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
 						
+						
+						Set<Integer> admissibleFreq = admissibleFreqCores.get(proc_uri);
+						
+						
 						for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
+							
+							int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
+							int freq = getPreviousFreq(currentFreq, admissibleFreq);
+							
 							requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
-									core, 0);
+									core, freq);
 						}
 						
 						
@@ -220,6 +253,40 @@ RequestDispatcherStateDataConsumerI{
 	}
 	
 	
+	public int getNextFreq(int currentFreq, Set<Integer> freqs) {
+		
+		int next = currentFreq;
+		
+		for(Integer i : freqs) {
+			
+			if(i>next) {
+				next = i;
+				break;
+			}
+			
+		}
+		System.out.println(next);
+		return next;
+	}
+	
+	public int getPreviousFreq(int currentFreq, Set<Integer> freqs) {
+	
+		int previous = currentFreq;
+		
+		for(Integer i : freqs) {
+			
+			if(i<previous) {
+				previous = i;
+				break;
+			}
+			
+		}
+		System.out.println(previous);
+		return previous;
+		
+	}
+
+
 	public void modulateAVM(double averageTime) throws Exception {
 		String avmUri;
 		if(averageTime > borne_sup) {

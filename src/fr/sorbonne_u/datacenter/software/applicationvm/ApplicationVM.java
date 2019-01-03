@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -190,6 +191,8 @@ implements	ProcessorServicesNotificationConsumerI,
 	
 	
 	protected Map<String, Map<Integer, Integer>> procCurrentFreqCoresMap;
+	
+	protected Map<String, Set<Integer>> admissibleFreqCores;
 
 
 	// ------------------------------------------------------------------------
@@ -360,6 +363,7 @@ implements	ProcessorServicesNotificationConsumerI,
 			processor_dynamic_outport_map = new HashMap<>();
 			processor_static_outport_map = new HashMap<>();
 			procCurrentFreqCoresMap = new HashMap<>();
+			admissibleFreqCores = new HashMap<>();
 			
 		}
 
@@ -783,7 +787,8 @@ implements	ProcessorServicesNotificationConsumerI,
 
 	public	ApplicationVMStaticStateI	getStaticState() throws Exception
 	{
-		return new ApplicationVMStaticState(allocatedCoresIdleStatus.keySet()) ;
+		return new ApplicationVMStaticState(allocatedCoresIdleStatus.keySet(),
+				admissibleFreqCores);
 	}
 
 	public	ApplicationVMDynamicStateI	getDynamicState()
@@ -869,44 +874,7 @@ implements	ProcessorServicesNotificationConsumerI,
 		}
 	}
 	
-	@Override
-	public void addPortConnectionProcessorStateData(AllocatedCore[] allocatedCore,
-			Map<String, String> dynamicStateDataMap,
-			Map<String, String> staticStateDataMap) throws Exception{
-		
-		for(int i=0; i<allocatedCore.length; i++){
-			String proc_uri = allocatedCore[i].processorURI;
-			
-			String dynamic_inport_uri = dynamicStateDataMap.get(proc_uri);
-			String static_inport_uri = staticStateDataMap.get(proc_uri);
-			
-			ProcessorDynamicStateDataOutboundPort dynamic_outport = 
-					new ProcessorDynamicStateDataOutboundPort(this, proc_uri);
-			addPort(dynamic_outport);
-			dynamic_outport.publishPort();
-			
-			ProcessorStaticStateDataOutboundPort static_outport =
-					new ProcessorStaticStateDataOutboundPort(this, proc_uri);
-			addPort(static_outport);
-			static_outport.publishPort();
-			
-			doPortConnection(dynamic_outport.getPortURI(),
-					dynamic_inport_uri,
-					ControlledDataConnector.class.getCanonicalName());
-			doPortConnection(static_outport.getPortURI(),
-					static_inport_uri,
-					DataConnector.class.getCanonicalName()
-					);
-			
-			processor_dynamic_outport_map.put(proc_uri, dynamic_outport);
-			processor_static_outport_map.put(proc_uri, static_outport);
-			
-			dynamic_outport.startUnlimitedPushing(500);
-			
-		}
-		
-		
-	}
+
 
 	/**
 	 * @see fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMManagementI#connectWithRequestSubmissioner()
@@ -922,8 +890,9 @@ implements	ProcessorServicesNotificationConsumerI,
 
 	@Override
 	public void acceptProcessorStaticData(String processorURI, ProcessorStaticStateI staticState) throws Exception {
-		for(Integer freq : staticState.getAdmissibleFrequencies())
-			System.out.println(freq);
+
+		this.admissibleFreqCores.put(processorURI, staticState.getAdmissibleFrequencies());
+		
 	}
 
 
@@ -936,6 +905,7 @@ implements	ProcessorServicesNotificationConsumerI,
 			logMessage("core number "+ac.coreNo+" ; current freq : "+currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
 			
 		}
+		
 		procCurrentFreqCoresMap.put(processorURI, currentFreqCores);
 		
 		

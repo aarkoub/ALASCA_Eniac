@@ -139,18 +139,5 @@ implements	ApplicationVMManagementI
 		
 	}
 
-	@Override
-	public void addPortConnectionProcessorStateData(AllocatedCore[] allocatedCore,
-			Map<String, String> dynamicStateDataMap, Map<String, String> staticStateDataMap) throws Exception {
-		this.getOwner().handleRequestSync(
-				new AbstractComponent.AbstractService<Void>() {
-					@Override
-					public Void call() throws Exception {
-						((ApplicationVMManagementI)this.getOwner()).
-						addPortConnectionProcessorStateData(allocatedCore, dynamicStateDataMap, staticStateDataMap);
-						return null;
-					}
-				}) ;
-		
-	}
+
 }

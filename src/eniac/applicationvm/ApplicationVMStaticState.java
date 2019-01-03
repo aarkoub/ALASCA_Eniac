@@ -15,21 +15,30 @@ public class ApplicationVMStaticState extends AbstractTimeStampedData implements
 	 */
 	private static final long serialVersionUID = 1L;
 	private Map<Integer, Integer> coreProc;
+	private Map<String, Set<Integer>> admissibleFreqCores;
 	
 
 	
-	public ApplicationVMStaticState(Set<AllocatedCore> allocatedCores) {
+	public ApplicationVMStaticState(Set<AllocatedCore> allocatedCores, Map<String,Set<Integer>> admissibleFreqCores) {
 		
 		coreProc = new HashMap<>();
 		
 		for(AllocatedCore ac : allocatedCores){
 			coreProc.put(ac.coreNo, ac.processorNo);			
 		}
+		
+		this.admissibleFreqCores = admissibleFreqCores;
+		
 	}
 
 	@Override
 	public Map<Integer, Integer> getIdCores() {
 		return coreProc;
+	}
+	
+	@Override
+	public Map<String, Set<Integer>> getAdmissibleFreqCores(){
+		return admissibleFreqCores;
 	}
 
 }

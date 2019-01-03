@@ -103,10 +103,5 @@ implements	ApplicationVMManagementI
 		
 	}
 
-	@Override
-	public void addPortConnectionProcessorStateData(AllocatedCore[] allocatedCore,
-			Map<String, String> dynamicStateDataMap, Map<String, String> staticStateDataMap) throws Exception {
-		((ApplicationVMManagementI)this.connector).addPortConnectionProcessorStateData(allocatedCore, dynamicStateDataMap, staticStateDataMap);
-		
-	}
+
 }

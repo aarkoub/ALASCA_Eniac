@@ -79,6 +79,5 @@ extends		OfferedI,
 	public void			connectWithRequestSubmissioner()
 	throws Exception ;
 
-	public void addPortConnectionProcessorStateData(AllocatedCore[] allocatedCore, Map<String, String> dynamicStateDataMap,
-			Map<String, String> staticStateDataMap) throws Exception;
+
 }
