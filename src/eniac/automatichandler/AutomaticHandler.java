@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jfree.ui.RefineryUtilities;
+
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
 import eniac.requestdispatcher.connectors.RequestDispatcherManagementConnector;
@@ -44,6 +46,8 @@ RequestDispatcherStateDataConsumerI{
 	protected double borne_sup = 30;
 	
 	protected Map<String, Set<Integer>> admissibleFreqCores;
+	
+	private ComputeTimeCharts chart;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
@@ -90,6 +94,10 @@ RequestDispatcherStateDataConsumerI{
 		toggleLogging();
 		toggleTracing();
 		
+		chart = new ComputeTimeCharts(autoHand_uri);
+		chart.pack();
+		RefineryUtilities.positionFrameRandomly(chart);
+		chart.setVisible(true);
 	}
 		
 	
@@ -175,6 +183,8 @@ RequestDispatcherStateDataConsumerI{
 	@Override
 	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
 			RequestDispatcherDynamicStateI dynamicState) throws Exception {
+		
+		chart.addData(dynamicState.getAverageRequestTime());
 		
 		logMessage("Average request time for "+requestDisptacherURI+
 				" = "+dynamicState.getAverageRequestTime());
