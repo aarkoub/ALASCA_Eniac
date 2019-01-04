@@ -67,7 +67,7 @@ public class Integrator extends AbstractComponent {
 			 */
 			
 			generatorOutboundPort.startGeneration();
-			Thread.sleep(2000L) ;
+			Thread.sleep(500000000L) ;
 			// then stop the generation.
 			
 			generatorOutboundPort.stopGeneration() ;

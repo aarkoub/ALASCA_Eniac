@@ -42,8 +42,8 @@ RequestDispatcherStateDataConsumerI{
 	protected String requestDispatcherStaticStateDataInboundPortURI;
 	protected String requestDispatcherURI;
 	
-	protected double borne_inf = 20;
-	protected double borne_sup = 30;
+	protected double borne_inf = 75;
+	protected double borne_sup = 125;
 	
 	protected Map<String, Set<Integer>> admissibleFreqCores;
 	
@@ -176,9 +176,9 @@ RequestDispatcherStateDataConsumerI{
 		}
 		
 	}
-
-
-
+	
+	private int wait = 0;
+	private boolean t = true;
 
 	@Override
 	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
@@ -189,8 +189,13 @@ RequestDispatcherStateDataConsumerI{
 		logMessage("Average request time for "+requestDisptacherURI+
 				" = "+dynamicState.getAverageRequestTime());
 		
-		modulateAVM(dynamicState.getAverageRequestTime());
+		if(wait%2 == 0 && t) {
+			modulateAVM(dynamicState.getAverageRequestTime());
+			t = false;
+		}
+		wait++;
 		
+		/*
 		Map<String, ApplicationVMDynamicStateI > avmDynamicStateMap = 
 				dynamicState.getAVMDynamicStateMap();
 		
@@ -259,7 +264,7 @@ RequestDispatcherStateDataConsumerI{
 				
 			}
 			
-		}
+		}*/
 	}
 	
 	

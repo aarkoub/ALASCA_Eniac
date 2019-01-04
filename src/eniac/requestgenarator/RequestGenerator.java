@@ -538,11 +538,10 @@ implements	RequestNotificationHandlerI
 														interArrivalDelay) +
 			" with number of instructions " + noi) ;
 		}
-
+		
 		// submit the current request.
 		this.rsop.sendRequestAndNotify(r) ;
 		// schedule the next request generation.
-	
 		this.nextRequestTaskFuture =
 			this.scheduleTask(
 				new AbstractComponent.AbstractTask() {

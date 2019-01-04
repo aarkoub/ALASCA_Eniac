@@ -91,8 +91,8 @@ public class CVM extends AbstractCVM {
 			String ComputerStaticStateDataInboundPortURI = "computerStatic_inport_uri_"+i;
 			String ComputerServicesInboundPortURI = "computer_in_port_"+i;
 			String computerURI = "computer_"+i ;
-			int numberOfProcessors = 1 ;
-			int numberOfCores = 4 ;
+			int numberOfProcessors = 2 ;
+			int numberOfCores = 16 ;
 			Set<Integer> admissibleFrequencies = new HashSet<Integer>() ;
 			admissibleFrequencies.add(1500) ;	// Cores can run at 1,5 GHz
 			admissibleFrequencies.add(3000) ;	// and at 3 GHz
@@ -166,7 +166,7 @@ public class CVM extends AbstractCVM {
 			 * Creation du g�n�rateur de requetes
 			 */
 		
-			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 50, 90000000, 
+			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 500, 99999999L, 
 					RequestGeneratorManagementInboundPortURI+i, requestSubmissionInboundPortURI+i,
 					requestNotificationInboundPortURI+i, requestAdmissionSubmissionInboundPortURI,
 					requestAdmissionNotificationInboundPortURI);
@@ -217,7 +217,7 @@ public class CVM extends AbstractCVM {
 			// Create an instance of the defined component virtual machine.
 			CVM a = new CVM() ;
 			// Execute the application.
-			a.startStandardLifeCycle(50000L) ;
+			a.startStandardLifeCycle(500000000L) ;
 			// Give some time to see the traces (convenience).
 			Thread.sleep(10000L) ;
 			// Simplifies the termination (termination has yet to be treated

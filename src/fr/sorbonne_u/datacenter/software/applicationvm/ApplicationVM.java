@@ -902,7 +902,7 @@ implements	ProcessorServicesNotificationConsumerI,
 		Map<Integer, Integer>currentFreqCores = new HashMap<>();
 		for(AllocatedCore ac : allocatedCoresIdleStatus.keySet()){
 			currentFreqCores.put(ac.coreNo,currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
-			logMessage("core number "+ac.coreNo+" ; current freq : "+currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
+			//logMessage("core number "+ac.coreNo+" ; current freq : "+currentDynamicState.getCurrentCoreFrequency(ac.coreNo));
 			
 		}
 		
