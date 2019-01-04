@@ -23,16 +23,15 @@ public class RequestDispatcherDynamicState extends AbstractTimeStampedData imple
 			Map<String, ApplicationVMDynamicStateI> avmDynamicStateMap) {
 				
 		long average=0 ;
-				
-		for(String reqUri : t1.keySet()){
+		
+		
+		for(String reqUri : t2.keySet()){
 			
 			Date r1 = t1.get(reqUri);
 			Date r2 = t2.get(reqUri);
-			
 			average += (r2.getTime()-r1.getTime());
 			
 		}
-		
 		this.average = average/t1.size();
 		
 		this.avmDynamicStateMap = avmDynamicStateMap;

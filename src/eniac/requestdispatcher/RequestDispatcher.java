@@ -478,8 +478,14 @@ PushModeControllingI{
 
 	public void sendDynamicState() throws Exception {
 		if (this.requestDispatcherDynamicStateDataInboundPort.connected()) {
-			RequestDispatcherDynamicStateI rdds = this.getDynamicState() ;
-			this.requestDispatcherDynamicStateDataInboundPort.send(rdds) ;
+			try {
+				RequestDispatcherDynamicStateI rdds = this.getDynamicState() ;
+				this.requestDispatcherDynamicStateDataInboundPort.send(rdds) ;
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			
 		}
 		
 	}
