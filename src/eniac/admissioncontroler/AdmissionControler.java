@@ -616,6 +616,17 @@ RequestDispatcherHandlerI{
 		req_disp_management_outport.addAVM(avmUris);
 		req_disp_management_outport.connectAVM(vmURI);
 		
+		
+		ApplicationVMManagementOutboundPort avmmop = new ApplicationVMManagementOutboundPort(this);
+		addPort(avmmop);
+		avmmop.publishPort();
+		doPortConnection(avmmop.getPortURI(), appliInPortURI, ApplicationVMManagementConnector.class.getCanonicalName());
+		avm_management_port_map.put(vmURI, avmmop);
+		
+		
+		cores.get(0).setVMUri(vmURI);
+		avmmop.allocateCores(cores.get(0).getCores());
+		allocationVMCores_map.put(vmURI, cores.get(0));
 		return vmURI;
 	}
 

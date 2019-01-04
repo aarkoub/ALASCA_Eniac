@@ -166,7 +166,7 @@ public class CVM extends AbstractCVM {
 			 * Creation du g�n�rateur de requetes
 			 */
 		
-			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 1000, 90000000, 
+			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 50, 90000000, 
 					RequestGeneratorManagementInboundPortURI+i, requestSubmissionInboundPortURI+i,
 					requestNotificationInboundPortURI+i, requestAdmissionSubmissionInboundPortURI,
 					requestAdmissionNotificationInboundPortURI);
