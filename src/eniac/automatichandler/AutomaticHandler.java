@@ -190,7 +190,7 @@ RequestDispatcherStateDataConsumerI{
 		
 
 		if(wait%5 == 0) {
-			logMessage("Action possible");
+			logMessage("Modulation possible");
 			modulateAVM(dynamicState);
 		}
 		wait++;
@@ -284,6 +284,10 @@ RequestDispatcherStateDataConsumerI{
 					logMessage(entry.getKey()+" 1 core added");
 					while(requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 1)) {
 						logMessage(entry.getKey()+" 1 core added");
+					}
+				}else if(Math.abs(UPPER_BOUND - dynamicstate.getAverageRequestTime()) > 4*UPPER_BOUND) {
+					if((avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
+						logMessage(avmUri+" added");
 					}
 				}
 			}
