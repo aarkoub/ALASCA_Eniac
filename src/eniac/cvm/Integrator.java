@@ -1,6 +1,5 @@
 package eniac.cvm;
 
-import eniac.admissioncontroler.ports.AdmissionControlerManagementOutboundPort;
 import eniac.requestgenarator.connector.RequestGeneratorManagementConnector;
 import eniac.requestgenarator.ports.RequestGeneratorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
@@ -69,7 +68,7 @@ public class Integrator extends AbstractComponent {
 			generatorOutboundPort.startGeneration();
 			Thread.sleep(500000000L) ;
 			// then stop the generation.
-			
+
 			generatorOutboundPort.stopGeneration() ;
 			
 			

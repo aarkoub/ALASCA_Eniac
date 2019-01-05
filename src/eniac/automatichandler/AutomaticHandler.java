@@ -1,6 +1,5 @@
 package eniac.automatichandler;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -8,7 +7,6 @@ import org.jfree.ui.RefineryUtilities;
 
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
-import eniac.requestdispatcher.connectors.RequestDispatcherManagementConnector;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
@@ -21,8 +19,6 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
-import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
-import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMDynamicStateI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateI;
 
 public class AutomaticHandler extends AbstractComponent
@@ -47,8 +43,8 @@ RequestDispatcherStateDataConsumerI{
 	private ComputeTimeCharts chart;
 	
 	
-	public static final double LOWER_BOUND = 400;
-	public static final double UPPER_BOUND = 600;
+	public static final double LOWER_BOUND = 800;
+	public static final double UPPER_BOUND = 1200;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
