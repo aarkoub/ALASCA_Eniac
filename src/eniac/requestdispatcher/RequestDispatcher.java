@@ -49,7 +49,7 @@ RequestSubmissionHandlerI,
 RequestNotificationHandlerI,
 ApplicationVMStateDataConsumerI,
 PushModeControllingI{
-
+	public static final int AVG_NUMBER_RQ = 100;
 	protected String rd_uri;
 	protected RequestDispatcherManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
 	protected String requestNotificationInboundPortURI;
@@ -59,10 +59,8 @@ PushModeControllingI{
 	protected RequestNotificationOutboundPort requestNotificationOutboundPort;
 	
 	//connecteur pour la VM
-	protected List<AVMData> avms;
-	protected int chooser;
+	protected Map<String, AVMData> avms;
 
-	protected Map<String,Date> t1,t2;
 	protected ScheduledFuture<?> pushingFuture;
 	
 	protected RequestDispatcherDynamicStateDataInboundPort requestDispatcherDynamicStateDataInboundPort;
@@ -71,6 +69,10 @@ PushModeControllingI{
 	protected Map<String, ApplicationVMDynamicStateI> avmDynamicStateMap;
 	protected Map<String, ApplicationVMStaticStateI> avmStaticStateMap;
 	
+	
+	protected AverageCompute avgcompute;
+	
+	protected Map<String, Double> avmScores;
 	
 	public RequestDispatcher(String rd_uri,
 			String managementInboundPortURI,
@@ -115,7 +117,7 @@ PushModeControllingI{
 		requestNotificationOutboundPort.publishPort();
 		
 		
-		avms = new ArrayList<>();
+		avms = new HashMap<>();
 		addOfferedInterface(RequestNotificationI.class);
 		addRequiredInterface(RequestSubmissionI.class);
 		RequestSubmissionOutboundPort requestSubmissionOutboundPortVM;
@@ -134,7 +136,7 @@ PushModeControllingI{
 			requestSubmissionOutboundPortVM.publishPort();
 			
 			data = new AVMData(uri, new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM));
-			avms.add(data);
+			avms.put(uri.getAVMUri(), data);
 			
 			String avmDynamicStateDataInboundPortURI = data.getAvmuris().getAVMUri() + "-avmdsdibp" ; 
 			String avmStaticStateDataInboundPortURI = data.getAvmuris().getAVMUri() + "-avmssdibp" ; 
@@ -160,8 +162,6 @@ PushModeControllingI{
 		
 		this.toggleLogging();
 		this.toggleTracing();
-		t1 = new HashMap<>();
-		t2 = new HashMap<>();
 		
 		addOfferedInterface(RequestDispatcherStaticStateI.class);
 		requestDispatcherStaticStateDataInboundPort = new RequestDispatcherStaticStateDataInboundPort(
@@ -180,9 +180,28 @@ PushModeControllingI{
 		avmDynamicStateMap = new HashMap<>();
 		avmStaticStateMap = new HashMap<>();
 		
+		avgcompute = new AverageCompute(AVG_NUMBER_RQ);
 		
+		avmScores = new HashMap<>();
+		
+		for(AVMUris uri : uris) {
+			avmScores.put(uri.getAVMUri(), (double)0);
+		}
 	}
 	
+	
+ 
+	public String chooseAVMToCompute() {
+		String avm = avms.keySet().stream().findFirst().get();
+		double score = avmScores.get(avm);
+		for(Map.Entry<String, Double> entry: avmScores.entrySet()) {
+			if(entry.getValue() < score) {
+				score = entry.getValue();
+				avm = entry.getKey();
+			}
+		}
+		return avm;
+	}
 	
 	
 	@Override
@@ -196,7 +215,7 @@ PushModeControllingI{
 			doPortConnection(requestNotificationOutboundPort.getPortURI(), requestNotificationInboundPortURI,
 					RequestNotificationConnector.class.getCanonicalName());
 			
-			for(AVMData data  : avms) {
+			for(AVMData data  : avms.values()) {
 				doPortConnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
 						data.getAvmuris().getRequestSubmissionInboundPortVM(),
 						RequestSubmissionConnector.class.getCanonicalName());
@@ -220,10 +239,9 @@ PushModeControllingI{
 	{
 		this.doPortDisconnection(
 							this.requestNotificationOutboundPort.getPortURI()) ;
-		
-		for(int i = 0; i < avms.size(); i++) {
+		for(Map.Entry<String, AVMData> d: avms.entrySet()) {
 			doPortDisconnection(
-					avms.get(i).getAvmports().getRequestSubmissionOutboundPort().getPortURI());
+					d.getValue().getAvmports().getRequestSubmissionOutboundPort().getPortURI());
 		}
 		
 		super.finalise() ;
@@ -236,7 +254,7 @@ PushModeControllingI{
 			requestSubmissionInboundPort.unpublishPort();
 			requestDispatcherMultiVMManagementInboundPort.unpublishPort();
 			requestNotificationOutboundPort.unpublishPort();
-			for(AVMData data : avms) {
+			for(AVMData data : avms.values()) {
 				
 				data.getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
 				data.getAvmports().getRequestNotificationInboundPort().unpublishPort();
@@ -264,7 +282,7 @@ PushModeControllingI{
 			requestSubmissionInboundPort.unpublishPort();
 			requestDispatcherMultiVMManagementInboundPort.unpublishPort();
 			requestNotificationOutboundPort.unpublishPort();
-			for(AVMData data : avms) {
+			for(AVMData data : avms.values()) {
 				data.getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
 				data.getAvmports().getRequestNotificationInboundPort().unpublishPort();
 				data.getAvmports().getAvmStaticStateDataOutboundPort().unpublishPort();
@@ -289,33 +307,31 @@ PushModeControllingI{
 	@Override
 	public void acceptRequestSubmission(RequestI r) throws Exception {
 		logMessage("RequestDispatcher "+rd_uri+" requete reçue "+r.getRequestURI());
-		chooser =  chooser%avms.size();
-		avms.get(chooser).getAvmports().getRequestSubmissionOutboundPort().submitRequest(r);
-		chooser++;
+		String choice =  chooseAVMToCompute();
+		avms.get(choice).getAvmports().getRequestSubmissionOutboundPort().submitRequest(r);
 		
 		Date r1 = new Date();
 		
-		t1.put(r.getRequestURI(), r1);
+		avgcompute.addStartTime(r.getRequestURI(), r1);
 		
 	}
 
 	@Override
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
 		logMessage("RequestDispatcher "+rd_uri+" requete reçue avec notification: "+r.getRequestURI());
-		chooser =  chooser%avms.size();
-		avms.get(chooser).getAvmports().getRequestSubmissionOutboundPort().submitRequestAndNotify(r);
-		chooser++;
+		String choice =  chooseAVMToCompute();
+		avms.get(choice).getAvmports().getRequestSubmissionOutboundPort().submitRequestAndNotify(r);
 		
 		Date r1 = new Date();
 		
-		t1.put(r.getRequestURI(), r1);
+		avgcompute.addStartTime(r.getRequestURI(), r1);
 		
 	}
 
 	@Override
 	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
 		Date r2 = new Date();
-		t2.put(r.getRequestURI(), r2);
+		avgcompute.addEndTime(r.getRequestURI(), r2);
 	
 		logMessage("Requete terminée : "+r.getRequestURI());
 		requestNotificationOutboundPort.notifyRequestTermination(r);
@@ -327,7 +343,7 @@ PushModeControllingI{
 	@Override
 	public boolean removeAVM(String uri) {
 		AVMData data = null;
-		for(AVMData tmp: avms) {
+		for(AVMData tmp: avms.values()) {
 			if(tmp.getAvmuris().getAVMUri() == uri) {
 				data = tmp;
 				break;
@@ -345,9 +361,10 @@ PushModeControllingI{
 			doPortDisconnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI());
 			data.getAvmports().getAvmStaticStateDataOutboundPort().unpublishPort();
 			
-			avms.remove(data);
+			avms.remove(uri);
 			avmDynamicStateMap.remove(uri);
 			avmStaticStateMap.remove(uri);
+			avmScores.remove(uri);
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -388,13 +405,13 @@ PushModeControllingI{
 		AVMPorts ports=new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM,
 				app_dynamic_outport, app_static_outport);
 		data = new AVMData(avmuris, ports);
-		avms.add(data);
+		avms.put(avmuris.getAVMUri(), data);
 		
 	}
 
 	@Override
 	public void connectAVM(String uri) throws Exception {
-		for(AVMData data : avms) {
+		for(AVMData data : avms.values()) {
 			if(data.getAvmuris().getAVMUri() == uri) {
 				doPortConnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
 						data.getAvmuris().getRequestSubmissionInboundPortVM(),
@@ -408,7 +425,8 @@ PushModeControllingI{
 						ControlledDataConnector.class.getCanonicalName());
 				
 				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(500);
-			
+				
+				avmScores.put(uri, (double)0);
 				
 				return;
 			}
@@ -436,7 +454,7 @@ PushModeControllingI{
 			throws Exception {
 		
 		avmDynamicStateMap.put(avmURI, dynamicState);
-		
+		avmScores.put(avmURI, dynamicState.getScore());
 		logMessage("dynamicState : "+avmURI);
 		logMessage("isIdle : "+dynamicState.isIdle());
 		
@@ -444,7 +462,7 @@ PushModeControllingI{
 
 	public RequestDispatcherDynamicStateI getDynamicState() {
 		
-		return new RequestDispatcherDynamicState(t1,t2, avmDynamicStateMap);
+		return new RequestDispatcherDynamicState(avgcompute.getAverage(), avmDynamicStateMap, avmScores);
 	}
 	
 	public RequestDispatcherStaticStateI getStaticState() {

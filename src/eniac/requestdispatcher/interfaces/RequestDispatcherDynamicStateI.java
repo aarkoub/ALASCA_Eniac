@@ -11,8 +11,9 @@ public interface RequestDispatcherDynamicStateI extends		DataOfferedI.DataI,
 DataRequiredI.DataI,
 TimeStampingI{
 	
-	public double getAverageRequestTime();
+	public int getAverageRequestTime();
 
 	public Map<String, ApplicationVMDynamicStateI> getAVMDynamicStateMap();
-
+	
+	public Map<String, Double> getScoresMap();
 }

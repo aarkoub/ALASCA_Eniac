@@ -386,7 +386,7 @@ RequestDispatcherHandlerI{
 		
 		RequestAdmissionI newRequestAdmission = requestAdmission.copy();
 		
-		List<AllocationCore> allocation = allocateCoreFromComputers(1, DEFAULT_AVM_SIZE);
+		List<AllocationCore> allocation = allocateCoreFromComputers(2, DEFAULT_AVM_SIZE);
 		/* Il n'y a pas assez de ressources pour satisfaire les besoins du générateur de requête */
 		if(allocation == null) {
 			logMessage("Controleur d'admission : Refus de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
@@ -578,7 +578,7 @@ RequestDispatcherHandlerI{
 
 	@Override
 	public String addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
-		List<AllocationCore> cores = allocateCoreFromComputers(1, 1);
+		List<AllocationCore> cores = allocateCoreFromComputers(2, 1);
 		if(cores==null){
 		
 			return null;

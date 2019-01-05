@@ -22,11 +22,16 @@ public class ApplicationVMDynamicState extends AbstractTimeStampedData implement
 	private String uri;
 	private Map<AllocatedCore, Boolean> allocatedCoresIdleStatus;
 	private Map<String, Map<Integer, Integer>> procCurrentFreqCoresMap;
+	private int nballocatedcore;
+	private int nbrequest;
 	
-	public ApplicationVMDynamicState(String avmUri, Map<AllocatedCore, Boolean> allocatedCoresIdleStatus, Map<String, Map<Integer, Integer>> procCurrentFreqCoresMap) {
+	public ApplicationVMDynamicState(String avmUri, Map<AllocatedCore, Boolean> allocatedCoresIdleStatus, Map<String, Map<Integer, Integer>> procCurrentFreqCoresMap,
+			int nballocatedcore, int nbrequest) {
 		this.uri = avmUri;
 		this.allocatedCoresIdleStatus = allocatedCoresIdleStatus;
 		this.procCurrentFreqCoresMap = procCurrentFreqCoresMap;
+		this.nballocatedcore = nballocatedcore;
+		this.nbrequest = nbrequest;
 		
 	}
 	
@@ -77,6 +82,12 @@ public class ApplicationVMDynamicState extends AbstractTimeStampedData implement
 		return procCurrentFreqCoresMap;
 	}
 	
+	@Override
+	public double getScore() {
+		return (double)nbrequest/(double)nballocatedcore;
+	}
+	
+
 
 
 }

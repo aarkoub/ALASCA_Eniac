@@ -42,12 +42,13 @@ RequestDispatcherStateDataConsumerI{
 	protected String requestDispatcherStaticStateDataInboundPortURI;
 	protected String requestDispatcherURI;
 	
-	protected double borne_inf = 75;
-	protected double borne_sup = 125;
-	
 	protected Map<String, Set<Integer>> admissibleFreqCores;
 	
 	private ComputeTimeCharts chart;
+	
+	
+	public static final double LOWER_BOUND = 400;
+	public static final double UPPER_BOUND = 600;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
@@ -178,22 +179,22 @@ RequestDispatcherStateDataConsumerI{
 	}
 	
 	private int wait = 0;
-	private boolean t = true;
-
 	@Override
 	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
 			RequestDispatcherDynamicStateI dynamicState) throws Exception {
 		
 		chart.addData(dynamicState.getAverageRequestTime());
 		
-		logMessage("Average request time for "+requestDisptacherURI+
-				" = "+dynamicState.getAverageRequestTime());
+		/*logMessage("Average request time for "+requestDisptacherURI+
+				" = "+dynamicState.getAverageRequestTime());*/
 		
-		if(wait%2 == 0 && t) {
-			modulateAVM(dynamicState.getAverageRequestTime());
-			t = false;
+
+		if(wait%5 == 0) {
+			logMessage("Action possible");
+			modulateAVM(dynamicState);
 		}
 		wait++;
+
 		
 		/*
 		Map<String, ApplicationVMDynamicStateI > avmDynamicStateMap = 
@@ -267,6 +268,42 @@ RequestDispatcherStateDataConsumerI{
 		}*/
 	}
 	
+	public static final int MAX_QUEUE = 3;
+	public void modulateAVM(RequestDispatcherDynamicStateI dynamicstate) throws Exception {
+		String avmUri;
+		if(dynamicstate.getAverageRequestTime() > UPPER_BOUND) {
+			logMessage("Response time too long: "+dynamicstate.getAverageRequestTime()+"ms (<"+ UPPER_BOUND +" ms wanted)");
+			for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
+				if(entry.getValue() > MAX_QUEUE) {
+					if(!requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 1)) {
+						if((avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
+							logMessage(avmUri+" added");
+						}
+						return;
+					}
+					logMessage(entry.getKey()+" 1 core added");
+					while(requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 1)) {
+						logMessage(entry.getKey()+" 1 core added");
+					}
+				}
+			}
+			
+			return;
+		}
+		
+		if(dynamicstate.getAverageRequestTime() < LOWER_BOUND) {
+			logMessage("Response time too fast: "+dynamicstate.getAverageRequestTime()+"ms (>"+ LOWER_BOUND +" ms wanted)");
+			if((avmUri=requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI))!=null){
+				
+				logMessage(avmUri+" removed");
+			}
+			return;
+		}
+		logMessage("Response time correct");
+		return;		
+	
+	}
+	
 	
 	public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 		
@@ -302,27 +339,7 @@ RequestDispatcherStateDataConsumerI{
 	}
 
 
-	public void modulateAVM(double averageTime) throws Exception {
-		String avmUri;
-		if(averageTime > borne_sup) {
-			
-			if((avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
-				logMessage(avmUri+" added");
-			}
-		}
-		else {
-			if(averageTime<borne_inf) {
-				
-				if((avmUri=requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI))!=null){
-					
-					logMessage(avmUri+" removed");
-				}
-			}
-			
-		}
-				
 	
-	}
 	
 	
 

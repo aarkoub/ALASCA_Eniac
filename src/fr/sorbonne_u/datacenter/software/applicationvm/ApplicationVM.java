@@ -794,7 +794,7 @@ implements	ProcessorServicesNotificationConsumerI,
 	public	ApplicationVMDynamicStateI	getDynamicState()
 	throws Exception
 	{
-		return new ApplicationVMDynamicState(vmURI, allocatedCoresIdleStatus, procCurrentFreqCoresMap) ;
+		return new ApplicationVMDynamicState(vmURI, allocatedCoresIdleStatus, procCurrentFreqCoresMap, allocatedCoresIdleStatus.size(), taskQueue.size()) ;
 	}
 
 	// ------------------------------------------------------------------------
