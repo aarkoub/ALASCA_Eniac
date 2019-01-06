@@ -302,7 +302,7 @@ implements	RequestNotificationHandlerI
 		ClassPool pool = ClassPool.getDefault() ;
 		CtClass cs = pool.get(connectorSuperClass.getCanonicalName()) ;
 		CtClass cii = pool.get(connectorImplementedInterface.getCanonicalName()) ;
-		CtClass oi = pool.get(offeredInterface.getCanonicalName()) ;
+		//CtClass oi = pool.get(offeredInterface.getCanonicalName()) ;
 		CtClass connectorCtClass = pool.makeClass(connectorCanonicalClassName) ;
 		
 		connectorCtClass.setSuperclass(cs) ;

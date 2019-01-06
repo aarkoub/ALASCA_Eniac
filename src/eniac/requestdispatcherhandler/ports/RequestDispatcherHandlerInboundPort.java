@@ -1,13 +1,11 @@
 package eniac.requestdispatcherhandler.ports;
 
 import eniac.admissioncontroler.AdmissionControler;
-import eniac.automatichandler.AutomaticHandler;
 import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
-import fr.sorbonne_u.datacenter.hardware.processors.Processor;
 import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
 import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 
@@ -63,6 +61,21 @@ implements RequestDispatcherHandlerI{
 						public String call() throws Exception {
 						
 							return ((AdmissionControler)this.getOwner()).removeAVMFromRequestDispatcher(requestDispatcherURI);
+						}
+					}) ;
+			
+		}
+		
+		
+		@Override
+		public boolean removeAVMFromRequestDispatcher(String requestDispatcherURI, String avmURI) throws Exception {
+			
+			return this.getOwner().handleRequestSync(
+					new AbstractComponent.AbstractService<Boolean>() {
+						@Override
+						public Boolean call() throws Exception {
+						
+							return ((AdmissionControler)this.getOwner()).removeAVMFromRequestDispatcher(requestDispatcherURI, avmURI);
 						}
 					}) ;
 			

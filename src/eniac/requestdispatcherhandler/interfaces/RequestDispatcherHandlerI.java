@@ -9,6 +9,8 @@ public interface RequestDispatcherHandlerI {
 	 public String addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception;
 	 
 	 public String removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception;
+	 
+	 public boolean removeAVMFromRequestDispatcher(String requestDispatcherURI, String avmURI) throws Exception;
 
 	 public boolean addCoreToAvm(String avm_uri, int nbcores) throws Exception;
 	 

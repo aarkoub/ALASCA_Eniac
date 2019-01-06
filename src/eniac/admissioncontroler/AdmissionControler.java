@@ -355,6 +355,7 @@ RequestDispatcherHandlerI{
 		
 	}
 	
+	@SuppressWarnings("unused")
 	private AllocationCore allocateCoreFromComputers(int nbcores) throws Exception {
 		AllocatedCore[] cores;
 		for(ComputerData cd: computerdata_map.values()) {
@@ -367,6 +368,7 @@ RequestDispatcherHandlerI{
 		return null;
 	}
 	
+	@SuppressWarnings("unused")
 	private AllocationCore allocateCoreFromComputers(int nbcores, String VMuri) throws Exception {
 		AllocatedCore[] cores;
 		for(ComputerData cd: computerdata_map.values()) {
@@ -545,7 +547,7 @@ RequestDispatcherHandlerI{
 	
 	
 	
-	
+	@Override
 	public boolean removeAVMFromRequestDispatcher(String RequestDispatcherURI, String avmURI) {
 		List<String> l = reqDispAvms_map.get(RequestDispatcherURI);
 		if(l == null) return false;

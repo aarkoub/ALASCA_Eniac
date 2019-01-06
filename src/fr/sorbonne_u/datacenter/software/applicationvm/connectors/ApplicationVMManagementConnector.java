@@ -1,6 +1,5 @@
 package fr.sorbonne_u.datacenter.software.applicationvm.connectors;
 
-import java.util.Map;
 
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //

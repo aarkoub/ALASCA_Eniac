@@ -1,6 +1,5 @@
 package fr.sorbonne_u.datacenter.software.applicationvm.interfaces;
 
-import java.util.Map;
 
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //

@@ -1,5 +1,7 @@
 package eniac.automatichandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,8 +45,8 @@ RequestDispatcherStateDataConsumerI{
 	private ComputeTimeCharts chart;
 	
 	
-	public static final double LOWER_BOUND = 800;
-	public static final double UPPER_BOUND = 1200;
+	public static final double LOWER_BOUND = 1800;
+	public static final double UPPER_BOUND = 2200;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
@@ -174,7 +176,7 @@ RequestDispatcherStateDataConsumerI{
 		
 	}
 	
-	private int wait = 0;
+	private int wait = 4;
 	@Override
 	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
 			RequestDispatcherDynamicStateI dynamicState) throws Exception {
@@ -186,7 +188,7 @@ RequestDispatcherStateDataConsumerI{
 		
 
 		if(wait%5 == 0) {
-			logMessage("Modulation possible");
+			logMessage("Action possible");
 			modulateAVM(dynamicState);
 		}
 		wait++;
@@ -264,10 +266,15 @@ RequestDispatcherStateDataConsumerI{
 		}*/
 	}
 	
+	private double last = UPPER_BOUND-1;
 	public static final int MAX_QUEUE = 3;
 	public void modulateAVM(RequestDispatcherDynamicStateI dynamicstate) throws Exception {
 		String avmUri;
 		if(dynamicstate.getAverageRequestTime() > UPPER_BOUND) {
+			if(last > dynamicstate.getAverageRequestTime()) {
+				last = dynamicstate.getAverageRequestTime();
+				return;
+			}
 			logMessage("Response time too long: "+dynamicstate.getAverageRequestTime()+"ms (<"+ UPPER_BOUND +" ms wanted)");
 			for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
 				if(entry.getValue() > MAX_QUEUE) {
@@ -291,17 +298,59 @@ RequestDispatcherStateDataConsumerI{
 			return;
 		}
 		
+		
 		if(dynamicstate.getAverageRequestTime() < LOWER_BOUND) {
-			logMessage("Response time too fast: "+dynamicstate.getAverageRequestTime()+"ms (>"+ LOWER_BOUND +" ms wanted)");
-			if((avmUri=requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI))!=null){
-				
-				logMessage(avmUri+" removed");
+			if(last < dynamicstate.getAverageRequestTime()) {
+				last = dynamicstate.getAverageRequestTime();
+				return;
 			}
+			logMessage("Response time too fast: "+dynamicstate.getAverageRequestTime()+"ms (>"+ LOWER_BOUND +" ms wanted)");
+			removeUnusedAVM(dynamicstate);
+			
 			return;
 		}
 		logMessage("Response time correct");
 		return;		
 	
+	}
+	
+	private void removeUnusedAVM(RequestDispatcherDynamicStateI dynamicstate) {
+		List<String> unusedavms = getUnusedAVMs(dynamicstate);
+		if(unusedavms.size() <= 1) return;
+		for(String avm: unusedavms) {
+			try {
+				if(requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI, avm)) {
+					logMessage(avm+" removed.");
+					return;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void removeUnusedAVMs(RequestDispatcherDynamicStateI dynamicstate) {
+		List<String> unusedavms = getUnusedAVMs(dynamicstate);
+		if(unusedavms.size() <= 1) return;
+		for(String avm: unusedavms) {
+			try {
+				if(requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI, avm)) {
+					logMessage(avm+" removed.");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private List<String> getUnusedAVMs(RequestDispatcherDynamicStateI dynamicstate) {
+		List<String> avms = new ArrayList<>();
+		for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
+			if(entry.getValue() == 0) {
+				avms.add(entry.getKey());
+			}
+		}
+		return avms;
 	}
 	
 	

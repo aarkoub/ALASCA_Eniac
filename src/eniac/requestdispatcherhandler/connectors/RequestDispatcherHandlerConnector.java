@@ -22,6 +22,14 @@ implements RequestDispatcherHandlerI{
 		return ((RequestDispatcherHandlerI)this.offering).removeAVMFromRequestDispatcher(requestDispatcherURI);
 		
 	}
+	
+	
+	@Override
+	public boolean removeAVMFromRequestDispatcher(String requestDispatcherURI, String avmURI) throws Exception{
+		return ((RequestDispatcherHandlerI)this.offering).removeAVMFromRequestDispatcher(requestDispatcherURI, avmURI);
+		
+	}
+	
 
 	@Override
 	public boolean addCoreToAvm(String avm_uri, int nbcores) throws Exception {

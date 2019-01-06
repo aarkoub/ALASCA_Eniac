@@ -194,7 +194,7 @@ PushModeControllingI{
 		String avm = avms.keySet().stream().findFirst().get();
 		double score = avmScores.get(avm);
 		for(Map.Entry<String, Double> entry: avmScores.entrySet()) {
-			if(entry.getValue() < score) {
+			if(entry.getValue() < score && avms.get(entry.getKey()) != null) {
 				score = entry.getValue();
 				avm = entry.getKey();
 			}
