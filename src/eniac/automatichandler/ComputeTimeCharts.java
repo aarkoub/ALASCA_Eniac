@@ -1,9 +1,12 @@
 package eniac.automatichandler;
+import java.awt.Color;
 import java.util.Date;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.ValueMarker;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -19,7 +22,7 @@ public class ComputeTimeCharts extends ApplicationFrame {
 	
 	private XYDataset dataset;
 	private TimeSeries series;
-	public ComputeTimeCharts(String name) {
+	public ComputeTimeCharts(String name, double average) {
 		super("Graphe " + name);
 		series = new TimeSeries("Temps moyen de calcul");
 		dataset = new TimeSeriesCollection(series);
@@ -31,8 +34,11 @@ public class ComputeTimeCharts extends ApplicationFrame {
 				false,
 				false);
 		ChartPanel chartPanel = new ChartPanel( chart );         
-		chartPanel.setPreferredSize( new java.awt.Dimension( 560 , 370 ) );         
-		chartPanel.setMouseZoomable( true , false );         
+		chartPanel.setPreferredSize( new java.awt.Dimension( 900 , 480 ) );         
+		chartPanel.setMouseZoomable( true , false );    
+		ValueMarker marker = new ValueMarker(average);
+		marker.setPaint(Color.BLUE);
+		((XYPlot)chart.getPlot()).addRangeMarker(marker);
 		setContentPane( chartPanel );	
 	}
 	
@@ -42,7 +48,7 @@ public class ComputeTimeCharts extends ApplicationFrame {
 	
 	public static void main(String[] args) throws InterruptedException {
 		String name = "nom";
-		ComputeTimeCharts chart = new ComputeTimeCharts(name);
+		ComputeTimeCharts chart = new ComputeTimeCharts(name, 100);
 		chart.pack();
 		RefineryUtilities.positionFrameRandomly(chart);
 		chart.setVisible(true);

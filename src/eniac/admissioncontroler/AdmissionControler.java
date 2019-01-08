@@ -516,7 +516,8 @@ RequestDispatcherHandlerI{
 				rd_uri,
 				requestDispatcherHandlerInboundPortURI,
 				requestDispatcherDynamicStateDataInboundPortURI,
-				requestDispatcherStaticStateDataInboundPortURI
+				requestDispatcherStaticStateDataInboundPortURI,
+				requestAdmission.getAverageRequestResponseTime()
 				};
 		
 		addOfferedInterface(RequestDispatcherHandlerI.class);

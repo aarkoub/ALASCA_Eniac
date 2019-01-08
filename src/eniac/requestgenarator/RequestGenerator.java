@@ -186,8 +186,8 @@ implements	RequestNotificationHandlerI
 		String requestSubmissionInboundPortURI,
 		String requestNotificationInboundPortURI,
 		String requestAdmissionSubmissionInboundPortURI,
-		String requestAdmissionNotificationInboundPortURI
-		) throws Exception
+		String requestAdmissionNotificationInboundPortURI,
+		double averageResponseTime) throws Exception
 	{
 		super(rgURI, 1, 1) ;
 
@@ -236,7 +236,7 @@ implements	RequestNotificationHandlerI
 		
 		// Creation de l'objet contenant l'URI de notification du RequestGenerator
 		requestAdmission = new RequestAdmission(requestNotificationInboundPortURI);
-		
+		requestAdmission.setAverageRequestResponseTime(averageResponseTime);
 		// Ajout du port pour soumettre la demande d'hebergement au Controleur d'Admission
 		addRequiredInterface(RequestAdmissionSubmissionI.class);
 		requestAdmissionSubmissionOutboundPort = new RequestAdmissionSubmissionOutboundPort(this);
@@ -589,7 +589,6 @@ implements	RequestNotificationHandlerI
 
 	
 		requestAdmission.setRequestGeneratorManagementInboundPortURI(rgmip.getPortURI());
-		
 		// Soumission de la demande d'hebergement (recupere le port de soumission de Request Dispatcher)
 		String reqSubInboundPortURI = null;
 		try {

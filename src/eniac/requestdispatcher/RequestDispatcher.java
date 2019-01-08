@@ -48,7 +48,7 @@ RequestSubmissionHandlerI,
 RequestNotificationHandlerI,
 ApplicationVMStateDataConsumerI,
 PushModeControllingI{
-	public static final int AVG_NUMBER_RQ = 100;
+	public static final int AVG_NUMBER_RQ = 50;
 	protected String rd_uri;
 	protected RequestDispatcherManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
 	protected String requestNotificationInboundPortURI;

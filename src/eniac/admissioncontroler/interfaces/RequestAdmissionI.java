@@ -17,6 +17,10 @@ public interface RequestAdmissionI extends Serializable {
 	public String getRequestDispatcherURI();
 	
 	public void setRequestDispatcherURI(String uri);
+	
+	public double getAverageRequestResponseTime();
+	
+	public void setAverageRequestResponseTime(double d);
 
 	public RequestAdmissionI copy();
 

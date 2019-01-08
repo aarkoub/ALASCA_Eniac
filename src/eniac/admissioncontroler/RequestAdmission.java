@@ -9,6 +9,7 @@ public class RequestAdmission implements RequestAdmissionI {
 	private String requestSubmissionPortURI;
 	private String requestDispatcherURI;
 	private String requestGeneratorManagementInboundPortURI;
+	private double requestAverageResponseTime = 0;
 	
 	
 	public RequestAdmission(String requestNotificationPortURI) {
@@ -60,6 +61,16 @@ public class RequestAdmission implements RequestAdmissionI {
 		newRequestAdmission.requestDispatcherURI = this.requestDispatcherURI;
 		
 		return newRequestAdmission;
+	}
+
+	@Override
+	public double getAverageRequestResponseTime() {
+		return requestAverageResponseTime;
+	}
+
+	@Override
+	public void setAverageRequestResponseTime(double d) {
+		requestAverageResponseTime = d;
 	}
 	
 
