@@ -440,7 +440,6 @@ PushModeControllingI{
 	public void acceptApplicationVMStaticData(String avmURI, ApplicationVMStaticStateI staticState) throws Exception {
 		avmStaticStateMap.put(avmURI, staticState);
 		logMessage("staticState : "+avmURI);
-		
 		for(Integer idCore : staticState.getIdCores().keySet()){
 			
 			logMessage("core_"+idCore+" on processor_"+staticState.getIdCores().get(idCore));

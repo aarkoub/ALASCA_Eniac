@@ -193,7 +193,7 @@ RequestDispatcherStateDataConsumerI{
 		ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
 		Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
 		for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
-			System.out.println(admissibleFreqCores==null?"Y":"N");
+			System.out.println("AVM: "+avm+"          "+(admissibleFreqCoresAVM==null));
 			Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
 			for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
 				int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
@@ -282,7 +282,6 @@ RequestDispatcherStateDataConsumerI{
 				if(entry.getValue() > MAX_QUEUE) {
 					int nbcore = dynamicstate.getAVMDynamicStateMap().get(entry.getKey()).getTotalNumberOfCores();
 					int nbtoadd = (int)Math.ceil((double)entry.getValue()/(double)nbcore);
-					System.out.println(increaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey()));
 					if(increaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey())) {
 						nbtoadd -= nbcore;
 						logMessage(entry.getKey()+" frequency increased");
@@ -300,7 +299,7 @@ RequestDispatcherStateDataConsumerI{
 						logMessage(entry.getKey()+" 1 core added");
 						nbtoadd--;
 					}
-				}else if(Math.abs(upper_bound - avg) > 100) {
+				}else {
 					if((avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
 						logMessage(avmUri+" added");
 					}
@@ -388,7 +387,6 @@ RequestDispatcherStateDataConsumerI{
 			}
 			
 		}
-		System.out.println(next);
 		return next;
 	}
 	
@@ -404,7 +402,6 @@ RequestDispatcherStateDataConsumerI{
 			}
 			
 		}
-		System.out.println(previous);
 		return previous;
 		
 	}
