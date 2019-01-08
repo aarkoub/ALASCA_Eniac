@@ -405,7 +405,7 @@ PushModeControllingI{
 				app_dynamic_outport, app_static_outport);
 		data = new AVMData(avmuris, ports);
 		avms.put(avmuris.getAVMUri(), data);
-		app_dynamic_outport.startUnlimitedPushing(500);
+		
 		
 	}
 
