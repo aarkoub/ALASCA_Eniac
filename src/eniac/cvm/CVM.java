@@ -169,7 +169,7 @@ public class CVM extends AbstractCVM {
 					RequestGeneratorManagementInboundPortURI+i, requestSubmissionInboundPortURI+i,
 					requestNotificationInboundPortURI+i, requestAdmissionSubmissionInboundPortURI,
 					requestAdmissionNotificationInboundPortURI,
-					2000);
+					3000);
 			
 			
 				

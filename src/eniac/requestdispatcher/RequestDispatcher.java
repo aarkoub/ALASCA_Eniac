@@ -437,6 +437,7 @@ PushModeControllingI{
 
 	@Override
 	public void acceptApplicationVMStaticData(String avmURI, ApplicationVMStaticStateI staticState) throws Exception {
+		avmStaticStateMap.put(avmURI, staticState);
 		logMessage("staticState : "+avmURI);
 		
 		for(Integer idCore : staticState.getIdCores().keySet()){

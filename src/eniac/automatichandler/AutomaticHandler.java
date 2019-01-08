@@ -1,10 +1,12 @@
 package eniac.automatichandler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.math3.analysis.function.Log;
 import org.jfree.ui.RefineryUtilities;
 
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
@@ -43,7 +45,7 @@ RequestDispatcherStateDataConsumerI{
 	protected String requestDispatcherStaticStateDataInboundPortURI;
 	protected String requestDispatcherURI;
 	
-	protected Map<String, Set<Integer>> admissibleFreqCores;
+	protected Map<String, Map<String,Set<Integer>>> admissibleFreqCores;
 	
 	private ComputeTimeCharts chart;
 	
@@ -104,9 +106,10 @@ RequestDispatcherStateDataConsumerI{
 		RefineryUtilities.positionFrameRandomly(chart);
 		chart.setVisible(true);
 		
-		System.out.println(averageResponseTime);
 		lower_bound = averageResponseTime-200;
 		upper_bound = averageResponseTime+200;
+		
+		
 	}
 		
 	
@@ -171,14 +174,14 @@ RequestDispatcherStateDataConsumerI{
 			RequestDispatcherStaticStateI staticState) throws Exception {
 		Map<String, ApplicationVMStaticStateI > avmStaticStateMap = 
 				staticState.getAVMStaticStateMap();
-		
+		admissibleFreqCores = new HashMap<>();
 		for(String avmUri : avmStaticStateMap.keySet()){
 			ApplicationVMStaticStateI avmStaticState = avmStaticStateMap.get(avmUri);
 			
 			Map<Integer, Integer> coreMap = avmStaticState.getIdCores();
 			for(Integer core : coreMap.keySet()){
 				logMessage(avmUri+" : core number "+core+" ; processor number "+String.valueOf(coreMap.get(core)));
-				admissibleFreqCores = avmStaticState.getAdmissibleFreqCores();
+				admissibleFreqCores.put(avmUri, avmStaticState.getAdmissibleFreqCores());
 			}
 			
 			
@@ -188,8 +191,10 @@ RequestDispatcherStateDataConsumerI{
 	
 	private boolean increaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
 		ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
+		Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
 		for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
-			Set<Integer> admissibleFreq = admissibleFreqCores.get(proc_uri);
+			System.out.println(admissibleFreqCores==null?"Y":"N");
+			Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
 			for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
 				int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 				int freq = getNextFreq(currentFreq, admissibleFreq);
@@ -214,8 +219,9 @@ RequestDispatcherStateDataConsumerI{
 	
 	private boolean decreaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
 		ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
+		Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
 		for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
-			Set<Integer> admissibleFreq = admissibleFreqCores.get(proc_uri);
+			Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
 			for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
 				int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 				int freq = getPreviousFreq(currentFreq, admissibleFreq);
@@ -245,12 +251,10 @@ RequestDispatcherStateDataConsumerI{
 		lavg = exponentialSmoothing(dynamicState.getAverageRequestTime());
 		chart.addData(lavg);
 		
-		/*logMessage("Average request time for "+requestDisptacherURI+
-				" = "+dynamicState.getAverageRequestTime());*/
 		
 
-		if(wait%30 == 0) {
-			logMessage("Action possible");
+		if(wait%10 == 0) {
+			logMessage("Modulation possible");
 			modulateAVM(dynamicState, lavg);
 		}
 		wait++;
@@ -276,15 +280,25 @@ RequestDispatcherStateDataConsumerI{
 			logMessage("Response time too long: "+avg+"ms (<"+ upper_bound +" ms wanted)");
 			for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
 				if(entry.getValue() > MAX_QUEUE) {
+					int nbcore = dynamicstate.getAVMDynamicStateMap().get(entry.getKey()).getTotalNumberOfCores();
+					int nbtoadd = (int)Math.ceil((double)entry.getValue()/(double)nbcore);
+					System.out.println(increaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey()));
+					if(increaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey())) {
+						nbtoadd -= nbcore;
+						logMessage(entry.getKey()+" frequency increased");
+					}
+					if(nbtoadd <= 0) continue;
 					if(!requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 1)) {
 						if((avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
 							logMessage(avmUri+" added");
 						}
 						return;
 					}
+					nbtoadd--;
 					logMessage(entry.getKey()+" 1 core added");
-					while(requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 1)) {
+					while(nbtoadd > 0 && requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 1)) {
 						logMessage(entry.getKey()+" 1 core added");
+						nbtoadd--;
 					}
 				}else if(Math.abs(upper_bound - avg) > 100) {
 					if((avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
@@ -315,6 +329,8 @@ RequestDispatcherStateDataConsumerI{
 			
 			return;
 		}
+		
+		last = avg;
 		logMessage("Response time correct");
 		return;		
 	
