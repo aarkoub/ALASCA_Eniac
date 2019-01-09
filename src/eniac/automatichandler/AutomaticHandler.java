@@ -176,6 +176,9 @@ RequestDispatcherStateDataConsumerI{
 				staticState.getAVMStaticStateMap();
 		admissibleFreqCores = new HashMap<>();
 		for(String avmUri : avmStaticStateMap.keySet()){
+			
+			//System.out.println(avmUri + " "+avmStaticStateMap.get(avmUri));
+			
 			ApplicationVMStaticStateI avmStaticState = avmStaticStateMap.get(avmUri);
 			
 			Map<Integer, Integer> coreMap = avmStaticState.getIdCores();
