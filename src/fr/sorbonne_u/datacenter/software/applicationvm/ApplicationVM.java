@@ -892,7 +892,7 @@ implements	ProcessorServicesNotificationConsumerI,
 	public void acceptProcessorStaticData(String processorURI, ProcessorStaticStateI staticState) throws Exception {
 
 		this.admissibleFreqCores.put(processorURI, staticState.getAdmissibleFrequencies());
-		
+		sendStaticState();
 	}
 
 
