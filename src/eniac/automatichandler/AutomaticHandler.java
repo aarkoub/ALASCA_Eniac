@@ -193,30 +193,24 @@ RequestDispatcherStateDataConsumerI{
 	}
 	
 	private boolean increaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
-		ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
-		Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
-		for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
-			System.out.println("AVM: "+avm+"          "+(admissibleFreqCoresAVM==null)+" "+admissibleFreqCores.containsKey(avm));
-			Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
-			for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
-				int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
-				int freq = getNextFreq(currentFreq, admissibleFreq);
-				if(currentFreq == freq) return false;
-				try {
-					requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
-							core, freq);
-				} catch (UnavailableFrequencyException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (UnacceptableFrequencyException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		try {
+			ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
+			Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
+			for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
+				System.out.println(avm+" "+admissibleFreqCoresAVM);
+				Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
+				for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
+					int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
+					int freq = getNextFreq(currentFreq, admissibleFreq);
+					if(currentFreq == freq) return false;
+						requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
+								core, freq);
+					}
 				}
-			}
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
+		
 		return true;
 	}
 	
@@ -281,14 +275,12 @@ RequestDispatcherStateDataConsumerI{
 			logMessage("Response time too long: "+avg+"ms (<"+ upper_bound +" ms wanted)");
 			for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
 				if(entry.getValue() > MAX_QUEUE) {
-					/*int nbcore = dynamicstate.getAVMDynamicStateMap().get(entry.getKey()).getTotalNumberOfCores();
-					int nbtoadd = (int)Math.ceil((double)entry.getValue()/(double)nbcore);
 					if(increaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey())) {
-						nbtoadd -= nbcore;
 						logMessage(entry.getKey()+" frequency increased");
+						continue;
 					}
-					if(nbtoadd <= 0) continue;*/
 					if(!requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 2)) {
+						
 						if(getUnusedAVMs(dynamicstate).size() == 0 && (avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
 							logMessage(avmUri+" added");
 						}
@@ -296,7 +288,6 @@ RequestDispatcherStateDataConsumerI{
 					}else {
 						logMessage(entry.getKey()+" 2 core added");
 					}
-					//nbtoadd--;
 				}else {
 					if(getUnusedAVMs(dynamicstate).size() == 0 && (avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
 						logMessage(avmUri+" added");

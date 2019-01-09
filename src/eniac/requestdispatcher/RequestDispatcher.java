@@ -199,6 +199,7 @@ PushModeControllingI{
 				avm = entry.getKey();
 			}
 		}
+		//System.out.println("AVM: "+avm+" SCORE: "+score+"   "+avmScores);
 		return avm;
 	}
 	
