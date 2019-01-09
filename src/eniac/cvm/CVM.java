@@ -84,14 +84,14 @@ public class CVM extends AbstractCVM {
 		 */
 		
 		List<ComputerURI> computeruris = new ArrayList<>();
-		for(int i=0; i<max_ressources+16; i++) {
+		for(int i=0; i<8; i++) {
 		
 			String ComputerDynamicStateDataInboundPortURI = "computerDynamic_inport_uri_"+i;
 			String ComputerStaticStateDataInboundPortURI = "computerStatic_inport_uri_"+i;
 			String ComputerServicesInboundPortURI = "computer_in_port_"+i;
 			String computerURI = "computer_"+i ;
 			int numberOfProcessors = 2 ;
-			int numberOfCores = 2 ;
+			int numberOfCores = 4 ;
 			Set<Integer> admissibleFrequencies = new HashSet<Integer>() ;
 			admissibleFrequencies.add(1500) ;	// Cores can run at 1,5 GHz
 			admissibleFrequencies.add(3000) ;	// and at 3 GHz

@@ -193,7 +193,7 @@ RequestDispatcherStateDataConsumerI{
 		ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
 		Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
 		for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
-			System.out.println("AVM: "+avm+"          "+(admissibleFreqCoresAVM==null));
+			System.out.println("AVM: "+avm+"          "+(admissibleFreqCoresAVM==null)+" "+admissibleFreqCores.containsKey(avm));
 			Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
 			for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
 				int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
@@ -244,16 +244,14 @@ RequestDispatcherStateDataConsumerI{
 		return true;
 	}
 	
-	private int wait = 1;
+	private int wait = 15;
 	@Override
 	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
 			RequestDispatcherDynamicStateI dynamicState) throws Exception {
 		lavg = exponentialSmoothing(dynamicState.getAverageRequestTime());
 		chart.addData(lavg);
-		
-		
 
-		if(wait%10 == 0) {
+		if(wait%20 == 0) {
 			logMessage("Modulation possible");
 			modulateAVM(dynamicState, lavg);
 		}
@@ -280,27 +278,24 @@ RequestDispatcherStateDataConsumerI{
 			logMessage("Response time too long: "+avg+"ms (<"+ upper_bound +" ms wanted)");
 			for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
 				if(entry.getValue() > MAX_QUEUE) {
-					int nbcore = dynamicstate.getAVMDynamicStateMap().get(entry.getKey()).getTotalNumberOfCores();
+					/*int nbcore = dynamicstate.getAVMDynamicStateMap().get(entry.getKey()).getTotalNumberOfCores();
 					int nbtoadd = (int)Math.ceil((double)entry.getValue()/(double)nbcore);
 					if(increaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey())) {
 						nbtoadd -= nbcore;
 						logMessage(entry.getKey()+" frequency increased");
 					}
-					if(nbtoadd <= 0) continue;
-					if(!requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 1)) {
-						if((avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
+					if(nbtoadd <= 0) continue;*/
+					if(!requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 2)) {
+						if(getUnusedAVMs(dynamicstate).size() == 0 && (avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
 							logMessage(avmUri+" added");
 						}
 						return;
+					}else {
+						logMessage(entry.getKey()+" 2 core added");
 					}
-					nbtoadd--;
-					logMessage(entry.getKey()+" 1 core added");
-					while(nbtoadd > 0 && requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 1)) {
-						logMessage(entry.getKey()+" 1 core added");
-						nbtoadd--;
-					}
+					//nbtoadd--;
 				}else {
-					if((avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
+					if(getUnusedAVMs(dynamicstate).size() == 0 && (avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
 						logMessage(avmUri+" added");
 					}
 					return;
@@ -316,15 +311,26 @@ RequestDispatcherStateDataConsumerI{
 				last = avg;
 				return;
 			}
+			//System.out.println(dynamicstate.getScoresMap().toString());
 			logMessage("Response time too fast: "+avg+"ms (>"+ lower_bound +" ms wanted)");
-			removeUnusedAVM(dynamicstate);
-			for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
-				if(entry.getValue() <= 2) {
+			if(removeUnusedAVM(dynamicstate)) return;
+			String avm = lowestScore(dynamicstate);
+			if(avm != null) {
+				if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(avm)) {
+					logMessage(avm+" removed 1 core");
+				}
+				if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(avm)) {
+					logMessage(avm+" removed 1 core");
+				}
+			}
+			//removeUnusedAVM(dynamicstate);
+			/*for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
+				if(entry.getValue() < MAX_QUEUE) {
 					if(decreaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey())) {
 						logMessage(entry.getKey()+" speed decreased");
 					}
 				}
-			}
+			}*/
 			
 			return;
 		}
@@ -335,19 +341,32 @@ RequestDispatcherStateDataConsumerI{
 	
 	}
 	
-	private void removeUnusedAVM(RequestDispatcherDynamicStateI dynamicstate) {
+	private String lowestScore(RequestDispatcherDynamicStateI dynamicstate) {
+		String avm = null;
+		double score = Double.MAX_VALUE;
+		for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
+			if(entry.getValue() != 0 && entry.getValue() < score) {
+				score = entry.getValue();
+				avm = entry.getKey();
+			}
+		}
+		return avm;
+	}
+	
+	private boolean removeUnusedAVM(RequestDispatcherDynamicStateI dynamicstate) {
 		List<String> unusedavms = getUnusedAVMs(dynamicstate);
-		if(unusedavms.size() <= 1) return;
+		if(unusedavms.size() <= 1) return false;
 		for(String avm: unusedavms) {
 			try {
 				if(requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI, avm)) {
 					logMessage(avm+" removed.");
-					return;
+					return true;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+		return false;
 	}
 	
 	private void removeUnusedAVMs(RequestDispatcherDynamicStateI dynamicstate) {

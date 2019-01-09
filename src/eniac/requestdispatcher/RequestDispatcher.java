@@ -48,7 +48,7 @@ RequestSubmissionHandlerI,
 RequestNotificationHandlerI,
 ApplicationVMStateDataConsumerI,
 PushModeControllingI{
-	public static final int AVG_NUMBER_RQ = 50;
+	public static final int AVG_NUMBER_RQ = 100;
 	protected String rd_uri;
 	protected RequestDispatcherManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
 	protected String requestNotificationInboundPortURI;
@@ -351,6 +351,7 @@ PushModeControllingI{
 		
 		if(data == null) return false;
 		try {
+			
 			doPortDisconnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI());
 			data.getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
 			

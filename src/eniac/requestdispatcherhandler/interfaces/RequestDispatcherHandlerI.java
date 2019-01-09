@@ -14,7 +14,7 @@ public interface RequestDispatcherHandlerI {
 
 	 public boolean addCoreToAvm(String avm_uri, int nbcores) throws Exception;
 	 
-	 public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) throws Exception;
+	 public boolean removeCoreFromAvm(String avm_uri) throws Exception;
 
 	public void setCoreFrequency(String processor_uri,int coreNo, int frequency)
 			throws UnavailableFrequencyException,

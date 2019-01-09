@@ -94,13 +94,13 @@ implements RequestDispatcherHandlerI{
 		}
 
 		@Override
-		public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) throws Exception {
+		public boolean removeCoreFromAvm(String avm_uri) throws Exception {
 			return this.getOwner().handleRequestSync(
 					new AbstractComponent.AbstractService<Boolean>() {
 						@Override
 						public Boolean call() throws Exception {
 						
-							return ((AdmissionControler)this.getOwner()).removeCoreFromAvm(avm_uri, allocatedCore);
+							return ((AdmissionControler)this.getOwner()).removeCoreFromAvm(avm_uri);
 						}
 					}) ;
 		}

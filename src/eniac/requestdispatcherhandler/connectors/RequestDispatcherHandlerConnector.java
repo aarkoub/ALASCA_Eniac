@@ -37,8 +37,8 @@ implements RequestDispatcherHandlerI{
 	}
 
 	@Override
-	public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) throws Exception {
-		return ((RequestDispatcherHandlerI)this.offering).removeCoreFromAvm(avm_uri, allocatedCore);
+	public boolean removeCoreFromAvm(String avm_uri) throws Exception {
+		return ((RequestDispatcherHandlerI)this.offering).removeCoreFromAvm(avm_uri);
 	}
 
 	@Override

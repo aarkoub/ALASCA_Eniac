@@ -263,31 +263,19 @@ RequestDispatcherHandlerI{
 	
 	
 	@Override
-	public boolean removeCoreFromAvm(String avm_uri, AllocatedCore allocatedCore) {
+	public boolean removeCoreFromAvm(String avm_uri) {
 		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
 		if(alloc == null) return false;
 		Computer computer = alloc.getComputer();
 		try {
 			
-			int core = -1;
-			for(int i = 0; i < alloc.getCores().length; i++) {
-				if(alloc.getCores()[i].coreNo == allocatedCore.coreNo &&
-						alloc.getCores()[i].processorNo == allocatedCore.processorNo &&
-						alloc.getCores()[i].processorInboundPortURI == allocatedCore.processorInboundPortURI &&
-						alloc.getCores()[i].processorURI == allocatedCore.processorURI) {
-					core = i;
-					break;
-				}
-			}
-			if(core == -1) return false;
-			computer.releaseCore(allocatedCore);
+			if(alloc.getCores().length <= 1) return false;
+			computer.releaseCore(alloc.getCores()[0]);
 			AllocatedCore[] newAlloc = new AllocatedCore[alloc.getCores().length-1];
 			int j = 0;
-			for(int i = 0; i < alloc.getCores().length; i++) {
-				if(i != core) {
-					newAlloc[j] = alloc.getCores()[i];
-					j++;
-				}
+			for(int i = 1; i < alloc.getCores().length; i++) {
+				newAlloc[j] = alloc.getCores()[i];
+				j++;
 			}
 			alloc.setCores(newAlloc);
 			
