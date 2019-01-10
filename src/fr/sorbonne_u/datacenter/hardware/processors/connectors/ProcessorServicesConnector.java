@@ -102,5 +102,10 @@ implements	ProcessorServicesI
 		return ((ProcessorServicesI)this.offering).getProcessorStaticStateDataURI();
 	}
 	
+	@Override
+	public void createStateDataInboundPortAVM(String avmURI, String processorStaticStateDataInboundPortURIForAVM,
+			String processorDynamicStateDataInboundPortURIForAVM) throws Exception {
+		((ProcessorServicesI)this.offering).createStateDataInboundPortAVM(avmURI, processorStaticStateDataInboundPortURIForAVM, processorDynamicStateDataInboundPortURIForAVM);		
+	}
 	
 }

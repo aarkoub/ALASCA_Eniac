@@ -108,5 +108,9 @@ extends		OfferedI,
 
 	public String getProcessorStaticStateDataURI() throws Exception;
 
-	
+	public void createStateDataInboundPortAVM(
+			String avmURI,
+			String processorStaticStateDataInboundPortURIForAVM,
+			String processorDynamicStateDataInboundPortURIForAVM
+			 ) throws Exception;
 }

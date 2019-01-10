@@ -843,30 +843,43 @@ implements	ProcessorServicesNotificationConsumerI,
 				this.processorNotificationInboundPorts.
 									put(allocatedCores[i].processorURI, np) ;
 				
-				ProcessorDynamicStateDataOutboundPort dynamic_outport = 
-						new ProcessorDynamicStateDataOutboundPort(this, allocatedCores[i].processorURI);
-				addPort(dynamic_outport);
-				dynamic_outport.publishPort();
+				ProcessorDynamicStateDataOutboundPort dynamic_outport;
+				if((dynamic_outport=processor_dynamic_outport_map.get(allocatedCores[i].processorURI))==null){
 				
-				ProcessorStaticStateDataOutboundPort static_outport =
-						new ProcessorStaticStateDataOutboundPort(this, allocatedCores[i].processorURI);
-				addPort(static_outport);
-				static_outport.publishPort();
+					dynamic_outport = new ProcessorDynamicStateDataOutboundPort(this, allocatedCores[i].processorURI);
+					addPort(dynamic_outport);
+					dynamic_outport.publishPort();
+					processor_dynamic_outport_map.put(allocatedCores[i].processorURI, dynamic_outport);
+				
+				}
+				
+				ProcessorStaticStateDataOutboundPort static_outport ;
+				if((static_outport=processor_static_outport_map.get(allocatedCores[i].processorURI))==null){
+					static_outport = new ProcessorStaticStateDataOutboundPort(this, allocatedCores[i].processorURI);
+					addPort(static_outport);
+					static_outport.publishPort();
+					processor_static_outport_map.put(allocatedCores[i].processorURI, static_outport);
+				}
+				
+				String processorStaticStateDataInboundPortURIForAVM = "proc-static-inport-"+vmURI;
+				String processorDynamicStateDataInboundPortURIForAVM =  "proc-dynamic-inport-"+vmURI;
+				
+				p.createStateDataInboundPortAVM(vmURI,
+						processorStaticStateDataInboundPortURIForAVM,
+						processorDynamicStateDataInboundPortURIForAVM);
+					
 				try{
 				doPortConnection(dynamic_outport.getPortURI(),
-						p.getProcessorDynamicStateDataURI(),
+						processorDynamicStateDataInboundPortURIForAVM,
 						ControlledDataConnector.class.getCanonicalName());
 				doPortConnection(static_outport.getPortURI(),
-						p.getProcessorStaticStateDataURI(),
+						processorStaticStateDataInboundPortURIForAVM,
 						DataConnector.class.getCanonicalName()
 						);
 				}
 				catch(Exception e){
 					e.printStackTrace();
-				}
-				
-				processor_dynamic_outport_map.put(allocatedCores[i].processorURI, dynamic_outport);
-				processor_static_outport_map.put(allocatedCores[i].processorURI, static_outport);
+				}			
 				
 				dynamic_outport.startUnlimitedPushing(500);
 				

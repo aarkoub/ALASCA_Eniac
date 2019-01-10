@@ -107,4 +107,6 @@ implements	ProcessorManagementI
 		((ProcessorManagementI)this.connector).
 										setCoreFrequency(coreNo, frequency) ;
 	}
+
+	
 }

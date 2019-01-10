@@ -86,4 +86,6 @@ extends		OfferedI,
 	throws	UnavailableFrequencyException,
 			UnacceptableFrequencyException,
 			Exception ;
+	
+	
 }

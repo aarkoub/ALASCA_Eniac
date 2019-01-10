@@ -149,5 +149,19 @@ implements	ProcessorServicesI
 					}
 				}) ;
 	}
+	
+	@Override
+	public void createStateDataInboundPortAVM(String avmURI, String processorStaticStateDataInboundPortURIForAVM,
+			String processorDynamicStateDataInboundPortURIForAVM) throws Exception {
+		this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService<Void>() {
+					@Override
+					public Void call() throws Exception {
+						((Processor)this.getOwner()).createStateDataInboundPortAVM(avmURI, processorStaticStateDataInboundPortURIForAVM, processorDynamicStateDataInboundPortURIForAVM); ;
+						return null;
+					}
+				});
+		
+	}
 
 }

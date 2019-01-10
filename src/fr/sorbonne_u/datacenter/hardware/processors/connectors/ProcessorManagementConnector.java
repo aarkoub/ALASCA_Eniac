@@ -84,4 +84,6 @@ implements	ProcessorManagementI
 		((ProcessorManagementI)this.offering).
 										setCoreFrequency(coreNo, frequency) ;
 	}
+
+	
 }
