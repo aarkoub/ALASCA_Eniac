@@ -8,39 +8,27 @@ import java.util.Map;
 
 public class AverageCompute {
 	private Map<String, Date> startTime;
-	private List<Long> times;
-	private int number;
-	
-	public AverageCompute(int number) {
-		startTime = new HashMap<>();
-		times = new ArrayList<>();
-		this.number = number;
-	}
+	private int average;
+	public static final double ALPHA = 0.1;
 	
 	public AverageCompute() {
-		this(0);
+		startTime = new HashMap<>();
+		average = 0;
 	}
+	
 	
 	public void addStartTime(String rq, Date d) {
 		startTime.put(rq, d);
 	}
 	
 	public void addEndTime(String rq, Date d) {
-		times.add(d.getTime() - startTime.remove(rq).getTime());
-		if(number == 0) return;
-		if(times.size() > number) {
-			times.remove(0);
-		}
+		int avgraw = (int)(d.getTime() - startTime.remove(rq).getTime());
+		average = (int)(ALPHA*avgraw + (1.0-ALPHA)*average);
 	}
 	
 	
 	
 	public int getAverage() {
-		if(times.size() == 0) return 0;
-		int avg = 0;
-		for(int i = 0; i < times.size(); i++) {
-			avg += times.get(i);
-		}
-		return avg/times.size();
+		return average;
 	}
 }

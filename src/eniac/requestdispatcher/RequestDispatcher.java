@@ -48,7 +48,6 @@ RequestSubmissionHandlerI,
 RequestNotificationHandlerI,
 ApplicationVMStateDataConsumerI,
 PushModeControllingI{
-	public static final int AVG_NUMBER_RQ = 100;
 	protected String rd_uri;
 	protected RequestDispatcherManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
 	protected String requestNotificationInboundPortURI;
@@ -179,7 +178,7 @@ PushModeControllingI{
 		avmDynamicStateMap = new HashMap<>();
 		avmStaticStateMap = new HashMap<>();
 		
-		avgcompute = new AverageCompute(AVG_NUMBER_RQ);
+		avgcompute = new AverageCompute();
 		
 		avmScores = new HashMap<>();
 		

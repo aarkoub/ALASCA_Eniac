@@ -245,7 +245,7 @@ RequestDispatcherStateDataConsumerI{
 	@Override
 	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
 			RequestDispatcherDynamicStateI dynamicState) throws Exception {
-		lavg = exponentialSmoothing(dynamicState.getAverageRequestTime());
+		lavg = dynamicState.getAverageRequestTime();
 		chart.addData(lavg);
 
 		if(wait%20 == 0) {
