@@ -270,7 +270,10 @@ RequestDispatcherHandlerI{
 		try {
 			
 			if(alloc.getCores().length <= 1) return false;
-			computer.releaseCore(alloc.getCores()[0]);
+			
+			AllocatedCore c = alloc.getCores()[0];
+			
+			computer.releaseCore(c);
 			AllocatedCore[] newAlloc = new AllocatedCore[alloc.getCores().length-1];
 			int j = 0;
 			for(int i = 1; i < alloc.getCores().length; i++) {
@@ -278,6 +281,7 @@ RequestDispatcherHandlerI{
 				j++;
 			}
 			alloc.setCores(newAlloc);
+			avm_management_port_map.get(avm_uri).removeProcDataStatePorts(c.processorURI);
 			
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -139,5 +139,19 @@ implements	ApplicationVMManagementI
 		
 	}
 
+	@Override
+	public void removeProcDataStatePorts(String processorUri) throws Exception {
+		this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService<Void>() {
+					@Override
+					public Void call() throws Exception {
+						((ApplicationVMManagementI)this.getOwner()).
+							removeProcDataStatePorts(processorUri);
+						return null;
+					}
+				}) ;
+		
+	}
+
 
 }

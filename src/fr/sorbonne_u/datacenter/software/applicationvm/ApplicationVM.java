@@ -193,6 +193,8 @@ implements	ProcessorServicesNotificationConsumerI,
 	protected Map<String, Map<Integer, Integer>> procCurrentFreqCoresMap;
 	
 	protected Map<String, Set<Integer>> admissibleFreqCores;
+	
+	protected Map<String, Integer> numberOfCoresPerProc;
 
 
 	// ------------------------------------------------------------------------
@@ -364,6 +366,8 @@ implements	ProcessorServicesNotificationConsumerI,
 			processor_static_outport_map = new HashMap<>();
 			procCurrentFreqCoresMap = new HashMap<>();
 			admissibleFreqCores = new HashMap<>();
+			
+			numberOfCoresPerProc = new HashMap<>();
 			
 		}
 
@@ -851,37 +855,50 @@ implements	ProcessorServicesNotificationConsumerI,
 					dynamic_outport.publishPort();
 					processor_dynamic_outport_map.put(allocatedCores[i].processorURI, dynamic_outport);
 				
-				}
 				
-				ProcessorStaticStateDataOutboundPort static_outport ;
-				if((static_outport=processor_static_outport_map.get(allocatedCores[i].processorURI))==null){
-					static_outport = new ProcessorStaticStateDataOutboundPort(this, allocatedCores[i].processorURI);
-					addPort(static_outport);
-					static_outport.publishPort();
-					processor_static_outport_map.put(allocatedCores[i].processorURI, static_outport);
-				}
 				
-				String processorStaticStateDataInboundPortURIForAVM = "proc-static-inport-"+vmURI;
-				String processorDynamicStateDataInboundPortURIForAVM =  "proc-dynamic-inport-"+vmURI;
-				
-				p.createStateDataInboundPortAVM(vmURI,
-						processorStaticStateDataInboundPortURIForAVM,
-						processorDynamicStateDataInboundPortURIForAVM);
+					ProcessorStaticStateDataOutboundPort static_outport ;
+					if((static_outport=processor_static_outport_map.get(allocatedCores[i].processorURI))==null){
+						static_outport = new ProcessorStaticStateDataOutboundPort(this, allocatedCores[i].processorURI);
+						addPort(static_outport);
+						static_outport.publishPort();
+						processor_static_outport_map.put(allocatedCores[i].processorURI, static_outport);
+					}
 					
-				try{
-				doPortConnection(dynamic_outport.getPortURI(),
-						processorDynamicStateDataInboundPortURIForAVM,
-						ControlledDataConnector.class.getCanonicalName());
-				doPortConnection(static_outport.getPortURI(),
-						processorStaticStateDataInboundPortURIForAVM,
-						DataConnector.class.getCanonicalName()
-						);
+					String processorStaticStateDataInboundPortURIForAVM = "proc-static-inport-"+vmURI;
+					String processorDynamicStateDataInboundPortURIForAVM =  "proc-dynamic-inport-"+vmURI;
+					
+					p.createStateDataInboundPortAVM(vmURI,
+							processorStaticStateDataInboundPortURIForAVM,
+							processorDynamicStateDataInboundPortURIForAVM);
+						
+					try{
+					doPortConnection(dynamic_outport.getPortURI(),
+							processorDynamicStateDataInboundPortURIForAVM,
+							ControlledDataConnector.class.getCanonicalName());
+					doPortConnection(static_outport.getPortURI(),
+							processorStaticStateDataInboundPortURIForAVM,
+							DataConnector.class.getCanonicalName()
+							);
+					}
+					catch(Exception e){
+						e.printStackTrace();
+					}			
+					
+					
+					if((numberOfCoresPerProc.get(allocatedCores[i].processorURI)==null)) {
+						numberOfCoresPerProc.put(allocatedCores[i].processorURI,1);
+						
+					}
+					else {
+						numberOfCoresPerProc.put(allocatedCores[i].processorURI, 
+								numberOfCoresPerProc.get(allocatedCores[i].processorURI+1));
+					}
+					
+					
+					dynamic_outport.startUnlimitedPushing(500);
+			
 				}
-				catch(Exception e){
-					e.printStackTrace();
-				}			
-				
-				dynamic_outport.startUnlimitedPushing(500);
 				
 			}
 		}
@@ -921,6 +938,22 @@ implements	ProcessorServicesNotificationConsumerI,
 		
 		procCurrentFreqCoresMap.put(processorURI, currentFreqCores);
 		
+		
+	}
+
+
+	@Override
+	public void removeProcDataStatePorts(String processorUri) throws Exception {
+		int number = numberOfCoresPerProc.get(processorUri);
+		if(number==1) {
+			processor_dynamic_outport_map.get(processorUri).doDisconnection();
+			processor_static_outport_map.get(processorUri).doDisconnection();
+			processor_dynamic_outport_map.remove(processorUri);
+			processor_static_outport_map.remove(processorUri);
+			
+		}
+		
+		numberOfCoresPerProc.put(processorUri, number-1);
 		
 	}
 }

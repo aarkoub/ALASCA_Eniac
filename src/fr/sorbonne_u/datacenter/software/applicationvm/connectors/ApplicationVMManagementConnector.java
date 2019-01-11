@@ -81,4 +81,10 @@ implements	ApplicationVMManagementI
 		
 	}
 
+	@Override
+	public void removeProcDataStatePorts(String processorUri) throws Exception {
+		((ApplicationVMManagementI)this.offering).removeProcDataStatePorts(processorUri);
+		
+	}
+
 }

@@ -77,6 +77,8 @@ extends		OfferedI,
 
 	public void			connectWithRequestSubmissioner()
 	throws Exception ;
+	
+	public void removeProcDataStatePorts(String processorUri) throws Exception;
 
 
 }
