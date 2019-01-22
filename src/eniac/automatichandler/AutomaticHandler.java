@@ -11,6 +11,12 @@ import org.jfree.ui.RefineryUtilities;
 
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
+import eniac.processorcoordinator.connectors.ProcessorCoordinatorFreqConnector;
+import eniac.processorcoordinator.interfaces.ProcessorCoordinatorManagementI;
+import eniac.processorcoordinator.interfaces.ProcessorCoordinatorOrderI;
+import eniac.processorcoordinator.ports.ProcessorCoordinatorFreqOutboundPort;
+import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementInboundPort;
+import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementOutboundPort;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
@@ -30,7 +36,8 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMS
 
 public class AutomaticHandler extends AbstractComponent
 implements
-RequestDispatcherStateDataConsumerI{
+RequestDispatcherStateDataConsumerI,
+ProcessorCoordinatorOrderI{
 	
 	protected String autoHand_uri;
 	
@@ -55,6 +62,10 @@ RequestDispatcherStateDataConsumerI{
 	
 	public static final double ALPHA = 0.5;
 	
+	
+	protected Map<String, ProcessorCoordinatorManagementOutboundPort>
+		coord_map = new HashMap<>();
+	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
 			String requestDispatcherUri,
@@ -70,7 +81,7 @@ RequestDispatcherStateDataConsumerI{
 		assert requestDispatcherDynamicStateDataInboundPortURI != null;
 		assert requestDispatcherStaticStateDataInboundPortURI != null;
 		assert requestDispatcherUri != null;
-		
+			
 		this.requestDispatcherURI = requestDispatcherUri;
 		this.autoHand_uri = autoHand_uri;
 		
@@ -97,7 +108,7 @@ RequestDispatcherStateDataConsumerI{
 		requestDispatcherStaticStateDataOutboundPort = new RequestDispatcherStaticStateDataOutboundPort(this, requestDispatcherUri);
 		addPort(requestDispatcherStaticStateDataOutboundPort);
 		requestDispatcherStaticStateDataOutboundPort.publishPort();
-		
+				
 		toggleLogging();
 		toggleTracing();
 		
@@ -279,7 +290,23 @@ RequestDispatcherStateDataConsumerI{
 						logMessage(entry.getKey()+" frequency increased");
 						continue;
 					}
-					if(!requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 2)) {
+					List<String> proc_coord_freq_inport_uri_list;
+					if( (proc_coord_freq_inport_uri_list=requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 2))!=null) {
+						
+						for(String proc_coord_freq_inport_uri : proc_coord_freq_inport_uri_list){
+							
+							ProcessorCoordinatorFreqOutboundPort outport = 
+									new ProcessorCoordinatorFreqOutboundPort(this);
+							addPort(outport);
+							outport.publishPort();
+							
+							doPortConnection(outport.getPortURI(),
+									proc_coord_freq_inport_uri, 
+									ProcessorCoordinatorFreqConnector.class.getCanonicalName());
+							
+							//proc_coord_freq_map.put(proc)
+							
+						}
 						
 						if(getUnusedAVMs(dynamicstate).size() == 0 && (avmUri=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(requestDispatcherURI))!=null){
 							logMessage(avmUri+" added");
@@ -416,6 +443,13 @@ RequestDispatcherStateDataConsumerI{
 			
 		}
 		return previous;
+		
+	}
+
+
+	@Override
+	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
+		
 		
 	}
 

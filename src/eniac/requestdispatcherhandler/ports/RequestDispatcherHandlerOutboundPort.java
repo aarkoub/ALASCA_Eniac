@@ -1,5 +1,7 @@
 package eniac.requestdispatcherhandler.ports;
 
+import java.util.List;
+
 import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
@@ -47,7 +49,7 @@ implements RequestDispatcherHandlerI{
 	}
 
 	@Override
-	public boolean addCoreToAvm(String avm_uri, int nbcores) throws Exception {
+	public List<String> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
 		return ((RequestDispatcherHandlerI)this.connector).addCoreToAvm(avm_uri, nbcores);
 	}
 

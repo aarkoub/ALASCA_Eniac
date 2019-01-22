@@ -1,5 +1,7 @@
 package eniac.requestdispatcherhandler.connectors;
 
+import java.util.List;
+
 import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.connectors.AbstractConnector;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
@@ -32,7 +34,7 @@ implements RequestDispatcherHandlerI{
 	
 
 	@Override
-	public boolean addCoreToAvm(String avm_uri, int nbcores) throws Exception {
+	public List<String> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
 		return ((RequestDispatcherHandlerI)this.offering).addCoreToAvm(avm_uri, nbcores);
 	}
 

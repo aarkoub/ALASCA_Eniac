@@ -1,5 +1,7 @@
 package eniac.requestdispatcherhandler.interfaces;
 
+import java.util.List;
+
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
 import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
@@ -12,7 +14,7 @@ public interface RequestDispatcherHandlerI {
 	 
 	 public boolean removeAVMFromRequestDispatcher(String requestDispatcherURI, String avmURI) throws Exception;
 
-	 public boolean addCoreToAvm(String avm_uri, int nbcores) throws Exception;
+	 public List<String> addCoreToAvm(String avm_uri, int nbcores) throws Exception;
 	 
 	 public boolean removeCoreFromAvm(String avm_uri) throws Exception;
 
