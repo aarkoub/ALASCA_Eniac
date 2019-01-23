@@ -40,7 +40,21 @@ import fr.sorbonne_u.datacenter.software.ports.RequestNotificationOutboundPort;
 import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionInboundPort;
 import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
 
-
+/**
+ * Ce composant correspond au répartiteur de requêtes, c'est-à-dire que ce composant reçoit des requêtes envoyés
+ * par le RequestGenerator via un port dédié et choisit à quelle AVM transmettre la requête pour son traitement.
+ * Le choix de l'AVM est fait par un calcul simple, on divise la taille de la file de chaque AVM par son nombre de coeurs
+ * alloués ce qui donne un score et on sélectionne le plus petit score.
+ * Pour plus de détail, les requêtes sont reçut dans la méthode acceptRequestSubmissionAndNotify où l'on informe 
+ * AverageCompute (permet le calcul de la moyenne) de l'arrivée d'une requête, ensuite ont choisit comme explicité
+ * précédemment quel AVM transmettre la requête et on la transmet.
+ * Lorsqu'une AVM a terminé le traitement d'un requête, celui-ci informe le répartiteur de requête via un port et appel
+ * la méthode acceptRequestTerminationNotification, dans cette méthode on informe AverageCompute de la date de fin
+ * de la requête et on retransmet le fait que la requête à été traité au RequestGenerator.
+ * 
+ * @author lc-laptop
+ *
+ */
 
 
 public class RequestDispatcher extends AbstractComponent implements RequestDispatcherManagementI,
@@ -48,29 +62,71 @@ RequestSubmissionHandlerI,
 RequestNotificationHandlerI,
 ApplicationVMStateDataConsumerI,
 PushModeControllingI{
+	/**
+	 * URI du répartiteur de requête
+	 */
 	protected String rd_uri;
-	protected RequestDispatcherManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
+	/**
+	 * URI du port de notification à prévenir lorsqu'une requête termine
+	 */
 	protected String requestNotificationInboundPortURI;
 	
-	//connecteur pour le generateur
+	
+	
+	/**
+	 * Port permettant de recevoir des appels pour notamment ajouter/retrancher des AVMs (Controleur d'admission)
+	 */
+	protected RequestDispatcherManagementInboundPort requestDispatcherMultiVMManagementInboundPort;
+	/**
+	 * Port permettant de recevoir des requêtes du RequestGenerator
+	 */
 	protected RequestSubmissionInboundPort requestSubmissionInboundPort;
+	
+	/**
+	 * Port permettant de prévenir qu'une requête est terminé
+	 */
 	protected RequestNotificationOutboundPort requestNotificationOutboundPort;
 	
-	//connecteur pour la VM
+	
+	
+	/**
+	 * Données liant l'uri d'une AVM à tous ses ports et URIs
+	 */
 	protected Map<String, AVMData> avms;
-
+	
+	/**
+	 * Attribut qui permet de garder en mémoire une tâche prévu (pour envoyer des données)
+	 */
 	protected ScheduledFuture<?> pushingFuture;
 	
+	/**
+	 * Port qui sert à envoyer les données dynamiques du répartiteur de requête
+	 */
 	protected RequestDispatcherDynamicStateDataInboundPort requestDispatcherDynamicStateDataInboundPort;
+	/**
+	 * Port qui sert à envoyer les données statiques du répartiteur de requête
+	 */
 	protected RequestDispatcherStaticStateDataInboundPort requestDispatcherStaticStateDataInboundPort;
 	
+	/**
+	 * Contient les données dynamiques de chaque AVM
+	 */
 	protected Map<String, ApplicationVMDynamicStateI> avmDynamicStateMap;
+	/**
+	 * Contient les données statiques de chaque AVM
+	 */
 	protected Map<String, ApplicationVMStaticStateI> avmStaticStateMap;
 	
-	
+	/**
+	 * Calcul des moyennes des temps de requêtes
+	 */
 	protected AverageCompute avgcompute;
 	
+	/**
+	 * Tableau des scores des AVMs (charge de requêtes de chaque AVM)
+	 */
 	protected Map<String, Double> avmScores;
+	
 	
 	public RequestDispatcher(String rd_uri,
 			String managementInboundPortURI,
@@ -122,7 +178,10 @@ PushModeControllingI{
 		RequestNotificationInboundPort requestNotificationInboundPortVM;
 		AVMData data;
 		
-
+		/** on connecte chaque port des AVM, c'est-à-dire les ports pour envoyer les données,
+		 * les ports pour envoyer les requêtes et pour recevoir les notifications de 
+		 * terminaisons.
+		 */
 		for(AVMUris uri : uris) {
 			
 			requestNotificationInboundPortVM = new RequestNotificationInboundPort(uri.getRequestNotificationInboundPortVM(), this);
@@ -188,7 +247,13 @@ PushModeControllingI{
 	}
 	
 	
- 
+	/**
+	 * Calcul et retourne l'URI d'une AVM qui sera choisit pour traiter la requête
+	 * A partir des données dynamiques des AVMs, on récupère le score, c'est-à-dire 
+	 * le rapport de la taille de la liste de traitement par le nombre de coeurs et on
+	 * prend le plus petit
+	 * @return URI de l'AVM choisit
+	 */
 	public String chooseAVMToCompute() {
 		String avm = avms.keySet().stream().findFirst().get();
 		double score = avmScores.get(avm);
@@ -198,17 +263,342 @@ PushModeControllingI{
 				avm = entry.getKey();
 			}
 		}
-		//System.out.println("AVM: "+avm+" SCORE: "+score+"   "+avmScores);
 		return avm;
 	}
 	
+
+
+	@Override
+	public void acceptRequestSubmission(RequestI r) throws Exception {
+		logMessage("RequestDispatcher "+rd_uri+" requete reçue "+r.getRequestURI());
+		String choice =  chooseAVMToCompute();
+		avms.get(choice).getAvmports().getRequestSubmissionOutboundPort().submitRequest(r);
+		
+		Date r1 = new Date();
+		
+		avgcompute.addStartTime(r.getRequestURI(), r1);
+		
+	}
+
+	@Override
+	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
+		logMessage("RequestDispatcher "+rd_uri+" requete reçue avec notification: "+r.getRequestURI());
+		String choice =  chooseAVMToCompute();
+		avms.get(choice).getAvmports().getRequestSubmissionOutboundPort().submitRequestAndNotify(r);
+		
+		Date r1 = new Date();
+		
+		avgcompute.addStartTime(r.getRequestURI(), r1);
+		
+	}
+
+	@Override
+	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
+		Date r2 = new Date();
+		avgcompute.addEndTime(r.getRequestURI(), r2);
 	
+		logMessage("Requete terminée : "+r.getRequestURI());
+		requestNotificationOutboundPort.notifyRequestTermination(r);
+		
+		
+	}
+
+
+	/**
+	 * Retire une avm du request dispatcher, c'est-à-dire,
+	 * on l'a supprime de la pool et on la deconnecte
+	 * @param URI de l'AVM a retirer
+	 * @return true si elle à été retiré/false sinon
+	 */
+	@Override
+	public boolean removeAVM(String uri) {
+		AVMData data = null;
+		for(AVMData tmp: avms.values()) {
+			if(tmp.getAvmuris().getAVMUri() == uri) {
+				data = tmp;
+				break;
+			}
+		}
+		
+		if(data == null) return false;
+		try {
+			
+			doPortDisconnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI());
+			data.getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
+			
+			doPortDisconnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI());
+			data.getAvmports().getAvmDynamicStateDataOutboundPort().unpublishPort();
+			
+			doPortDisconnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI());
+			data.getAvmports().getAvmStaticStateDataOutboundPort().unpublishPort();
+			
+			avms.remove(uri);
+			avmDynamicStateMap.remove(uri);
+			avmStaticStateMap.remove(uri);
+			avmScores.remove(uri);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		return false;
+	}
+
+	/**
+	 * Retourne le nombre d'AVMs du répartiteur de requêtes
+	 * @return le nombre d'AVM
+	 */
+	@Override
+	public int getNbAvm() {
+		return avms.size();
+	}
+
+	
+	/**
+	 * Ajoute et créer les différents ports pour l'AVM
+	 * mais ne les connectes pas encore.
+	 * @param les URIs des ports de l'AVM
+	 */
+	@Override
+	public void addAVM(AVMUris avmuris) throws Exception {
+		RequestSubmissionOutboundPort requestSubmissionOutboundPortVM;
+		RequestNotificationInboundPort requestNotificationInboundPortVM;
+		AVMData data;
+		
+		//instanciation des ports
+		requestNotificationInboundPortVM = new RequestNotificationInboundPort(avmuris.getRequestNotificationInboundPortVM(), this);
+		addPort(requestNotificationInboundPortVM);
+		requestNotificationInboundPortVM.publishPort();
+		requestSubmissionOutboundPortVM = new RequestSubmissionOutboundPort(this);
+		addPort(requestSubmissionOutboundPortVM);
+		requestSubmissionOutboundPortVM.publishPort();
+		
+		ApplicationVMDynamicStateDataOutboundPort app_dynamic_outport =
+				new ApplicationVMDynamicStateDataOutboundPort(this, avmuris.getAVMUri());
+		addPort(app_dynamic_outport);
+		app_dynamic_outport.publishPort();
+		
+		ApplicationVMStaticStateDataOutboundPort app_static_outport = 
+				new ApplicationVMStaticStateDataOutboundPort(this, avmuris.getAVMUri());
+		addPort(app_static_outport);
+		app_static_outport.publishPort();
+		
+		//ajout de l'AVM dans la pool
+		AVMPorts ports=new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM,
+				app_dynamic_outport, app_static_outport);
+		data = new AVMData(avmuris, ports);
+		avms.put(avmuris.getAVMUri(), data);
+		
+		
+	}
+
+	/**
+	 * Dans cette méthode, on effectue les connections entre ports pour démarrer l'AVM, 
+	 * ceci n'est pas fait dans l'ajout car il faut vérifier que l'Objet AVM est instancier avant
+	 * toute connection
+	 * @param URI de l'AVM
+	 */
+	@Override
+	public void connectAVM(String uri) throws Exception {
+		//boucle pour chercher les uris de l'AVM
+		for(AVMData data : avms.values()) {
+			//connection des ports
+			if(data.getAvmuris().getAVMUri() == uri) {
+				doPortConnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
+						data.getAvmuris().getRequestSubmissionInboundPortVM(),
+						RequestSubmissionConnector.class.getCanonicalName());
+				
+				doPortConnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI(), 
+						data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(),
+						DataConnector.class.getCanonicalName());
+				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),
+						data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(), 
+						ControlledDataConnector.class.getCanonicalName());
+				
+				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(500);
+				
+				//on débute avec un score à 0 pour qu'ils soient choisit rapidement
+				avmScores.put(uri, (double)0);
+				return;
+			}
+		}
+		
+	}
+	
+	
+
+	@Override
+	public void acceptApplicationVMStaticData(String avmURI, ApplicationVMStaticStateI staticState) throws Exception {
+		avmStaticStateMap.put(avmURI, staticState);
+				
+		logMessage("staticState : "+avmURI);
+		for(Integer idCore : staticState.getIdCores().keySet()){
+			
+			logMessage("core_"+idCore+" on processor_"+staticState.getIdCores().get(idCore));
+			
+		}
+		
+		sendStaticState();
+
+		
+	}
+
+	@Override
+	public void acceptApplicationVMDynamicData(String avmURI, ApplicationVMDynamicStateI dynamicState)
+			throws Exception {
+		
+		avmDynamicStateMap.put(avmURI, dynamicState);
+		avmScores.put(avmURI, dynamicState.getScore());
+		logMessage("dynamicState : "+avmURI);
+		logMessage("isIdle : "+dynamicState.isIdle());
+		
+	}
+
+	public RequestDispatcherDynamicStateI getDynamicState() {
+		
+		return new RequestDispatcherDynamicState(avgcompute.getAverage(), avmDynamicStateMap, avmScores);
+	}
+	
+	public RequestDispatcherStaticStateI getStaticState() {
+		return new RequestDispatcherStaticState(avmStaticStateMap);
+	}
+
+	@Override
+	public void startUnlimitedPushing(int interval) throws Exception {
+
+		// first, send the static state if the corresponding port is connected
+		this.sendStaticState() ;
+
+		this.pushingFuture =
+			this.scheduleTaskAtFixedRate(
+					new AbstractComponent.AbstractTask() {
+						@Override
+						public void run() {
+							try {
+								((RequestDispatcher)this.getOwner()).
+											sendDynamicState() ;
+							} catch (Exception e) {
+								throw new RuntimeException(e) ;
+							}
+						}
+					},
+					TimeManagement.acceleratedDelay(interval),
+					TimeManagement.acceleratedDelay(interval),
+					TimeUnit.MILLISECONDS) ;
+		
+	}
+	
+	/**
+	 * Envoit des données dynamique du répartiteur de requêtes
+	 * @throws Exception
+	 */
+	public void sendDynamicState() throws Exception {
+		if (this.requestDispatcherDynamicStateDataInboundPort.connected()) {
+			try {
+				RequestDispatcherDynamicStateI rdds = this.getDynamicState() ;
+				this.requestDispatcherDynamicStateDataInboundPort.send(rdds) ;
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			
+		}
+		
+	}
+
+	@Override
+	public void startLimitedPushing(int interval, int n) throws Exception {
+		assert	n > 0 ;
+
+		this.logMessage(this.rd_uri + " startLimitedPushing with interval "
+									+ interval + " ms for " + n + " times.") ;
+
+		// first, send the static state if the corresponding port is connected
+		this.sendStaticState() ;
+
+		this.pushingFuture =
+			this.scheduleTask(
+					new AbstractComponent.AbstractTask() {
+						@Override
+						public void run() {
+							try {
+								((RequestDispatcher)this.getOwner()).
+									sendDynamicState(interval, n) ;
+							} catch (Exception e) {
+								throw new RuntimeException(e) ;
+							}
+						}
+					},
+					TimeManagement.acceleratedDelay(interval),
+					TimeUnit.MILLISECONDS) ;
+		
+	}
+
+	public void sendDynamicState(int interval, final int numberOfRemainingPushes
+			) throws Exception
+		{
+	
+			this.sendStaticState() ;
+			final int fNumberOfRemainingPushes = numberOfRemainingPushes - 1 ;
+			if (fNumberOfRemainingPushes > 0) {
+				this.pushingFuture =
+						this.scheduleTask(
+								new AbstractComponent.AbstractTask() {
+									@Override
+									public void run() {
+										try {
+											((RequestDispatcher)this.getOwner()).
+												sendDynamicState(
+													interval,
+													fNumberOfRemainingPushes) ;
+										} catch (Exception e) {
+											throw new RuntimeException(e) ;
+										}
+									}
+								},
+								TimeManagement.acceleratedDelay(interval),
+								TimeUnit.MILLISECONDS) ;
+			}
+		
+	}
+
+	public void sendStaticState() throws Exception {
+		if (this.requestDispatcherStaticStateDataInboundPort.connected()) {
+			RequestDispatcherStaticStateI rdds = this.getStaticState() ;
+			this.requestDispatcherStaticStateDataInboundPort.send(rdds) ;
+		}
+		
+	}
+
+	@Override
+	public void stopPushing() throws Exception {
+		if (this.pushingFuture != null &&
+				!(this.pushingFuture.isCancelled() ||
+									this.pushingFuture.isDone())) {
+			this.pushingFuture.cancel(false) ;
+		}
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
 	@Override
 	public void start() throws ComponentStartException {
 		super.start();
 		
 	}
 	
+	@Override
 	public void startPortConnection() {
 		try {
 			doPortConnection(requestNotificationOutboundPort.getPortURI(), requestNotificationInboundPortURI,
@@ -300,293 +690,5 @@ PushModeControllingI{
 		
 		
 	}
-
-
-
-	@Override
-	public void acceptRequestSubmission(RequestI r) throws Exception {
-		logMessage("RequestDispatcher "+rd_uri+" requete reçue "+r.getRequestURI());
-		String choice =  chooseAVMToCompute();
-		avms.get(choice).getAvmports().getRequestSubmissionOutboundPort().submitRequest(r);
-		
-		Date r1 = new Date();
-		
-		avgcompute.addStartTime(r.getRequestURI(), r1);
-		
-	}
-
-	@Override
-	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
-		logMessage("RequestDispatcher "+rd_uri+" requete reçue avec notification: "+r.getRequestURI());
-		String choice =  chooseAVMToCompute();
-		avms.get(choice).getAvmports().getRequestSubmissionOutboundPort().submitRequestAndNotify(r);
-		
-		Date r1 = new Date();
-		
-		avgcompute.addStartTime(r.getRequestURI(), r1);
-		
-	}
-
-	@Override
-	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
-		Date r2 = new Date();
-		avgcompute.addEndTime(r.getRequestURI(), r2);
-	
-		logMessage("Requete terminée : "+r.getRequestURI());
-		requestNotificationOutboundPort.notifyRequestTermination(r);
-		
-		
-	}
-
-
-	@Override
-	public boolean removeAVM(String uri) {
-		AVMData data = null;
-		for(AVMData tmp: avms.values()) {
-			if(tmp.getAvmuris().getAVMUri() == uri) {
-				data = tmp;
-				break;
-			}
-		}
-		
-		if(data == null) return false;
-		try {
-			
-			doPortDisconnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI());
-			data.getAvmports().getRequestSubmissionOutboundPort().unpublishPort();
-			
-			doPortDisconnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI());
-			data.getAvmports().getAvmDynamicStateDataOutboundPort().unpublishPort();
-			
-			doPortDisconnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI());
-			data.getAvmports().getAvmStaticStateDataOutboundPort().unpublishPort();
-			
-			avms.remove(uri);
-			avmDynamicStateMap.remove(uri);
-			avmStaticStateMap.remove(uri);
-			avmScores.remove(uri);
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		
-		return false;
-	}
-
-	@Override
-	public int getNbAvm() {
-		return avms.size();
-	}
-
-	@Override
-	public void addAVM(AVMUris avmuris) throws Exception {
-		RequestSubmissionOutboundPort requestSubmissionOutboundPortVM;
-		RequestNotificationInboundPort requestNotificationInboundPortVM;
-		AVMData data;
-		
-		requestNotificationInboundPortVM = new RequestNotificationInboundPort(avmuris.getRequestNotificationInboundPortVM(), this);
-		addPort(requestNotificationInboundPortVM);
-		requestNotificationInboundPortVM.publishPort();
-		requestSubmissionOutboundPortVM = new RequestSubmissionOutboundPort(this);
-		addPort(requestSubmissionOutboundPortVM);
-		requestSubmissionOutboundPortVM.publishPort();
-		
-		ApplicationVMDynamicStateDataOutboundPort app_dynamic_outport =
-				new ApplicationVMDynamicStateDataOutboundPort(this, avmuris.getAVMUri());
-		addPort(app_dynamic_outport);
-		app_dynamic_outport.publishPort();
-		
-		ApplicationVMStaticStateDataOutboundPort app_static_outport = 
-				new ApplicationVMStaticStateDataOutboundPort(this, avmuris.getAVMUri());
-		addPort(app_static_outport);
-		app_static_outport.publishPort();
-		
-		AVMPorts ports=new AVMPorts(requestSubmissionOutboundPortVM, requestNotificationInboundPortVM,
-				app_dynamic_outport, app_static_outport);
-		data = new AVMData(avmuris, ports);
-		avms.put(avmuris.getAVMUri(), data);
-		
-		
-	}
-
-	@Override
-	public void connectAVM(String uri) throws Exception {
-		for(AVMData data : avms.values()) {
-			if(data.getAvmuris().getAVMUri() == uri) {
-				doPortConnection(data.getAvmports().getRequestSubmissionOutboundPort().getPortURI(),
-						data.getAvmuris().getRequestSubmissionInboundPortVM(),
-						RequestSubmissionConnector.class.getCanonicalName());
-				
-				doPortConnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI(), 
-						data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(),
-						DataConnector.class.getCanonicalName());
-				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),
-						data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(), 
-						ControlledDataConnector.class.getCanonicalName());
-				
-				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(500);
-				
-				avmScores.put(uri, (double)0);
-				
-				return;
-			}
-		}
-		
-	}
-	
-	
-
-	@Override
-	public void acceptApplicationVMStaticData(String avmURI, ApplicationVMStaticStateI staticState) throws Exception {
-		avmStaticStateMap.put(avmURI, staticState);
-				
-		logMessage("staticState : "+avmURI);
-		for(Integer idCore : staticState.getIdCores().keySet()){
-			
-			logMessage("core_"+idCore+" on processor_"+staticState.getIdCores().get(idCore));
-			
-		}
-		
-		sendStaticState();
-
-		
-	}
-
-	@Override
-	public void acceptApplicationVMDynamicData(String avmURI, ApplicationVMDynamicStateI dynamicState)
-			throws Exception {
-		
-		avmDynamicStateMap.put(avmURI, dynamicState);
-		avmScores.put(avmURI, dynamicState.getScore());
-		logMessage("dynamicState : "+avmURI);
-		logMessage("isIdle : "+dynamicState.isIdle());
-		
-	}
-
-	public RequestDispatcherDynamicStateI getDynamicState() {
-		
-		return new RequestDispatcherDynamicState(avgcompute.getAverage(), avmDynamicStateMap, avmScores);
-	}
-	
-	public RequestDispatcherStaticStateI getStaticState() {
-		return new RequestDispatcherStaticState(avmStaticStateMap);
-	}
-
-	@Override
-	public void startUnlimitedPushing(int interval) throws Exception {
-
-		// first, send the static state if the corresponding port is connected
-		this.sendStaticState() ;
-
-		this.pushingFuture =
-			this.scheduleTaskAtFixedRate(
-					new AbstractComponent.AbstractTask() {
-						@Override
-						public void run() {
-							try {
-								((RequestDispatcher)this.getOwner()).
-											sendDynamicState() ;
-							} catch (Exception e) {
-								throw new RuntimeException(e) ;
-							}
-						}
-					},
-					TimeManagement.acceleratedDelay(interval),
-					TimeManagement.acceleratedDelay(interval),
-					TimeUnit.MILLISECONDS) ;
-		
-	}
-
-	public void sendDynamicState() throws Exception {
-		if (this.requestDispatcherDynamicStateDataInboundPort.connected()) {
-			try {
-				RequestDispatcherDynamicStateI rdds = this.getDynamicState() ;
-				this.requestDispatcherDynamicStateDataInboundPort.send(rdds) ;
-			}catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-			
-		}
-		
-	}
-
-	@Override
-	public void startLimitedPushing(int interval, int n) throws Exception {
-		assert	n > 0 ;
-
-		this.logMessage(this.rd_uri + " startLimitedPushing with interval "
-									+ interval + " ms for " + n + " times.") ;
-
-		// first, send the static state if the corresponding port is connected
-		this.sendStaticState() ;
-
-		this.pushingFuture =
-			this.scheduleTask(
-					new AbstractComponent.AbstractTask() {
-						@Override
-						public void run() {
-							try {
-								((RequestDispatcher)this.getOwner()).
-									sendDynamicState(interval, n) ;
-							} catch (Exception e) {
-								throw new RuntimeException(e) ;
-							}
-						}
-					},
-					TimeManagement.acceleratedDelay(interval),
-					TimeUnit.MILLISECONDS) ;
-		
-	}
-
-	public void sendDynamicState(int interval, final int numberOfRemainingPushes
-			) throws Exception
-		{
-	
-			this.sendStaticState() ;
-			final int fNumberOfRemainingPushes = numberOfRemainingPushes - 1 ;
-			if (fNumberOfRemainingPushes > 0) {
-				this.pushingFuture =
-						this.scheduleTask(
-								new AbstractComponent.AbstractTask() {
-									@Override
-									public void run() {
-										try {
-											((RequestDispatcher)this.getOwner()).
-												sendDynamicState(
-													interval,
-													fNumberOfRemainingPushes) ;
-										} catch (Exception e) {
-											throw new RuntimeException(e) ;
-										}
-									}
-								},
-								TimeManagement.acceleratedDelay(interval),
-								TimeUnit.MILLISECONDS) ;
-			}
-		
-	}
-
-	public void sendStaticState() throws Exception {
-		if (this.requestDispatcherStaticStateDataInboundPort.connected()) {
-			RequestDispatcherStaticStateI rdds = this.getStaticState() ;
-			this.requestDispatcherStaticStateDataInboundPort.send(rdds) ;
-		}
-		
-	}
-
-	@Override
-	public void stopPushing() throws Exception {
-		if (this.pushingFuture != null &&
-				!(this.pushingFuture.isCancelled() ||
-									this.pushingFuture.isDone())) {
-			this.pushingFuture.cancel(false) ;
-		}
-		
-	}
-
-
-	
 
 }
