@@ -37,13 +37,13 @@ implements ProcessorCoordinatorOrderI{
 		}
 
 		@Override
-		public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
+		public void setCoreFreqNextTime(String procURI, int frequency) throws Exception {
 			this.getOwner().handleRequestSync(
 					new AbstractComponent.AbstractService<Void>() {
 						@Override
 						public Void call() throws Exception {
 							((AutomaticHandler)this.getOwner()).
-									setCoreFreqNextTime(procURI, coreNo, frequency);
+									setCoreFreqNextTime(procURI, frequency);
 							return null;
 						}
 					});			

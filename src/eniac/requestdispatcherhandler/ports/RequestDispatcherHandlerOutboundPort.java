@@ -49,7 +49,7 @@ implements RequestDispatcherHandlerI{
 	}
 
 	@Override
-	public List<String> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
+	public List<List<String>> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
 		return ((RequestDispatcherHandlerI)this.connector).addCoreToAvm(avm_uri, nbcores);
 	}
 

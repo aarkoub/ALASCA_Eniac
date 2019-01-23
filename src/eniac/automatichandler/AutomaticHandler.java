@@ -17,6 +17,7 @@ import eniac.processorcoordinator.interfaces.ProcessorCoordinatorOrderI;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorFreqOutboundPort;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementInboundPort;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementOutboundPort;
+import eniac.processorcoordinator.ports.ProcessorCoordinatorOrderInboundPort;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
@@ -62,9 +63,16 @@ ProcessorCoordinatorOrderI{
 	
 	public static final double ALPHA = 0.5;
 	
-	
+	private double last = upper_bound-1;
+	public static final int MAX_QUEUE = 3;
+	private double lavg = upper_bound;
+
+	protected Map<String, ProcessorCoordinatorFreqOutboundPort> proc_coord_freq_map
+	= new HashMap<>();
 	protected Map<String, ProcessorCoordinatorManagementOutboundPort>
 		coord_map = new HashMap<>();
+	
+	protected Map<String, ProcessorCoordinatorOrderInboundPort> proc_coord_order_map;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
@@ -73,6 +81,7 @@ ProcessorCoordinatorOrderI{
 			String requestDispatcherDynamicStateDataInboundPortURI,
 			String requestDispatcherStaticStateDataInboundPortURI,
 			Double averageResponseTime) throws Exception{
+		
 		super(autoHand_uri,1,1);
 		
 		assert autoHand_uri!=null;
@@ -120,6 +129,7 @@ ProcessorCoordinatorOrderI{
 		lower_bound = averageResponseTime-200;
 		upper_bound = averageResponseTime+200;
 		
+		proc_coord_order_map = new HashMap<>();		
 		
 	}
 		
@@ -130,6 +140,12 @@ ProcessorCoordinatorOrderI{
 		requestDispatcherHandlerOutboundPort.doDisconnection();
 		requestDispatcherDynamicStateDataOutboundPort.doDisconnection();
 		requestDispatcherStaticStateDataOutboundPort.doDisconnection();
+		
+		for(String uri : proc_coord_freq_map.keySet()){
+			ProcessorCoordinatorFreqOutboundPort port = proc_coord_freq_map.get(uri);
+			if(port.connected())
+				port.doDisconnection();
+		}
 
 		super.finalise();
 	}
@@ -141,6 +157,12 @@ ProcessorCoordinatorOrderI{
 			requestDispatcherHandlerOutboundPort.unpublishPort();
 			requestDispatcherDynamicStateDataOutboundPort.unpublishPort();
 			requestDispatcherStaticStateDataOutboundPort.unpublishPort();
+			
+			for(String uri : proc_coord_freq_map.keySet()){
+				ProcessorCoordinatorFreqOutboundPort port = proc_coord_freq_map.get(uri);
+				port.unpublishPort();
+			}
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -204,18 +226,28 @@ ProcessorCoordinatorOrderI{
 	}
 	
 	private boolean increaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
+		
 		try {
-			ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
+			
+			ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);	
 			Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
+			
 			for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
+				
 				System.out.println(avm+" "+admissibleFreqCoresAVM);
 				Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
+				
 				for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
+					
 					int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 					int freq = getNextFreq(currentFreq, admissibleFreq);
+					
 					if(currentFreq == freq) return false;
-						requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
-								core, freq);
+					
+						proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
+					
+					/*requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
+								core, freq);*/
 					}
 				}
 		}catch(Exception e) {
@@ -226,23 +258,32 @@ ProcessorCoordinatorOrderI{
 	}
 	
 	private boolean decreaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
+		
 		ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
 		Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
+		
 		for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
+			
 			Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
+			
 			for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
+				
 				int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 				int freq = getPreviousFreq(currentFreq, admissibleFreq);
+				
 				if(currentFreq == freq) return false;
+				
 				try {
-					requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
-							core, freq);
+					this.proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
+				
 				} catch (UnavailableFrequencyException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				
 				} catch (UnacceptableFrequencyException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -267,9 +308,6 @@ ProcessorCoordinatorOrderI{
 		
 	}
 	
-	private double last = upper_bound-1;
-	public static final int MAX_QUEUE = 3;
-	private double lavg = upper_bound;
 	
 	
 	public double exponentialSmoothing(double avgraw) {
@@ -283,17 +321,24 @@ ProcessorCoordinatorOrderI{
 				last = avg;
 				return;
 			}
+			
 			logMessage("Response time too long: "+avg+"ms (<"+ upper_bound +" ms wanted)");
+			
 			for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
+				
 				if(entry.getValue() > MAX_QUEUE) {
+				
 					if(increaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey())) {
 						logMessage(entry.getKey()+" frequency increased");
 						continue;
+					
 					}
-					List<String> proc_coord_freq_inport_uri_list;
+					
+					List<List<String>> proc_coord_freq_inport_uri_list;
+					
 					if( (proc_coord_freq_inport_uri_list=requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 2))!=null) {
 						
-						for(String proc_coord_freq_inport_uri : proc_coord_freq_inport_uri_list){
+						for(List<String> proc_coord_freq_inport_uri : proc_coord_freq_inport_uri_list){
 							
 							ProcessorCoordinatorFreqOutboundPort outport = 
 									new ProcessorCoordinatorFreqOutboundPort(this);
@@ -301,10 +346,25 @@ ProcessorCoordinatorOrderI{
 							outport.publishPort();
 							
 							doPortConnection(outport.getPortURI(),
-									proc_coord_freq_inport_uri, 
+									proc_coord_freq_inport_uri.get(1), 
 									ProcessorCoordinatorFreqConnector.class.getCanonicalName());
 							
-							//proc_coord_freq_map.put(proc)
+							String proc_uri = proc_coord_freq_inport_uri.get(0);
+							
+							proc_coord_freq_map.put(proc_uri, outport);
+							
+							String processorCoordinatorOrderInboundPortURI =
+									"proc_coord_order_uri_"+autoHand_uri;
+							
+							ProcessorCoordinatorOrderInboundPort inport = 
+									new ProcessorCoordinatorOrderInboundPort(processorCoordinatorOrderInboundPortURI, this);
+							addPort(inport);
+							inport.publishPort();
+							
+							proc_coord_order_map.put(proc_uri, inport);
+							
+							outport.addProcessorCoordinatorOrderOutboundPort(autoHand_uri,
+									processorCoordinatorOrderInboundPortURI);
 							
 						}
 						
@@ -448,8 +508,9 @@ ProcessorCoordinatorOrderI{
 
 
 	@Override
-	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
+	public void setCoreFreqNextTime(String procURI, int frequency) throws Exception {
 		
+		System.out.println(this.autoHand_uri+" "+procURI+" "+frequency);
 		
 	}
 

@@ -1,7 +1,10 @@
 package eniac.processorcoordinator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import eniac.processorcoordinator.connectors.ProcessorCoordinatorOrderConnector;
 import eniac.processorcoordinator.interfaces.ProcessorCoordinatorFreqI;
@@ -28,6 +31,7 @@ ProcessorCoordinatorFreqI{
 	
 	protected int number = 0;
 	protected Map<String, ProcessorCoordinatorFreqInboundPort> proc_cord_freq_map;
+	
 	
 	
 	public ProcessorCoordinator(String coordinatorURI,
@@ -61,7 +65,7 @@ ProcessorCoordinatorFreqI{
 	
 	@Override
 	public void start() throws ComponentStartException{
-		this.start();
+		super.start();
 		
 		try {
 			doPortConnection(processorManagementOutboundPort.getPortURI(),
@@ -74,9 +78,10 @@ ProcessorCoordinatorFreqI{
 		
 	}
 	
+	@Override
 	public void addProcessorCoordinatorOrderOutboundPort(
 			String automaticHandlerURI,
-			String processorCoordinatorOrderInboundPortURI){
+			String processorCoordinatorOrderInboundPortURI) throws Exception{
 		
 		try {
 			ProcessorCoordinatorOrderOutboundPort proc_order_outport =
@@ -101,12 +106,19 @@ ProcessorCoordinatorFreqI{
 	}
 	
 	@Override
-	public void setCoreFrequency(int coreNo, int frequency) {
+	public void setCoreFrequency(String handler_uri, int coreNo, int frequency) {
 		try {
 			processorManagementOutboundPort.setCoreFrequency(coreNo, frequency);
 			
+			/*
+			 * Miss : if ecart trop grand, alors order les autres
+			 * get dynamic state from proc
+			 */
+			
 			for(String hand_uri : procCoordinatorOrderPortMap.keySet()){
-				procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, coreNo, frequency);
+				
+				if(!hand_uri.equals(handler_uri))
+					procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, frequency);
 			}
 			
 			
@@ -172,4 +184,5 @@ ProcessorCoordinatorFreqI{
 				
 		return inbound_port_uri;
 	}
+
 }

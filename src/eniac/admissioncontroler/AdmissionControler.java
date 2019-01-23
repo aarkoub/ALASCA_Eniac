@@ -202,6 +202,7 @@ RequestDispatcherHandlerI{
 						proc_coord_management_inport_uri
 				};
 				
+				
 				try {
 					dynamicComponentCreationOutboundPort.createComponent(
 							ProcessorCoordinator.class.getCanonicalName(),
@@ -215,7 +216,7 @@ RequestDispatcherHandlerI{
 					proc_coord_map.put(procUri, proc_coord_management_outport);
 					
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 				}
 				
@@ -330,12 +331,12 @@ RequestDispatcherHandlerI{
 	}
 	
 	@Override
-	public List<String> addCoreToAvm(String avm_uri, int nbcores) {
+	public List<List<String>> addCoreToAvm(String avm_uri, int nbcores) {
 		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
 		if(alloc == null) return null;
 		Computer computer = alloc.getComputer();
 		
-		List<String> proc_coord_manage_inport_list = null;
+		List<List<String>> proc_coord_manage_inport_list = null;
 		
 		try {
 			
@@ -348,13 +349,22 @@ RequestDispatcherHandlerI{
 			}
 			
 			AllocatedCore[] alloccores = new AllocatedCore[cores.length+alloc.getCores().length];
+			
 			for(int i = 0; i < alloc.getCores().length; i++) {
+				
+				List<String> uris = new ArrayList<>();
+				
 				alloccores[i] = alloc.getCores()[i];
 				
 				ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(proc_coord_map.get(alloccores[i].processorURI));
 				
-				proc_coord_manage_inport_list.add(outport.addCoordInboundPort());
+				uris.add(alloccores[i].processorURI);
+				uris.add(outport.addCoordInboundPort());
+				
+				proc_coord_manage_inport_list.add(uris);
+				
 			}
+			
 			for(int i = alloc.getCores().length; i < alloccores.length; i++) {
 				alloccores[i] = cores[i-alloc.getCores().length];
 			}

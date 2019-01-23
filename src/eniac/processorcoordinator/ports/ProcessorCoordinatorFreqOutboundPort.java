@@ -25,9 +25,15 @@ implements ProcessorCoordinatorFreqI{
 	}
 
 	@Override
-	public void setCoreFrequency(int coreNo, int frequency) throws Exception {
-		((ProcessorCoordinatorFreqI)connector).setCoreFrequency(coreNo, frequency);
+	public void setCoreFrequency(String handler_uri, int coreNo, int frequency) throws Exception {
+		((ProcessorCoordinatorFreqI)connector).setCoreFrequency(handler_uri, coreNo, frequency);
 		
+	}
+
+	@Override
+	public void addProcessorCoordinatorOrderOutboundPort(String handler_uri, String processorCoordinatorOrderInboundPortURI)
+			throws Exception {
+		((ProcessorCoordinatorFreqI)connector).addProcessorCoordinatorOrderOutboundPort(handler_uri, processorCoordinatorOrderInboundPortURI);		
 	}
 	
 }

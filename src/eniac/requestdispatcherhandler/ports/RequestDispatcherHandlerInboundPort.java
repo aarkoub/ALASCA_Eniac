@@ -84,11 +84,11 @@ implements RequestDispatcherHandlerI{
 		}
 
 		@Override
-		public List<String> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
+		public List<List<String>> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
 			return this.getOwner().handleRequestSync(
-					new AbstractComponent.AbstractService<List<String>>() {
+					new AbstractComponent.AbstractService<List<List<String>>>() {
 						@Override
-						public List<String> call() throws Exception {
+						public List<List<String>> call() throws Exception {
 						
 							return ((AdmissionControler)this.getOwner()).addCoreToAvm(avm_uri, nbcores);
 						}

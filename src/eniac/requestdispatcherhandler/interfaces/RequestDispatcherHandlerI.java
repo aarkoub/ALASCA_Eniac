@@ -14,7 +14,7 @@ public interface RequestDispatcherHandlerI {
 	 
 	 public boolean removeAVMFromRequestDispatcher(String requestDispatcherURI, String avmURI) throws Exception;
 
-	 public List<String> addCoreToAvm(String avm_uri, int nbcores) throws Exception;
+	 public List<List<String>> addCoreToAvm(String avm_uri, int nbcores) throws Exception;
 	 
 	 public boolean removeCoreFromAvm(String avm_uri) throws Exception;
 
