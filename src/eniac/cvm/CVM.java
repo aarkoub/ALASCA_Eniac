@@ -11,10 +11,12 @@ import java.util.Set;
 import eniac.admissioncontroler.AdmissionControler;
 import eniac.admissioncontroler.ComputerURI;
 import eniac.automatichandler.AutomaticHandler;
+import eniac.processorcoordinator.ProcessorCoordinator;
 import eniac.requestgenarator.RequestGenerator;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.processors.Processor;
+import fr.sorbonne_u.datacenter.hardware.processors.Processor.ProcessorPortTypes;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 
 
@@ -134,6 +136,29 @@ public class CVM extends AbstractCVM {
 			
 		}
 		
+		Map<String, String > proc_coord_management_map = new HashMap<>();
+		
+		for (int i = 0; i < computers.size(); i++) {
+			Computer c =  computers.get(i);
+			
+			for(String proc_uri : c.getStaticState().getProcessorPortMap().keySet() ){
+				
+				String coordinatorURI = "proc_coord_uri_"+proc_uri;
+				String proc_coord_management_inport_uri = "proc_coord_management_inport_uri_"+proc_uri;
+				String proc_management_inport_uri = c.getStaticState().getProcessorPortMap().get(proc_uri).get(ProcessorPortTypes.MANAGEMENT);
+				
+				ProcessorCoordinator pc = new ProcessorCoordinator(coordinatorURI,
+						proc_uri, 
+						proc_management_inport_uri,
+						proc_coord_management_inport_uri);
+				
+				addDeployedComponent(pc);
+				
+				proc_coord_management_map.put(proc_uri, proc_coord_management_inport_uri);
+								
+			}
+		}
+		
 		
 		for(int i=0; i<max_ressources; i++){
 			requestAdmissionSubmissionInboundPortURIS.add("request_admission_submission_inbound_port_uri_"+i);
@@ -150,6 +175,7 @@ public class CVM extends AbstractCVM {
 				dynamicComponentCreationInboundPortURI,
 				requestAdmissionSubmissionInboundPortURI,
 				requestAdmissionNotificationInboundPortURI,
+				proc_coord_management_map,
 				computers,
 				computeruris,
 				computerMonitors);

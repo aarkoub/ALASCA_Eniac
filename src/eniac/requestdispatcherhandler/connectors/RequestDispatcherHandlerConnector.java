@@ -1,6 +1,6 @@
 package eniac.requestdispatcherhandler.connectors;
 
-import java.util.List;
+import java.util.Map;
 
 import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
 import fr.sorbonne_u.components.connectors.AbstractConnector;
@@ -34,7 +34,7 @@ implements RequestDispatcherHandlerI{
 	
 
 	@Override
-	public List<List<String>> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
+	public Map<String, String> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
 		return ((RequestDispatcherHandlerI)this.offering).addCoreToAvm(avm_uri, nbcores);
 	}
 

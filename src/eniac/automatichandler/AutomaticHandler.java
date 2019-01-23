@@ -67,10 +67,9 @@ ProcessorCoordinatorOrderI{
 	public static final int MAX_QUEUE = 3;
 	private double lavg = upper_bound;
 
-	protected Map<String, ProcessorCoordinatorFreqOutboundPort> proc_coord_freq_map
-	= new HashMap<>();
+	protected Map<String, ProcessorCoordinatorFreqOutboundPort> proc_coord_freq_map;
 	protected Map<String, ProcessorCoordinatorManagementOutboundPort>
-		coord_map = new HashMap<>();
+		coord_map;
 	
 	protected Map<String, ProcessorCoordinatorOrderInboundPort> proc_coord_order_map;
 	
@@ -80,16 +79,17 @@ ProcessorCoordinatorOrderI{
 			String requestDispatcherHandlerInboundPortURI,
 			String requestDispatcherDynamicStateDataInboundPortURI,
 			String requestDispatcherStaticStateDataInboundPortURI,
-			Double averageResponseTime) throws Exception{
+			Double averageResponseTime,
+			HashMap<String, String> processorCoordinatorFreqInportURIS) throws Exception{
 		
 		super(autoHand_uri,1,1);
-		
 		assert autoHand_uri!=null;
 		assert managementInboundPortURI!=null;
 		assert requestDispatcherHandlerInboundPortURI != null;
 		assert requestDispatcherDynamicStateDataInboundPortURI != null;
 		assert requestDispatcherStaticStateDataInboundPortURI != null;
 		assert requestDispatcherUri != null;
+		assert processorCoordinatorFreqInportURIS != null;
 			
 		this.requestDispatcherURI = requestDispatcherUri;
 		this.autoHand_uri = autoHand_uri;
@@ -97,7 +97,7 @@ ProcessorCoordinatorOrderI{
 		this.requestDispatcherDynamicStateDataInboundPortURI = requestDispatcherDynamicStateDataInboundPortURI;
 		this.requestDispatcherStaticStateDataInboundPortURI = requestDispatcherStaticStateDataInboundPortURI;
 		this.requestDispatcherHandlerInboundPortURI = requestDispatcherHandlerInboundPortURI;
-
+		
 		addOfferedInterface(AutomaticHandlerManagementI.class);
 		automaticHandlerManagementInboundPort = new AutomaticHandlerManagementInboundPort(autoHand_uri, this);		
 		addPort(automaticHandlerManagementInboundPort);
@@ -129,7 +129,28 @@ ProcessorCoordinatorOrderI{
 		lower_bound = averageResponseTime-200;
 		upper_bound = averageResponseTime+200;
 		
-		proc_coord_order_map = new HashMap<>();		
+		proc_coord_order_map = new HashMap<>();	
+		coord_map = new HashMap<>();
+		proc_coord_freq_map = new HashMap<>();
+		
+		for(String proc_uri : processorCoordinatorFreqInportURIS.keySet()){
+			
+			ProcessorCoordinatorFreqOutboundPort outport =
+					new ProcessorCoordinatorFreqOutboundPort(this);
+			this.addPort(outport);
+			outport.publishPort();
+			
+			try{
+			doPortConnection(outport.getPortURI(),
+					processorCoordinatorFreqInportURIS.get(proc_uri),
+					ProcessorCoordinatorFreqConnector.class.getCanonicalName());
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+			
+			proc_coord_freq_map.put(proc_uri, outport);			
+		}
 		
 	}
 		
@@ -334,23 +355,20 @@ ProcessorCoordinatorOrderI{
 					
 					}
 					
-					List<List<String>> proc_coord_freq_inport_uri_list;
+					Map<String, String> proc_coord_freq_inport_uri_map;
 					
-					if( (proc_coord_freq_inport_uri_list=requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 2))!=null) {
+					if( (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 2))!=null) {
 						
-						for(List<String> proc_coord_freq_inport_uri : proc_coord_freq_inport_uri_list){
+						for(String proc_uri : proc_coord_freq_inport_uri_map.keySet()){
 							
 							ProcessorCoordinatorFreqOutboundPort outport = 
 									new ProcessorCoordinatorFreqOutboundPort(this);
 							addPort(outport);
 							outport.publishPort();
 							
-							doPortConnection(outport.getPortURI(),
-									proc_coord_freq_inport_uri.get(1), 
+							doPortConnection(outport.getPortURI(),proc_coord_freq_inport_uri_map.get(proc_uri), 
 									ProcessorCoordinatorFreqConnector.class.getCanonicalName());
-							
-							String proc_uri = proc_coord_freq_inport_uri.get(0);
-							
+														
 							proc_coord_freq_map.put(proc_uri, outport);
 							
 							String processorCoordinatorOrderInboundPortURI =

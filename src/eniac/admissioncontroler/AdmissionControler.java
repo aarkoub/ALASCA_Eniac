@@ -13,7 +13,7 @@ import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
 import eniac.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
 import eniac.automatichandler.AutomaticHandler;
-import eniac.processorcoordinator.ProcessorCoordinator;
+import eniac.processorcoordinator.connectors.ProcessorCoordinatorManagementConnector;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementOutboundPort;
 import eniac.requestadmission.ports.RequestAdmissionNotificationInboundPort;
 import eniac.requestadmission.ports.RequestAdmissionSubmissionInboundPort;
@@ -35,10 +35,8 @@ import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.computers.connectors.ComputerServicesConnector;
 import fr.sorbonne_u.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
-import fr.sorbonne_u.datacenter.hardware.processors.Processor.ProcessorPortTypes;
 import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
 import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.connectors.ProcessorManagementConnector;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorManagementOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
@@ -76,9 +74,10 @@ RequestDispatcherHandlerI{
 	protected static final String AVM_STATIC_STATE = "avm_static_state";
 	
 	protected Map<Integer, List<Computer>> nbCoresMap ;
-	protected Map<String, String> proc_management ;
 
 	protected Map<String, ProcessorCoordinatorManagementOutboundPort> proc_coord_map;
+
+	protected Map<String, String> proc_coord_management_inport_map;
 	
 	
 	public AdmissionControler(String uri, 
@@ -87,6 +86,7 @@ RequestDispatcherHandlerI{
 			String dynamicComponentCreationInboundPortURI,
 			String requestAdmissionSubmissionInboundPortURI,
 			String requestAdmissionNotificationInboundPortURI,
+			Map<String, String> processorCoordinatorManagementInboundPortURIS,
 			List<Computer> computers,
 			List<ComputerURI> computeruris,
 			List<ComputerMonitor> computerMonitors) throws Exception{
@@ -133,32 +133,16 @@ RequestDispatcherHandlerI{
 		reqDispAvms_map = new HashMap<>();
 		requestDispatcherHandlerInboundPortMap = new HashMap<>();
 		rd_notification_inport_map = new HashMap<>();
-		
-		proc_management = new HashMap<>();
-		
+	
 		
 		proc_coord_map = new HashMap<>();
+		
+		proc_coord_management_inport_map = processorCoordinatorManagementInboundPortURIS;
 		
 		ComputerServicesOutboundPort csop;
 		for (int i = 0; i < computers.size(); i++) {
 			Computer c =  computers.get(i);
-			
-			for(String proc_uri : c.getStaticState().getProcessorPortMap().keySet() ){
-				
-				
-				/*ProcessorManagementOutboundPort p = new ProcessorManagementOutboundPort(this);
-				addPort(p);
-				p.publishPort();
-				
-				doPortConnection(p.getPortURI(),
-						c.getStaticState().getProcessorPortMap().get(proc_uri).get(ProcessorPortTypes.MANAGEMENT),
-						ProcessorManagementConnector.class.getCanonicalName());*/
-				
-				proc_management.put(proc_uri, c.getStaticState().getProcessorPortMap().get(proc_uri).get(ProcessorPortTypes.MANAGEMENT));
-								
-			}
-			
-			
+						
 			ComputerURI cUri = computeruris.get(i);
 			csop = new ComputerServicesOutboundPort(this);
 			addPort(csop);
@@ -169,7 +153,7 @@ RequestDispatcherHandlerI{
 			
 		}
 		
-		
+				
 		
 	}
 	
@@ -180,7 +164,6 @@ RequestDispatcherHandlerI{
 	public void start() throws ComponentStartException{
 		super.start();
 		
-					
 			try {
 				doPortConnection(dynamicComponentCreationOutboundPort.getPortURI(), AbstractCVM.DCC_INBOUNDPORT_URI_SUFFIX, 
 						DynamicComponentCreationConnector.class.getCanonicalName());
@@ -189,41 +172,29 @@ RequestDispatcherHandlerI{
 				e.printStackTrace();
 			}
 			
-			for(String procUri : proc_management.keySet()){
+			for(String proc_uri : proc_coord_management_inport_map.keySet()){
 				
-				String coordinatorURI = "proc_coord_uri_"+procUri;
-				String proc_coord_management_inport_uri = "proc_coord_management_inport_uri_"+procUri;
-				String proc_management_inport_uri = proc_management.get(procUri);
-				
-				Object[] constructorParams = {
-						coordinatorURI,
-						procUri,
-						proc_management_inport_uri,
-						proc_coord_management_inport_uri
-				};
-				
-				
+				ProcessorCoordinatorManagementOutboundPort outport;
 				try {
-					dynamicComponentCreationOutboundPort.createComponent(
-							ProcessorCoordinator.class.getCanonicalName(),
-							constructorParams);
+					outport = new ProcessorCoordinatorManagementOutboundPort(this);
+					addPort(outport);
+					outport.publishPort();
 					
-					ProcessorCoordinatorManagementOutboundPort proc_coord_management_outport =
-							new ProcessorCoordinatorManagementOutboundPort(this);
-					addPort(proc_coord_management_outport);
-					proc_coord_management_outport.publishPort();
+					doPortConnection(outport.getPortURI(),
+							proc_coord_management_inport_map.get(proc_uri),
+							ProcessorCoordinatorManagementConnector.class.getCanonicalName());
 					
-					proc_coord_map.put(procUri, proc_coord_management_outport);
+					this.proc_coord_map.put(proc_uri, outport);
 					
 				} catch (Exception e) {
-					
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
-			
 				
+							
 			}
-			
+					
 		
 	}
 	
@@ -331,16 +302,16 @@ RequestDispatcherHandlerI{
 	}
 	
 	@Override
-	public List<List<String>> addCoreToAvm(String avm_uri, int nbcores) {
+	public Map<String, String> addCoreToAvm(String avm_uri, int nbcores) {
 		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
 		if(alloc == null) return null;
 		Computer computer = alloc.getComputer();
 		
-		List<List<String>> proc_coord_manage_inport_list = null;
+		Map<String, String> proc_coord_manage_inport_map = null;
 		
 		try {
 			
-			proc_coord_manage_inport_list = new ArrayList<>();
+			
 			
 			AllocatedCore[] cores = computer.allocateCores(nbcores);
 			if(cores.length != nbcores) {
@@ -350,27 +321,25 @@ RequestDispatcherHandlerI{
 			
 			AllocatedCore[] alloccores = new AllocatedCore[cores.length+alloc.getCores().length];
 			
+			proc_coord_manage_inport_map = new HashMap<>();
+			
+			
+			
 			for(int i = 0; i < alloc.getCores().length; i++) {
 				
-				List<String> uris = new ArrayList<>();
-				
 				alloccores[i] = alloc.getCores()[i];
-				
-				ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(proc_coord_map.get(alloccores[i].processorURI));
-				
-				uris.add(alloccores[i].processorURI);
-				uris.add(outport.addCoordInboundPort());
-				
-				proc_coord_manage_inport_list.add(uris);
-				
+								
 			}
+			
+			
 			
 			for(int i = alloc.getCores().length; i < alloccores.length; i++) {
 				alloccores[i] = cores[i-alloc.getCores().length];
 			}
 			alloc.setCores(alloccores);
+			getProcessorCoordinatorFreqURIS(alloccores, proc_coord_manage_inport_map);
 			avm_management_port_map.get(avm_uri).allocateCores(cores);
-			return proc_coord_manage_inport_list;
+			return proc_coord_manage_inport_map;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -434,16 +403,23 @@ RequestDispatcherHandlerI{
 	@Override
 	public RequestAdmissionI getNewRequestAdmission(RequestAdmissionI requestAdmission) throws Exception {
 		
-
-		
 		RequestAdmissionI newRequestAdmission = requestAdmission.copy();
 		
 		List<AllocationCore> allocation = allocateCoreFromComputers(2, DEFAULT_AVM_SIZE);
+		
+		
 		/* Il n'y a pas assez de ressources pour satisfaire les besoins du générateur de requête */
 		if(allocation == null) {
 			logMessage("Controleur d'admission : Refus de la demande du générateur "+requestAdmission.getRequestGeneratorManagementInboundPortURI());
 			return newRequestAdmission;
 		}
+		
+		Map<String, String> proc_uri_cores_list = new HashMap<>();
+		
+		for(AllocationCore ac : allocation){
+			getProcessorCoordinatorFreqURIS(ac.getCores(),proc_uri_cores_list );
+		}
+		
 		
 		String rd_uri = "dispatcher_"+id;
 		String distribInPortURI = "dispatcher_management_inbound_port_URI_"+id;
@@ -567,7 +543,8 @@ RequestDispatcherHandlerI{
 				requestDispatcherHandlerInboundPortURI,
 				requestDispatcherDynamicStateDataInboundPortURI,
 				requestDispatcherStaticStateDataInboundPortURI,
-				requestAdmission.getAverageRequestResponseTime()
+				requestAdmission.getAverageRequestResponseTime(),
+				proc_uri_cores_list
 				};
 		
 		addOfferedInterface(RequestDispatcherHandlerI.class);
@@ -598,6 +575,31 @@ RequestDispatcherHandlerI{
 	
 	
 	
+	private void getProcessorCoordinatorFreqURIS(AllocatedCore[] allocatedCores, Map<String, String> proc_coord_manage_inport_map) {
+		
+		
+		for(int i = 0; i < allocatedCores.length; i++) {
+						
+			if(proc_coord_manage_inport_map.containsKey(allocatedCores[i].processorInboundPortURI))
+				continue;
+			
+			
+			ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(allocatedCores[i].processorURI);
+		
+			try {
+				proc_coord_manage_inport_map.put(allocatedCores[i].processorURI, outport.addCoordInboundPort());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+							
+		}
+		
+	}
+
+
+
+
 	@Override
 	public boolean removeAVMFromRequestDispatcher(String RequestDispatcherURI, String avmURI) {
 		List<String> l = reqDispAvms_map.get(RequestDispatcherURI);

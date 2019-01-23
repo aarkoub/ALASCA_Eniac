@@ -30,7 +30,7 @@ ProcessorCoordinatorFreqI{
 	protected ProcessorCoordinatorManagementInboundPort management_inport;
 	
 	protected int number = 0;
-	protected Map<String, ProcessorCoordinatorFreqInboundPort> proc_cord_freq_map;
+	protected Map<String, ProcessorCoordinatorFreqInboundPort> proc_cord_freq_map = new HashMap<>();
 	
 	
 	

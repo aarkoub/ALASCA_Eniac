@@ -1,6 +1,7 @@
 package eniac.requestdispatcherhandler.ports;
 
 import java.util.List;
+import java.util.Map;
 
 import eniac.admissioncontroler.AdmissionControler;
 import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
@@ -84,11 +85,11 @@ implements RequestDispatcherHandlerI{
 		}
 
 		@Override
-		public List<List<String>> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
+		public Map<String, String> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
 			return this.getOwner().handleRequestSync(
-					new AbstractComponent.AbstractService<List<List<String>>>() {
+					new AbstractComponent.AbstractService<Map<String, String>>() {
 						@Override
-						public List<List<String>> call() throws Exception {
+						public Map<String, String> call() throws Exception {
 						
 							return ((AdmissionControler)this.getOwner()).addCoreToAvm(avm_uri, nbcores);
 						}
