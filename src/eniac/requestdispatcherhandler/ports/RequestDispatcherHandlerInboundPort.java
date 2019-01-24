@@ -85,25 +85,25 @@ implements RequestDispatcherHandlerI{
 		}
 
 		@Override
-		public Map<String, String> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
+		public Map<String, String> addCoreToAvm(String handler_uri, String avm_uri, int nbcores) throws Exception {
 			return this.getOwner().handleRequestSync(
 					new AbstractComponent.AbstractService<Map<String, String>>() {
 						@Override
 						public Map<String, String> call() throws Exception {
 						
-							return ((AdmissionControler)this.getOwner()).addCoreToAvm(avm_uri, nbcores);
+							return ((AdmissionControler)this.getOwner()).addCoreToAvm(handler_uri, avm_uri, nbcores);
 						}
 					}) ;
 		}
 
 		@Override
-		public boolean removeCoreFromAvm(String avm_uri) throws Exception {
+		public boolean removeCoreFromAvm(String handler_uri, String avm_uri) throws Exception {
 			return this.getOwner().handleRequestSync(
 					new AbstractComponent.AbstractService<Boolean>() {
 						@Override
 						public Boolean call() throws Exception {
 						
-							return ((AdmissionControler)this.getOwner()).removeCoreFromAvm(avm_uri);
+							return ((AdmissionControler)this.getOwner()).removeCoreFromAvm(handler_uri, avm_uri);
 						}
 					}) ;
 		}

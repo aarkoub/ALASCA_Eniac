@@ -997,6 +997,7 @@ implements	PushModeControllingI
 		}
 
 		this.cores[coreNo].setFrequency(frequency) ;
+		
 	}
 	
 	public String getProcessorDynamicStateDataURI() throws Exception{

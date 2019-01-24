@@ -49,13 +49,13 @@ implements RequestDispatcherHandlerI{
 	}
 
 	@Override
-	public Map<String, String> addCoreToAvm(String avm_uri, int nbcores) throws Exception {
-		return ((RequestDispatcherHandlerI)this.connector).addCoreToAvm(avm_uri, nbcores);
+	public Map<String, String> addCoreToAvm(String handler_uri, String avm_uri, int nbcores) throws Exception {
+		return ((RequestDispatcherHandlerI)this.connector).addCoreToAvm(handler_uri, avm_uri, nbcores);
 	}
 
 	@Override
-	public boolean removeCoreFromAvm(String avm_uri) throws Exception {
-		return ((RequestDispatcherHandlerI)this.connector).removeCoreFromAvm(avm_uri);
+	public boolean removeCoreFromAvm(String handler_uri, String avm_uri) throws Exception {
+		return ((RequestDispatcherHandlerI)this.connector).removeCoreFromAvm(handler_uri, avm_uri);
 	}
 
 	@Override

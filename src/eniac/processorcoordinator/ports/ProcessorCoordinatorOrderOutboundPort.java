@@ -26,8 +26,8 @@ implements ProcessorCoordinatorOrderI{
 	
 
 	@Override
-	public void setCoreFreqNextTime(String procURI, int frequency) throws Exception {
-		((ProcessorCoordinatorOrderI)connector).setCoreFreqNextTime(procURI, frequency);
+	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
+		((ProcessorCoordinatorOrderI)connector).setCoreFreqNextTime(procURI, coreNo, frequency);
 		
 	}
 

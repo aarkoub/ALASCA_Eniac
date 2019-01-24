@@ -8,8 +8,8 @@ extends AbstractConnector
 implements ProcessorCoordinatorOrderI{
 
 	@Override
-	public void setCoreFreqNextTime(String procURI, int frequency) throws Exception {
-		((ProcessorCoordinatorOrderI)this.offering).setCoreFreqNextTime(procURI, frequency);
+	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
+		((ProcessorCoordinatorOrderI)this.offering).setCoreFreqNextTime(procURI, coreNo, frequency);
 		
 	}
 	

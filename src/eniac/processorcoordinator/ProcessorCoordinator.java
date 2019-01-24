@@ -92,7 +92,7 @@ ProcessorCoordinatorFreqI{
 			doPortConnection(proc_order_outport.getPortURI(),
 					processorCoordinatorOrderInboundPortURI, 
 					ProcessorCoordinatorOrderConnector.class.getCanonicalName());
-			
+			System.out.println(automaticHandlerURI);
 			procCoordinatorOrderPortMap.put(automaticHandlerURI, proc_order_outport);
 			
 			
@@ -114,11 +114,10 @@ ProcessorCoordinatorFreqI{
 			 * Miss : if ecart trop grand, alors order les autres
 			 * get dynamic state from proc
 			 */
-			
 			for(String hand_uri : procCoordinatorOrderPortMap.keySet()){
 				
-				if(!hand_uri.equals(handler_uri))
-					procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, frequency);
+				procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, coreNo, frequency);
+
 			}
 			
 			

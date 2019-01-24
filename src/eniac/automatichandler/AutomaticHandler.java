@@ -6,16 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.math3.analysis.function.Log;
 import org.jfree.ui.RefineryUtilities;
 
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
 import eniac.processorcoordinator.connectors.ProcessorCoordinatorFreqConnector;
-import eniac.processorcoordinator.interfaces.ProcessorCoordinatorManagementI;
 import eniac.processorcoordinator.interfaces.ProcessorCoordinatorOrderI;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorFreqOutboundPort;
-import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementInboundPort;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementOutboundPort;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorOrderInboundPort;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
@@ -71,7 +68,9 @@ ProcessorCoordinatorOrderI{
 	protected Map<String, ProcessorCoordinatorManagementOutboundPort>
 		coord_map;
 	
-	protected Map<String, ProcessorCoordinatorOrderInboundPort> proc_coord_order_map;
+	protected Map<String, String> proc_coord_order_map;
+
+	protected Map<String, String> processorCoordinatorFreqInportURIS;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
@@ -140,17 +139,18 @@ ProcessorCoordinatorOrderI{
 			this.addPort(outport);
 			outport.publishPort();
 			
-			try{
-			doPortConnection(outport.getPortURI(),
-					processorCoordinatorFreqInportURIS.get(proc_uri),
-					ProcessorCoordinatorFreqConnector.class.getCanonicalName());
-			}
-			catch(Exception e){
-				e.printStackTrace();
-			}
+			String inport_uri = autoHand_uri+"_proc_order_inport";
 			
-			proc_coord_freq_map.put(proc_uri, outport);			
+			ProcessorCoordinatorOrderInboundPort inport =
+					new ProcessorCoordinatorOrderInboundPort(inport_uri, this);
+			this.addPort(inport);
+			inport.publishPort();
+						
+			proc_coord_freq_map.put(proc_uri, outport);	
+			proc_coord_order_map.put(proc_uri, inport_uri);
 		}
+		
+		this.processorCoordinatorFreqInportURIS = processorCoordinatorFreqInportURIS;
 		
 	}
 		
@@ -213,6 +213,22 @@ ProcessorCoordinatorOrderI{
 					DataConnector.class.getCanonicalName()
 					);
 			
+			
+
+			for(String proc_uri : proc_coord_freq_map.keySet()){
+				
+				ProcessorCoordinatorFreqOutboundPort outport =
+						proc_coord_freq_map.get(proc_uri);
+
+				doPortConnection(outport.getPortURI(),
+						processorCoordinatorFreqInportURIS.get(proc_uri),
+						ProcessorCoordinatorFreqConnector.class.getCanonicalName());
+				
+				outport.addProcessorCoordinatorOrderOutboundPort(autoHand_uri,
+						proc_coord_order_map.get(proc_uri));
+						
+			}
+			
 		System.out.println(this.autoHand_uri+" "+requestDispatcherURI);
 		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(500);
 			
@@ -264,7 +280,7 @@ ProcessorCoordinatorOrderI{
 					int freq = getNextFreq(currentFreq, admissibleFreq);
 					
 					if(currentFreq == freq) return false;
-					
+					System.out.println("ok "+proc_uri);
 						proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
 					
 					/*requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
@@ -357,7 +373,7 @@ ProcessorCoordinatorOrderI{
 					
 					Map<String, String> proc_coord_freq_inport_uri_map;
 					
-					if( (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addCoreToAvm(entry.getKey(), 2))!=null) {
+					if( (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addCoreToAvm(autoHand_uri, entry.getKey(), 2))!=null) {
 						
 						for(String proc_uri : proc_coord_freq_inport_uri_map.keySet()){
 							
@@ -379,7 +395,7 @@ ProcessorCoordinatorOrderI{
 							addPort(inport);
 							inport.publishPort();
 							
-							proc_coord_order_map.put(proc_uri, inport);
+							proc_coord_order_map.put(proc_uri, processorCoordinatorOrderInboundPortURI);
 							
 							outport.addProcessorCoordinatorOrderOutboundPort(autoHand_uri,
 									processorCoordinatorOrderInboundPortURI);
@@ -415,10 +431,10 @@ ProcessorCoordinatorOrderI{
 			if(removeUnusedAVM(dynamicstate)) return;
 			String avm = lowestScore(dynamicstate);
 			if(avm != null) {
-				if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(avm)) {
+				if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm)) {
 					logMessage(avm+" removed 1 core");
 				}
-				if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(avm)) {
+				if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm)) {
 					logMessage(avm+" removed 1 core");
 				}
 			}
@@ -526,9 +542,9 @@ ProcessorCoordinatorOrderI{
 
 
 	@Override
-	public void setCoreFreqNextTime(String procURI, int frequency) throws Exception {
+	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
 		
-		System.out.println(this.autoHand_uri+" "+procURI+" "+frequency);
+		System.out.println("GOT IT "+this.autoHand_uri+" "+procURI+" "+coreNo+" "+frequency);
 		
 	}
 

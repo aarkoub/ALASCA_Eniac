@@ -14,9 +14,9 @@ public interface RequestDispatcherHandlerI {
 	 
 	 public boolean removeAVMFromRequestDispatcher(String requestDispatcherURI, String avmURI) throws Exception;
 
-	 public Map<String, String> addCoreToAvm(String avm_uri, int nbcores) throws Exception;
+	 public Map<String, String> addCoreToAvm(String handler_uri, String avm_uri, int nbcores) throws Exception;
 	 
-	 public boolean removeCoreFromAvm(String avm_uri) throws Exception;
+	 public boolean removeCoreFromAvm(String handler_uri, String avm_uri) throws Exception;
 
 	public void setCoreFrequency(String processor_uri,int coreNo, int frequency)
 			throws UnavailableFrequencyException,
