@@ -27,5 +27,11 @@ implements ProcessorCoordinatorManagementI{
 	public String addCoordInboundPort() throws Exception {
 		return ((ProcessorCoordinatorManagementI)connector).addCoordInboundPort();
 	}
+
+	@Override
+	public void removeOrderOutport(String handler_uri) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

@@ -8,7 +8,7 @@ import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyExceptio
 
 public interface RequestDispatcherHandlerI {
 	
-	 public String addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception;
+	 public Map<String, String> addAVMToRequestDispatcher(String handler_uri, String requestDispatcherURI) throws Exception;
 	 
 	 public String removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception;
 	 

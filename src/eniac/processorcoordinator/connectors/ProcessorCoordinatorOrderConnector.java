@@ -12,6 +12,12 @@ implements ProcessorCoordinatorOrderI{
 		((ProcessorCoordinatorOrderI)this.offering).setCoreFreqNextTime(procURI, coreNo, frequency);
 		
 	}
+
+	@Override
+	public void removeFreq(String procURI) throws Exception {
+		((ProcessorCoordinatorOrderI)this.offering).removeFreq(procURI);
+		
+	}
 	
 	
 

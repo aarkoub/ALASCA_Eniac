@@ -48,5 +48,19 @@ implements ProcessorCoordinatorManagementI
 			
 		}
 
+		@Override
+		public void removeOrderOutport(String handler_uri) throws Exception {
+			this.getOwner().handleRequestSync(
+					new AbstractComponent.AbstractService<Void>() {
+						@Override
+						public Void call() throws Exception {
+							((ProcessorCoordinator)this.getOwner()).removeOrderOutport(handler_uri); ;
+							return null;
+							
+						}
+					});			
+			
+		}
+
 	
 }

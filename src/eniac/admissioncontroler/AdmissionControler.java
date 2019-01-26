@@ -287,6 +287,10 @@ RequestDispatcherHandlerI{
 			
 			AllocatedCore c = alloc.getCores()[0];
 			
+			for(AllocatedCore core : alloc.getCores()){
+				System.out.println("\t"+c.processorURI);
+			}
+			
 			computer.releaseCore(c);
 			AllocatedCore[] newAlloc = new AllocatedCore[alloc.getCores().length-1];
 			int j = 0;
@@ -298,12 +302,18 @@ RequestDispatcherHandlerI{
 			avm_management_port_map.get(avm_uri).removeProcDataStatePorts(c.processorURI);
 			
 			Map<String, Integer> cores_map = current_cores_handlers_map.get(handler_uri);
+			System.out.println("removing "+handler_uri+" "+c.processorURI);
 			int nb_cores = cores_map.get(c.processorURI);
 			if(nb_cores==1){
 				cores_map.remove(c.processorURI);
+				ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(c.processorURI);
+				outport.removeOrderOutport(handler_uri);
 			}
-			else
+			else{
 				cores_map.put(c.processorURI, nb_cores-1);
+				System.out.println("removed "+handler_uri+" "+c.processorURI+cores_map.get(c.processorURI));
+			}
+					
 				
 			
 		} catch (Exception e) {
@@ -323,8 +333,6 @@ RequestDispatcherHandlerI{
 		Map<String, String> proc_coord_manage_inport_map = null;
 		
 		try {
-			
-			
 			
 			AllocatedCore[] cores = computer.allocateCores(nbcores);
 			if(cores.length != nbcores) {
@@ -349,9 +357,9 @@ RequestDispatcherHandlerI{
 			for(int i = alloc.getCores().length; i < alloccores.length; i++) {
 				alloccores[i] = cores[i-alloc.getCores().length];
 			}
-			System.out.println("ICI");
+			
 			alloc.setCores(alloccores);
-			System.out.println("ICI 2");			
+					
 			getProcessorCoordinatorFreqURIS(handler_uri, alloccores, proc_coord_manage_inport_map);
 			
 			for(String proc_uri : proc_coord_manage_inport_map.keySet()){
@@ -606,12 +614,14 @@ RequestDispatcherHandlerI{
 		
 		for(int i = 0; i < allocatedCores.length; i++) {
 			
-			System.out.println("allocatedCores "+allocatedCores[i].coreNo+" "+allocatedCores[i].processorURI);
+			System.out.println("allocatedCores "+handler_uri+" "+allocatedCores[i].coreNo+" "+allocatedCores[i].processorURI);
 			
 			if(cores_map!=null){
 				if(cores_map.get(allocatedCores[i].processorURI)!=null){
+					System.out.println("ICI "+cores_map.get(allocatedCores[i].processorURI));
 					cores_map.put(allocatedCores[i].processorURI,
-							cores_map.get(allocatedCores[i].processorURI+1));
+							cores_map.get(allocatedCores[i].processorURI)+1);
+					
 					continue;
 				}
 			}
@@ -622,7 +632,6 @@ RequestDispatcherHandlerI{
 			
 			
 			cores_map.put(allocatedCores[i].processorURI, 1);
-			
 			
 			ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(allocatedCores[i].processorURI);
 		
@@ -674,7 +683,7 @@ RequestDispatcherHandlerI{
 
 
 	@Override
-	public String addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
+	public Map<String, String> addAVMToRequestDispatcher(String handler_uri, String requestDispatcherURI) throws Exception {
 		List<AllocationCore> cores = allocateCoreFromComputers(2, 1);
 		if(cores==null){
 		
@@ -723,8 +732,10 @@ RequestDispatcherHandlerI{
 		
 		cores.get(0).setVMUri(vmURI);
 		avmmop.allocateCores(cores.get(0).getCores());
+		Map<String, String> proc_coord_manage_inport_map = new HashMap<>();
+		getProcessorCoordinatorFreqURIS(handler_uri, cores.get(0).getCores(), proc_coord_manage_inport_map );
 		allocationVMCores_map.put(vmURI, cores.get(0));
-		return vmURI;
+		return proc_coord_manage_inport_map;
 	}
 
 

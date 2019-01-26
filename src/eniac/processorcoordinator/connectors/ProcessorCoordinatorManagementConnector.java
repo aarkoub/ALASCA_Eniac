@@ -12,6 +12,11 @@ implements ProcessorCoordinatorManagementI{
 		return ((ProcessorCoordinatorManagementI)offering).addCoordInboundPort();
 	}
 
+	@Override
+	public void removeOrderOutport(String handler_uri) throws Exception {
+		((ProcessorCoordinatorManagementI)offering).removeOrderOutport(handler_uri);		
+	}
+
 	
 
 }

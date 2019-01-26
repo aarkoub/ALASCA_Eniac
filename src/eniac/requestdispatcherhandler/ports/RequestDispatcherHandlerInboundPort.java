@@ -1,6 +1,5 @@
 package eniac.requestdispatcherhandler.ports;
 
-import java.util.List;
 import java.util.Map;
 
 import eniac.admissioncontroler.AdmissionControler;
@@ -42,13 +41,13 @@ implements RequestDispatcherHandlerI{
 
 
 		@Override
-		public String addAVMToRequestDispatcher(String requestDispatcherURI) throws Exception {
+		public Map<String, String> addAVMToRequestDispatcher(String handler_uri, String requestDispatcherURI) throws Exception {
 			return this.getOwner().handleRequestSync(
-			new AbstractComponent.AbstractService<String>() {
+			new AbstractComponent.AbstractService<Map<String, String>>() {
 				@Override
-				public String call() throws Exception {
+				public Map<String, String> call() throws Exception {
 				
-					return ((AdmissionControler)this.getOwner()).addAVMToRequestDispatcher(requestDispatcherURI);
+					return ((AdmissionControler)this.getOwner()).addAVMToRequestDispatcher(handler_uri, requestDispatcherURI);
 			
 				}
 			}) ;

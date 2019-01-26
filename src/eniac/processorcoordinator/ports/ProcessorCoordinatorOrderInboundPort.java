@@ -49,4 +49,17 @@ implements ProcessorCoordinatorOrderI{
 					});			
 		}
 
+		@Override
+		public void removeFreq(String procURI) throws Exception {
+			this.getOwner().handleRequestAsync(
+					new AbstractComponent.AbstractService<Void>() {
+						@Override
+						public Void call() throws Exception {
+							((AutomaticHandler)this.getOwner()).removeFreq(procURI);
+							return null;
+						}
+					});		
+			
+		}
+
 }

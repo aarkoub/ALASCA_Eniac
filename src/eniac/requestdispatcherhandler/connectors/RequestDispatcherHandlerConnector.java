@@ -14,8 +14,8 @@ implements RequestDispatcherHandlerI{
 
 
 	@Override
-	public String addAVMToRequestDispatcher(String requestDispatcherURI)throws Exception {
-		return ((RequestDispatcherHandlerI)this.offering).addAVMToRequestDispatcher(requestDispatcherURI);
+	public Map<String, String> addAVMToRequestDispatcher(String handler_uri, String requestDispatcherURI)throws Exception {
+		return ((RequestDispatcherHandlerI)this.offering).addAVMToRequestDispatcher(handler_uri, requestDispatcherURI);
 		
 	}
 

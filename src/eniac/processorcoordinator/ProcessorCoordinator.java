@@ -184,4 +184,14 @@ ProcessorCoordinatorFreqI{
 		return inbound_port_uri;
 	}
 
+	@Override
+	public void removeOrderOutport(String handler_uri) throws Exception {
+		
+		for(String hand_uri : procCoordinatorOrderPortMap.keySet()){
+			procCoordinatorOrderPortMap.get(hand_uri).removeFreq(this.procURI);
+			procCoordinatorOrderPortMap.remove(hand_uri).unpublishPort();
+		}
+		
+	}
+
 }
