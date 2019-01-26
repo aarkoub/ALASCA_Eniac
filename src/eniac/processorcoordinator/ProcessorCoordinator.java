@@ -186,12 +186,12 @@ ProcessorCoordinatorFreqI{
 
 	@Override
 	public void removeOrderOutport(String handler_uri) throws Exception {
+		System.out.println("LETS REMOVE FREQ PROT VIA ORDER PORT FOR "+handler_uri);
 		
-		for(String hand_uri : procCoordinatorOrderPortMap.keySet()){
-			procCoordinatorOrderPortMap.get(hand_uri).removeFreq(this.procURI);
-			procCoordinatorOrderPortMap.remove(hand_uri).unpublishPort();
-		}
-		
+		procCoordinatorOrderPortMap.get(handler_uri).removeFreq(this.procURI);
+		System.out.println("DONE");
+			
+		procCoordinatorOrderPortMap.remove(handler_uri).unpublishPort();		
 	}
 
 }

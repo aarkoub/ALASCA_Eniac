@@ -277,13 +277,13 @@ RequestDispatcherHandlerI{
 	
 	
 	@Override
-	public boolean removeCoreFromAvm(String handler_uri, String avm_uri) {
+	public List<String> removeCoreFromAvm(String handler_uri, String avm_uri) {
 		AllocationCore alloc = allocationVMCores_map.get(avm_uri);
-		if(alloc == null) return false;
+		if(alloc == null) return null;
 		Computer computer = alloc.getComputer();
 		try {
 			
-			if(alloc.getCores().length <= 1) return false;
+			if(alloc.getCores().length <= 1) return null;
 			
 			AllocatedCore c = alloc.getCores()[0];
 			
@@ -300,27 +300,17 @@ RequestDispatcherHandlerI{
 			}
 			alloc.setCores(newAlloc);
 			avm_management_port_map.get(avm_uri).removeProcDataStatePorts(c.processorURI);
+			List<String> res = new ArrayList<>();
+			 removeCoresMap(handler_uri, c.processorURI, res);
+			 return res;
 			
-			Map<String, Integer> cores_map = current_cores_handlers_map.get(handler_uri);
-			System.out.println("removing "+handler_uri+" "+c.processorURI);
-			int nb_cores = cores_map.get(c.processorURI);
-			if(nb_cores==1){
-				cores_map.remove(c.processorURI);
-				ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(c.processorURI);
-				outport.removeOrderOutport(handler_uri);
-			}
-			else{
-				cores_map.put(c.processorURI, nb_cores-1);
-				System.out.println("removed "+handler_uri+" "+c.processorURI+cores_map.get(c.processorURI));
-			}
-					
-				
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
+			return null;
 		}
-		return true;
+		
+		
 	}
 	
 	@Override
@@ -652,22 +642,34 @@ RequestDispatcherHandlerI{
 
 
 	@Override
-	public boolean removeAVMFromRequestDispatcher(String RequestDispatcherURI, String avmURI) {
+	public List<String> removeAVMFromRequestDispatcher(String handler_uri, String RequestDispatcherURI, String avmURI) {
+		
 		List<String> l = reqDispAvms_map.get(RequestDispatcherURI);
-		if(l == null) return false;
+		if(l == null) return null;
 		l.remove(avmURI);
 		RequestDispatcherManagementOutboundPort rqout = rd_management_port_map.get(RequestDispatcherURI);
 		try {
 			rqout.removeAVM(avmURI);
+			
+			List<String> proc_freqs = new ArrayList<>();
+			
+			for(AllocatedCore core : allocationVMCores_map.get(avmURI).getCores() ){
+				removeCoresMap(handler_uri, core.processorURI, proc_freqs);
+			}
+			
 			allocationVMCores_map.get(avmURI).freeCores();
+			
 			allocationVMCores_map.remove(avmURI);
 			avm_management_port_map.remove(avmURI).doDisconnection();
+			
+			return proc_freqs;
+			
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
+			return null;
 		}
+	
 		
-		return true;
 	}
 
 	@Override
@@ -740,27 +742,30 @@ RequestDispatcherHandlerI{
 
 
 
+	
+	private void removeCoresMap(String handler_uri, String processorURI,
+			List<String> procURIS){
 
-	@Override
-	public String removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
-		
-		List<String> l = reqDispAvms_map.get(requestDispatcherURI);
-		if(l == null || l.size()<=1) return null;
-		String avmURI = l.remove(0);
-		
-		RequestDispatcherManagementOutboundPort rqout = rd_management_port_map.get(requestDispatcherURI);
-		try {
-			rqout.removeAVM(avmURI);
-			allocationVMCores_map.get(avmURI).freeCores();
-			allocationVMCores_map.remove(avmURI);
-			avm_management_port_map.remove(avmURI).doDisconnection();
-		} catch (Exception e) {
-			e.printStackTrace();
-		
+		Map<String, Integer> cores_map = current_cores_handlers_map.get(handler_uri);
+		int nb_cores = cores_map.get(processorURI);
+		if(nb_cores==1){
+			cores_map.remove(processorURI);
+			ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(processorURI);
+			try {
+				System.out.println("removing "+handler_uri+" "+processorURI+cores_map.get(processorURI));
+				outport.removeOrderOutport(handler_uri);
+				System.out.println("removed "+handler_uri+" "+processorURI+cores_map.get(processorURI));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			procURIS.add(processorURI);
 		}
-		return avmURI;
-
-		
+		else{
+			cores_map.put(processorURI, nb_cores-1);
+			
+		}
+				
 	}
 
 

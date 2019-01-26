@@ -424,12 +424,13 @@ ProcessorCoordinatorOrderI{
 					logMessage("Response time too fast: "+avg+"ms (>"+ lower_bound +" ms wanted)");
 					if(removeUnusedAVM(dynamicstate)) return;
 					String avm = lowestScore(dynamicstate);
+					List<String> proc_freqs_list ;
 					if(avm != null) {
-						if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm)) {
+						if((proc_freqs_list=requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm))!=null) {
 							
 							logMessage(avm+" removed 1 core");
 						}
-						if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm)) {
+						if((proc_freqs_list=requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm))!=null) {
 							logMessage(avm+" removed 1 core");
 						}
 					}
@@ -508,8 +509,9 @@ ProcessorCoordinatorOrderI{
 		List<String> unusedavms = getUnusedAVMs(dynamicstate);
 		if(unusedavms.size() <= 1) return false;
 		for(String avm: unusedavms) {
+			List<String> proc_freqs_list;
 			try {
-				if(requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI, avm)) {
+				if((proc_freqs_list=requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(autoHand_uri, requestDispatcherURI, avm))!=null) {
 					logMessage(avm+" removed.");
 					return true;
 				}
@@ -524,8 +526,9 @@ ProcessorCoordinatorOrderI{
 		List<String> unusedavms = getUnusedAVMs(dynamicstate);
 		if(unusedavms.size() <= 1) return;
 		for(String avm: unusedavms) {
+			List <String> proc_freqs_list;
 			try {
-				if(requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(requestDispatcherURI, avm)) {
+				if((proc_freqs_list=requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(autoHand_uri, requestDispatcherURI, avm))!=null) {
 					logMessage(avm+" removed.");
 				}
 			} catch (Exception e) {

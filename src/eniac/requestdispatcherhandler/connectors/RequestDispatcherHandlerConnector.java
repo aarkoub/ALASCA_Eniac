@@ -1,5 +1,6 @@
 package eniac.requestdispatcherhandler.connectors;
 
+import java.util.List;
 import java.util.Map;
 
 import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
@@ -18,17 +19,11 @@ implements RequestDispatcherHandlerI{
 		return ((RequestDispatcherHandlerI)this.offering).addAVMToRequestDispatcher(handler_uri, requestDispatcherURI);
 		
 	}
-
-	@Override
-	public String removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception{
-		return ((RequestDispatcherHandlerI)this.offering).removeAVMFromRequestDispatcher(requestDispatcherURI);
-		
-	}
 	
 	
 	@Override
-	public boolean removeAVMFromRequestDispatcher(String requestDispatcherURI, String avmURI) throws Exception{
-		return ((RequestDispatcherHandlerI)this.offering).removeAVMFromRequestDispatcher(requestDispatcherURI, avmURI);
+	public List<String> removeAVMFromRequestDispatcher(String handler_uri, String requestDispatcherURI, String avmURI) throws Exception{
+		return ((RequestDispatcherHandlerI)this.offering).removeAVMFromRequestDispatcher(handler_uri, requestDispatcherURI, avmURI);
 		
 	}
 	
@@ -39,7 +34,7 @@ implements RequestDispatcherHandlerI{
 	}
 
 	@Override
-	public boolean removeCoreFromAvm(String handler_uri, String avm_uri) throws Exception {
+	public List<String> removeCoreFromAvm(String handler_uri, String avm_uri) throws Exception {
 		return ((RequestDispatcherHandlerI)this.offering).removeCoreFromAvm(handler_uri, avm_uri);
 	}
 

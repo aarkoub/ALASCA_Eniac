@@ -1,5 +1,6 @@
 package eniac.requestdispatcherhandler.ports;
 
+import java.util.List;
 import java.util.Map;
 
 import eniac.admissioncontroler.AdmissionControler;
@@ -54,30 +55,17 @@ implements RequestDispatcherHandlerI{
 			
 		}
 
-		@Override
-		public String removeAVMFromRequestDispatcher(String requestDispatcherURI) throws Exception {
 			
-			return this.getOwner().handleRequestSync(
-					new AbstractComponent.AbstractService<String>() {
-						@Override
-						public String call() throws Exception {
-						
-							return ((AdmissionControler)this.getOwner()).removeAVMFromRequestDispatcher(requestDispatcherURI);
-						}
-					}) ;
-			
-		}
-		
 		
 		@Override
-		public boolean removeAVMFromRequestDispatcher(String requestDispatcherURI, String avmURI) throws Exception {
+		public List<String> removeAVMFromRequestDispatcher(String handler_uri, String requestDispatcherURI, String avmURI) throws Exception {
 			
 			return this.getOwner().handleRequestSync(
-					new AbstractComponent.AbstractService<Boolean>() {
+					new AbstractComponent.AbstractService< List<String> >() {
 						@Override
-						public Boolean call() throws Exception {
+						public  List<String>  call() throws Exception {
 						
-							return ((AdmissionControler)this.getOwner()).removeAVMFromRequestDispatcher(requestDispatcherURI, avmURI);
+							return ((AdmissionControler)this.getOwner()).removeAVMFromRequestDispatcher(handler_uri, requestDispatcherURI, avmURI);
 						}
 					}) ;
 			
@@ -96,11 +84,11 @@ implements RequestDispatcherHandlerI{
 		}
 
 		@Override
-		public boolean removeCoreFromAvm(String handler_uri, String avm_uri) throws Exception {
+		public List<String> removeCoreFromAvm(String handler_uri, String avm_uri) throws Exception {
 			return this.getOwner().handleRequestSync(
-					new AbstractComponent.AbstractService<Boolean>() {
+					new AbstractComponent.AbstractService< List<String> >() {
 						@Override
-						public Boolean call() throws Exception {
+						public  List<String>  call() throws Exception {
 						
 							return ((AdmissionControler)this.getOwner()).removeCoreFromAvm(handler_uri, avm_uri);
 						}
