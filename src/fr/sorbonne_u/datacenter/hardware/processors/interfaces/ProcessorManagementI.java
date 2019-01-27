@@ -1,5 +1,7 @@
 package fr.sorbonne_u.datacenter.hardware.processors.interfaces;
 
+import java.util.List;
+
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -86,6 +88,8 @@ extends		OfferedI,
 	throws	UnavailableFrequencyException,
 			UnacceptableFrequencyException,
 			Exception ;
+	
+	public List<String> getStateDataInportsForProcCoord() throws Exception;
 	
 	
 }

@@ -285,8 +285,9 @@ ProcessorCoordinatorOrderI{
 					int freq = getNextFreq(currentFreq, admissibleFreq);
 					
 					if(currentFreq == freq) return false;
-					System.out.println("ok "+autoHand_uri+" "+proc_uri);
+					System.out.println("ok "+autoHand_uri+" "+proc_uri+" "+core);
 					//if(proc_coord_freq_map.get(proc_uri)!=null)
+					if(proc_coord_freq_map.get(proc_uri)==null)System.out.println(proc_coord_freq_map.get(proc_uri));
 						proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
 					
 					/*requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 

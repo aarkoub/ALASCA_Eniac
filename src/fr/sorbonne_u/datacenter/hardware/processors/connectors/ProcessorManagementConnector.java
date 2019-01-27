@@ -1,5 +1,7 @@
 package fr.sorbonne_u.datacenter.hardware.processors.connectors;
 
+import java.util.List;
+
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -83,6 +85,11 @@ implements	ProcessorManagementI
 
 		((ProcessorManagementI)this.offering).
 										setCoreFrequency(coreNo, frequency) ;
+	}
+
+	@Override
+	public List<String> getStateDataInportsForProcCoord() throws Exception {
+		return ((ProcessorManagementI)this.offering).getStateDataInportsForProcCoord();
 	}
 
 	

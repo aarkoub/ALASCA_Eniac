@@ -653,9 +653,9 @@ RequestDispatcherHandlerI{
 			
 			List<String> proc_freqs = new ArrayList<>();
 			
-			for(AllocatedCore core : allocationVMCores_map.get(avmURI).getCores() ){
+			/*for(AllocatedCore core : allocationVMCores_map.get(avmURI).getCores() ){
 				removeCoresMap(handler_uri, core.processorURI, proc_freqs);
-			}
+			}*/
 			
 			allocationVMCores_map.get(avmURI).freeCores();
 			

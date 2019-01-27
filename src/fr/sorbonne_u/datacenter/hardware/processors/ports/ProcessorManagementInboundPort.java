@@ -1,5 +1,7 @@
 package fr.sorbonne_u.datacenter.hardware.processors.ports;
 
+import java.util.List;
+
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -113,6 +115,18 @@ implements	ProcessorManagementI
 						((Processor)this.getOwner()).
 								setCoreFrequency(coreNo, frequency) ;
 						return null;
+					}
+				});
+	}
+
+	@Override
+	public List<String> getStateDataInportsForProcCoord() throws Exception {
+		
+		return this.getOwner().handleRequestSync(
+				new AbstractComponent.AbstractService< List<String>>() {
+					@Override
+					public  List<String> call() throws Exception {
+						return ((Processor)this.getOwner()).addStateDataOutportsForProcCoord();
 					}
 				});
 	}

@@ -13,14 +13,22 @@ import eniac.processorcoordinator.ports.ProcessorCoordinatorFreqInboundPort;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementInboundPort;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorOrderOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
+import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
+import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
 import fr.sorbonne_u.datacenter.hardware.processors.connectors.ProcessorManagementConnector;
+import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorDynamicStateI;
+import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorStateDataConsumerI;
+import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorStaticStateI;
+import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorDynamicStateDataOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorManagementOutboundPort;
+import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorStaticStateDataOutboundPort;
 
 public class ProcessorCoordinator extends AbstractComponent
 implements ProcessorCoordinatorManagementI,
-ProcessorCoordinatorFreqI{
+ProcessorCoordinatorFreqI,
+ProcessorStateDataConsumerI{
 
 	protected String coordinatorURI;
 	protected String processorManagementInboundPortURI;
@@ -28,6 +36,8 @@ ProcessorCoordinatorFreqI{
 	protected ProcessorManagementOutboundPort processorManagementOutboundPort;
 	protected Map<String, ProcessorCoordinatorOrderOutboundPort> procCoordinatorOrderPortMap;
 	protected ProcessorCoordinatorManagementInboundPort management_inport;
+	protected ProcessorStaticStateDataOutboundPort static_outport;
+	protected ProcessorDynamicStateDataOutboundPort dynamic_outport;
 	
 	protected int number = 0;
 	protected Map<String, ProcessorCoordinatorFreqInboundPort> proc_cord_freq_map = new HashMap<>();
@@ -71,6 +81,31 @@ ProcessorCoordinatorFreqI{
 			doPortConnection(processorManagementOutboundPort.getPortURI(),
 					processorManagementInboundPortURI,
 					ProcessorManagementConnector.class.getCanonicalName());
+			
+			List<String> uris = processorManagementOutboundPort.getStateDataInportsForProcCoord();
+			
+			String static_inport_uri = uris.get(0);
+			String dynamic_inport_uri = uris.get(1);
+			
+			static_outport = new ProcessorStaticStateDataOutboundPort(this, procURI);
+			addPort(static_outport);
+			static_outport.publishPort();
+			
+			doPortConnection(static_outport.getPortURI(),
+					static_inport_uri,
+					DataConnector.class.getCanonicalName());
+			
+			dynamic_outport = new ProcessorDynamicStateDataOutboundPort(this, procURI);
+			addPort(dynamic_outport);
+			dynamic_outport.publishPort();
+			
+			doPortConnection(dynamic_outport.getPortURI(),
+					dynamic_inport_uri,
+					ControlledDataConnector.class.getCanonicalName());
+			
+			
+			
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -192,6 +227,19 @@ ProcessorCoordinatorFreqI{
 		System.out.println("DONE");
 			
 		procCoordinatorOrderPortMap.remove(handler_uri).unpublishPort();		
+	}
+
+	@Override
+	public void acceptProcessorStaticData(String processorURI, ProcessorStaticStateI staticState) throws Exception {
+		
+		
+	}
+
+	@Override
+	public void acceptProcessorDynamicData(String processorURI, ProcessorDynamicStateI currentDynamicState)
+			throws Exception {
+		
+		
 	}
 
 }

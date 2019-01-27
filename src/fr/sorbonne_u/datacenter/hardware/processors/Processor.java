@@ -1,5 +1,7 @@
 package fr.sorbonne_u.datacenter.hardware.processors ;
 
+import java.util.ArrayList;
+
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -36,6 +38,7 @@ package fr.sorbonne_u.datacenter.hardware.processors ;
 
 import java.util.HashMap ;
 import java.util.HashSet ;
+import java.util.List;
 import java.util.Map ;
 import java.util.Set ;
 import java.util.concurrent.ScheduledFuture;
@@ -52,11 +55,13 @@ import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServices
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesNotificationI;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorStaticStateI;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorDynamicStateDataInboundPort;
+import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorDynamicStateDataOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorIntrospectionInboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorManagementInboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorServicesInboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorServicesNotificationOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorStaticStateDataInboundPort;
+import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorStaticStateDataOutboundPort;
 import fr.sorbonne_u.datacenter.interfaces.ControlledDataOfferedI;
 import fr.sorbonne_u.datacenter.interfaces.PushModeControllingI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.TaskI;
@@ -177,6 +182,9 @@ implements	PushModeControllingI
 	protected String processorDynamicStateDataInboundPortURIForAVM;
 	protected String processorStaticStateDataInboundPortURIForAVM;
 	protected String processorManagementInboundPortURI;
+	
+	protected ProcessorDynamicStateDataInboundPort coord_dynamic_inport ;
+	protected ProcessorStaticStateDataInboundPort coord_static_inport;
 
 	// ------------------------------------------------------------------------
 	// Component constructor
@@ -640,6 +648,11 @@ implements	PushModeControllingI
 			
 		}
 		
+		if(this.coord_static_inport.connected()){
+			ProcessorStaticStateI pss = this.getStaticState() ;
+			coord_static_inport.send(pss);
+		}
+		
 		
 		
 	}
@@ -699,6 +712,8 @@ implements	PushModeControllingI
 			processorDynamicStateDataInboundPortAVM.send(pds) ;
 			
 		}
+		
+		coord_dynamic_inport.send(pds);
 		
 	
 		
@@ -1010,6 +1025,30 @@ implements	PushModeControllingI
 	
 	public String getProcessorManagementInboundPortURI() throws Exception{
 		return processorManagementInboundPortURI;
+	}
+	
+	public List<String> addStateDataOutportsForProcCoord() throws Exception {
+		
+		List<String> uris = new ArrayList<>();
+		String dynamic_inport = processorURI+"_proc_coord_dynamic_inport";
+		String static_inport =  processorURI+"_proc_coord_static_inport";
+		
+		
+		coord_dynamic_inport = 
+				new ProcessorDynamicStateDataInboundPort(dynamic_inport,this);
+		addPort(coord_dynamic_inport);
+		coord_dynamic_inport.publishPort();
+		
+		coord_static_inport = 
+				new ProcessorStaticStateDataInboundPort(static_inport,this);
+		addPort(coord_static_inport);
+		coord_static_inport.publishPort();
+		
+		uris.add(static_inport);
+		uris.add(dynamic_inport);
+		
+		return uris;
+		
 	}
 	
 }
