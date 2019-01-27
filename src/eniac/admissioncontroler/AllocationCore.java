@@ -3,9 +3,25 @@ package eniac.admissioncontroler;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 
+/**
+ * La classe AllocationCore est un conteneur afin de garder en mémoire quelles sont les coeurs alloués à une AVM.
+ * Cela permet par la suite, d'allouer des coeurs en plus, car une AVM doit avoir ses coeurs sur le même ordinateur, cela permet aussi de désallouer plus facilement.
+ * @author L-C
+ *
+ */
+
 public class AllocationCore {
+	/**
+	 * Ordinateur où se trouve les coeurs
+	 */
 	private Computer computer;
+	/**
+	 * L'ensemble de coeurs alloués
+	 */
 	private AllocatedCore[] cores;
+	/**
+	 * URI de l'AVM auquel les coeurs sont attribués
+	 */
 	private String VMUri;
 
 	

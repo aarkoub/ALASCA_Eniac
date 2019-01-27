@@ -29,8 +29,8 @@ public class AVMData {
 
 	/**
 	 * Unique constructeur
-	 * @param avmuris
-	 * @param avmports
+	 * @param avmuris Uris
+	 * @param avmports Ports
 	 */
 	public AVMData(AVMUris avmuris, AVMPorts avmports) {
 		this.avmports = avmports;

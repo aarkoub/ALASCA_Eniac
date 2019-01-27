@@ -21,7 +21,7 @@ public interface SubmissionISend extends OfferedI, RequiredI{
 	/**
 	 * Soumission et demande de notification lorsque la requête termine
 	 * @param r la requête à soumettre
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	public void sendRequestAndNotify(final RequestI r) throws Exception ;
 }

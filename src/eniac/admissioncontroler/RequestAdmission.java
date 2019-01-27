@@ -2,13 +2,36 @@ package eniac.admissioncontroler;
 
 import eniac.admissioncontroler.interfaces.RequestAdmissionI;
 
+/**
+ * La classe RequestAdmission est un implantation de RequestAdmissionI, il s'agit de l'objet envoyé par le RequestGenerator lors de la soumission de demande d'hébergement d'application au
+ * contrôleur d'admission et y contient le temps de réponse souhaitée, le port de notification du RequestGenerator.
+ * L'objet est ensuite renvoyé par le contrôleur d'admission au RequestGenerator dans le cas où le contrôleur accepte la demande et dans cet objet contient l'URI du port de soumission 
+ * du RequestDispatcher.
+ * @author L-C
+ *
+ */
 public class RequestAdmission implements RequestAdmissionI {
 	private static final long serialVersionUID = 1L;
 	
+	/**
+	 * URI de notification du RequestGenerator
+	 */
 	private String requestNotificationPortURI;
+	/**
+	 * URI de soumission du RequestDispatcher
+	 */
 	private String requestSubmissionPortURI;
+	/**
+	 * URI du RequestDispatcher alloué
+	 */
 	private String requestDispatcherURI;
+	/**
+	 * URI du RequestGenerator pour les contrôles
+	 */
 	private String requestGeneratorManagementInboundPortURI;
+	/**
+	 * Temps de réponse souhaités par le demandeur d'hébergement
+	 */
 	private double requestAverageResponseTime = 0;
 	
 	
@@ -59,7 +82,7 @@ public class RequestAdmission implements RequestAdmissionI {
 		newRequestAdmission.requestNotificationPortURI = this.requestNotificationPortURI;
 		newRequestAdmission.requestSubmissionPortURI = this.requestSubmissionPortURI;
 		newRequestAdmission.requestDispatcherURI = this.requestDispatcherURI;
-		
+		newRequestAdmission.requestAverageResponseTime = this.requestAverageResponseTime;
 		return newRequestAdmission;
 	}
 

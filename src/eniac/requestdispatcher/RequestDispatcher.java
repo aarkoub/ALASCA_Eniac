@@ -379,7 +379,8 @@ PushModeControllingI{
 
 	
 	/**
-	 * Ajoute et créer les différents ports pour l'AVM
+	 * Ajoute et créer les différents ports pour l'AVM, c'est-à-dire 
+	 * le port de notification, le port de soumission, les ports d'envoit d'informations statiques et dynamiques
 	 * mais ne les connectes pas encore.
 	 * @param avmuris les URIs des ports de l'AVM
 	 */

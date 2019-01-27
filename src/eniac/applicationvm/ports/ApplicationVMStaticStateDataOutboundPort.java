@@ -7,6 +7,13 @@ import fr.sorbonne_u.components.ports.AbstractDataOutboundPort;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateDataI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateI;
 
+/**
+ * Cette classe correspond au port utilisé pour l'envoit des données statiques de l'AVM vers le RequestDispatcher.
+ * Il a été prit exemple sur BCM.
+ * @author L-C
+ *
+ */
+
 public class ApplicationVMStaticStateDataOutboundPort extends	
 AbstractDataOutboundPort
 implements ApplicationVMStaticStateDataI {

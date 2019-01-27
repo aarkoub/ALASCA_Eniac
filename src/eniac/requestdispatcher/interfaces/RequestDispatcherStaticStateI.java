@@ -17,7 +17,7 @@ DataRequiredI.DataI{
 
 	/**
 	 * Retourne les données statiques de chaque AVM (coeurs et fréquences)
-	 * @return
+	 * @return données statiques
 	 */
 	public Map<String, ApplicationVMStaticStateI> getAVMStaticStateMap();
 	

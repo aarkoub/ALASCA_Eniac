@@ -154,7 +154,7 @@ implements	RequestGeneratorManagementI
 	 * par la réponse du Controlleur d'admission, ici nous faisont la connection avec un connecteur générer par Javassist, nous avons intentionnellement changé la 
 	 * méthode soumission de requête afin d'utiliser Javassist.
 	 * @return true si le controlleur d'admission accepte/ false sinon
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	@Override
 	public boolean askAdmissionControler() throws Exception {
@@ -176,6 +176,7 @@ implements	RequestGeneratorManagementI
 	/**
 	 * Cette méthode demande au controlleur d'admission de libérer les ressources qui ont été alloué pour ce RequestGenerator, car
 	 * celui-ci a terminé ses demandes de tâches.
+	 * @throws Exception exception
 	 */
 	@Override
 	public void freeAdmissionControlerRessources() throws Exception {

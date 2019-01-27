@@ -1,9 +1,29 @@
 package eniac.admissioncontroler;
 
+/**
+ * La classe ComputerURI regroupe toutes les URIs qui sont utilisés par une instance de Computer, on y retrouve notamment son URI et
+ * les URIs des ports utilisés.
+ * @author L-C
+ *
+ */
+
+
 public class ComputerURI {
+	/**
+	 * URI du Computer
+	 */
 	private String ComputerUri;
+	/**
+	 * URI pour les services
+	 */
 	private String ComputerServicesInboundPortURI;
+	/**
+	 * URI pour les envoit de données statiques
+	 */
 	private String ComputerStaticStateDataInboundPortURI;
+	/**
+	 * URI pour les envoit de données dynamiques
+	 */
 	private String ComputerDynamicStateDataInboundPortURI;
 	
 	public ComputerURI(String ComputerUri, String ComputerServicesInboundPortURI, String ComputerStaticStateDataInboundPortURI, String ComputerDynamicStateDataInboundPortURI) {
