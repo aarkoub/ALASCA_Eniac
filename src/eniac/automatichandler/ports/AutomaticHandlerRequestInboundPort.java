@@ -1,10 +1,10 @@
-package eniac.requestdispatcherhandler.ports;
+package eniac.automatichandler.ports;
 
 import java.util.List;
 import java.util.Map;
 
 import eniac.admissioncontroler.AdmissionControler;
-import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
+import eniac.automatichandler.interfaces.AutomaticHandlerRequestI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
@@ -12,29 +12,29 @@ import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
 import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 
-public class RequestDispatcherHandlerInboundPort
+public class AutomaticHandlerRequestInboundPort
 extends AbstractInboundPort
-implements RequestDispatcherHandlerI{
+implements AutomaticHandlerRequestI{
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	public	RequestDispatcherHandlerInboundPort(
+	public	AutomaticHandlerRequestInboundPort(
 			ComponentI owner
 			) throws Exception
 		{
-			super(RequestDispatcherHandlerI.class, owner) ;
+			super(AutomaticHandlerRequestI.class, owner) ;
 
 		}
 
-		public	RequestDispatcherHandlerInboundPort(
+		public	AutomaticHandlerRequestInboundPort(
 			String uri,
 			ComponentI owner
 			) throws Exception
 		{
-			super(uri, RequestDispatcherHandlerI.class, owner);
+			super(uri, AutomaticHandlerRequestI.class, owner);
 
 			
 		}

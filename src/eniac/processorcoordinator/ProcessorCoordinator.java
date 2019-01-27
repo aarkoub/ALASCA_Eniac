@@ -148,7 +148,6 @@ ProcessorStateDataConsumerI{
 	@Override
 	public void setCoreFrequency(String handler_uri, int coreNo, int frequency) {
 		try {
-			
 		
 			processorManagementOutboundPort.setCoreFrequency(coreNo, frequency);
 			

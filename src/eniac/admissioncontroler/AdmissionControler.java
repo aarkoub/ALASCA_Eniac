@@ -13,6 +13,8 @@ import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionHandlerI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
 import eniac.admissioncontroler.ports.AdmissionControlerManagementInboundPort;
 import eniac.automatichandler.AutomaticHandler;
+import eniac.automatichandler.interfaces.AutomaticHandlerRequestI;
+import eniac.automatichandler.ports.AutomaticHandlerRequestInboundPort;
 import eniac.processorcoordinator.connectors.ProcessorCoordinatorManagementConnector;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementOutboundPort;
 import eniac.requestadmission.ports.RequestAdmissionNotificationInboundPort;
@@ -22,8 +24,6 @@ import eniac.requestdispatcher.connectors.RequestDispatcherManagementConnector;
 import eniac.requestdispatcher.data.AVMUris;
 import eniac.requestdispatcher.interfaces.RequestDispatcherManagementI;
 import eniac.requestdispatcher.ports.RequestDispatcherManagementOutboundPort;
-import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
-import eniac.requestdispatcherhandler.ports.RequestDispatcherHandlerInboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
@@ -47,7 +47,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManage
 public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI, 
 RequestAdmissionSubmissionHandlerI,
 RequestAdmissionNotificationHandlerI,
-RequestDispatcherHandlerI{
+AutomaticHandlerRequestI{
 	
 	protected String uri;
 	
@@ -56,7 +56,7 @@ RequestDispatcherHandlerI{
 	protected DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
 	protected RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
 	protected RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
-	protected Map<String,RequestDispatcherHandlerInboundPort> requestDispatcherHandlerInboundPortMap;
+	protected Map<String,AutomaticHandlerRequestInboundPort> requestDispatcherHandlerInboundPortMap;
 	
 	protected static final int DEFAULT_AVM_SIZE = 2;
 	protected Map<String, RequestDispatcherManagementOutboundPort> rd_management_port_map;
@@ -569,8 +569,8 @@ RequestDispatcherHandlerI{
 				proc_uri_cores_list
 				};
 		
-		addOfferedInterface(RequestDispatcherHandlerI.class);
-		RequestDispatcherHandlerInboundPort req_disp_hand_inport = new RequestDispatcherHandlerInboundPort(requestDispatcherHandlerInboundPortURI, this);
+		addOfferedInterface(AutomaticHandlerRequestI.class);
+		AutomaticHandlerRequestInboundPort req_disp_hand_inport = new AutomaticHandlerRequestInboundPort(requestDispatcherHandlerInboundPortURI, this);
 		addPort(req_disp_hand_inport);
 		req_disp_hand_inport.publishPort();
 		

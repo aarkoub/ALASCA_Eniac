@@ -1,4 +1,4 @@
-package eniac.requestdispatcherhandler.interfaces;
+package eniac.automatichandler.interfaces;
 
 import java.util.List;
 import java.util.Map;
@@ -7,7 +7,7 @@ import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
 import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 
-public interface RequestDispatcherHandlerI {
+public interface AutomaticHandlerRequestI {
 	
 	 public Map<String, String> addAVMToRequestDispatcher(String handler_uri, String requestDispatcherURI) throws Exception;
 	 	 

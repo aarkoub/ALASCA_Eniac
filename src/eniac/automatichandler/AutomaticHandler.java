@@ -6,13 +6,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 
 import org.jfree.ui.RefineryUtilities;
 
 import eniac.applicationvm.ApplicationVMDynamicState;
+import eniac.automatichandler.connectors.AutomaticHandlerRequestConnector;
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
+import eniac.automatichandler.interfaces.AutomaticHandlerRequestI;
 import eniac.automatichandler.ports.AutomaticHandlerManagementInboundPort;
+import eniac.automatichandler.ports.AutomaticHandlerRequestOutboundPort;
 import eniac.processorcoordinator.connectors.ProcessorCoordinatorFreqConnector;
 import eniac.processorcoordinator.interfaces.ProcessorCoordinatorOrderI;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorFreqOutboundPort;
@@ -23,9 +27,6 @@ import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
 import eniac.requestdispatcher.ports.RequestDispatcherDynamicStateDataOutboundPort;
 import eniac.requestdispatcher.ports.RequestDispatcherStaticStateDataOutboundPort;
-import eniac.requestdispatcherhandler.connectors.RequestDispatcherHandlerConnector;
-import eniac.requestdispatcherhandler.interfaces.RequestDispatcherHandlerI;
-import eniac.requestdispatcherhandler.ports.RequestDispatcherHandlerOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
@@ -46,7 +47,7 @@ ProcessorCoordinatorOrderI{
 	
 	protected RequestDispatcherDynamicStateDataOutboundPort requestDispatcherDynamicStateDataOutboundPort;
 	protected RequestDispatcherStaticStateDataOutboundPort requestDispatcherStaticStateDataOutboundPort;
-	protected RequestDispatcherHandlerOutboundPort requestDispatcherHandlerOutboundPort;
+	protected AutomaticHandlerRequestOutboundPort requestDispatcherHandlerOutboundPort;
 	
 	protected String requestDispatcherHandlerInboundPortURI;
 	protected String requestDispatcherDynamicStateDataInboundPortURI;
@@ -107,8 +108,8 @@ ProcessorCoordinatorOrderI{
 		addPort(automaticHandlerManagementInboundPort);
 		automaticHandlerManagementInboundPort.publishPort();
 		
-		addRequiredInterface(RequestDispatcherHandlerI.class);
-		requestDispatcherHandlerOutboundPort = new RequestDispatcherHandlerOutboundPort(this);
+		addRequiredInterface(AutomaticHandlerRequestI.class);
+		requestDispatcherHandlerOutboundPort = new AutomaticHandlerRequestOutboundPort(this);
 		addPort(requestDispatcherHandlerOutboundPort);
 		requestDispatcherHandlerOutboundPort.publishPort();
 		
@@ -205,7 +206,7 @@ ProcessorCoordinatorOrderI{
 			
 			doPortConnection(requestDispatcherHandlerOutboundPort.getPortURI(),
 					requestDispatcherHandlerInboundPortURI,
-					RequestDispatcherHandlerConnector.class.getCanonicalName()
+					AutomaticHandlerRequestConnector.class.getCanonicalName()
 				);
 			
 			doPortConnection(requestDispatcherDynamicStateDataOutboundPort.getPortURI(), 
@@ -594,6 +595,12 @@ ProcessorCoordinatorOrderI{
 				Set<Entry<String, ApplicationVMDynamicStateI>> avm_ds = current_ds.getAVMDynamicStateMap().entrySet();
 				
 				Iterator<Entry<String, ApplicationVMDynamicStateI>> avm_ite = avm_ds.iterator();
+				
+				Random r = new Random();
+				int execute = r.nextInt(2);
+				
+				if(execute==0)
+					return;
 				
 				while(avm_ite.hasNext()){
 					Entry<String, ApplicationVMDynamicStateI> avm_entry = avm_ite.next();
