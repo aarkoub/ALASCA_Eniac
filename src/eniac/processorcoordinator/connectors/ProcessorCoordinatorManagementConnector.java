@@ -22,6 +22,12 @@ implements ProcessorCoordinatorManagementI{
 		((ProcessorCoordinatorManagementI)offering).notifyFreqChanged(handler_uri);
 	}
 
+	@Override
+	public void notifyCorePossession(String handler_uri, int coreNum) throws Exception {
+		((ProcessorCoordinatorManagementI)offering).notifyCorePossession(handler_uri, coreNum);
+		
+	}
+
 	
 
 }

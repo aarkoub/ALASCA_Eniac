@@ -39,5 +39,11 @@ implements ProcessorCoordinatorManagementI{
 		((ProcessorCoordinatorManagementI)connector).notifyFreqChanged(handler_uri);
 		
 	}
+
+	@Override
+	public void notifyCorePossession(String handler_uri, int coreNum) throws Exception {
+		((ProcessorCoordinatorManagementI)connector).notifyCorePossession(handler_uri, coreNum);
+		
+	}
 	
 }

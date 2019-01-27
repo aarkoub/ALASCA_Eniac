@@ -76,5 +76,19 @@ implements ProcessorCoordinatorManagementI
 			
 		}
 
+		@Override
+		public void notifyCorePossession(String handler_uri, int coreNum) throws Exception {
+			this.getOwner().handleRequestSync(
+					new AbstractComponent.AbstractService<Void>() {
+						@Override
+						public Void call() throws Exception {
+							((ProcessorCoordinator)this.getOwner()).notifyCorePossession(handler_uri, coreNum);
+							return null;
+							
+						}
+					});			
+			
+		}
+
 	
 }
