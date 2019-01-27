@@ -39,21 +39,7 @@ import eniac.requestgenarator.interfaces.RequestGeneratorManagementI;
 import fr.sorbonne_u.components.connectors.AbstractConnector;
 
 /**
- * The class <code>RequestGeneratorManagementConnector</code> implements a
- * standard client/server connector for the management request generator
- * management interface.
- *
- * <p><strong>Description</strong></p>
- * 
- * <p><strong>Invariant</strong></p>
- * 
- * <pre>
- * invariant	true
- * </pre>
- * 
- * <p>Created on : May 5, 2015</p>
- * 
- * @author	<a href="mailto:Jacques.Malenfant@lip6.fr">Jacques Malenfant</a>
+ * Cette classe a été reprit de BCM et modifié
  */
 public class				RequestGeneratorManagementConnector
 extends		AbstractConnector

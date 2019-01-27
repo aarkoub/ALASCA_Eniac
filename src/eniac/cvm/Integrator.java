@@ -6,12 +6,24 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 
+/**
+ * Cette classe est un composant intégrateur permettant de démarrer le RequestGenerator.
+ * Elle sert à faire la demande d'hébergement d'application et génère les requêtes.
+ * Cette classe peut être modifier afin de changer les délais d'envois de requêtes.
+ * @author L-C
+ *
+ */
 
 public class Integrator extends AbstractComponent {
 	
-	
+	/**
+	 * Port permettant d'appliquer des contrôles sur le RequestGenerator
+	 */
 	protected RequestGeneratorManagementOutboundPort generatorOutboundPort;
 
+	/**
+	 * URI du port de contrôle du RequestGenerator
+	 */
 	private String generatorInPortURI; 
 
 	
@@ -51,6 +63,10 @@ public class Integrator extends AbstractComponent {
 		
 	}
 	
+	/**
+	 * Coeur du composant Integrator, on y fait tout le traitement en rapport avec le RequestGenerator, c'est-à-dire la demande d'hébergement d'application mais 
+	 * aussi la génération des requêtes, l'arrêt et la désallocation des ressources.
+	 */
 	@Override
 	public void execute() throws Exception{
 		super.execute();

@@ -40,20 +40,7 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 
 /**
- * The class <code>RequestGeneratorManagementOutboundPort</code> implements the
- * outbound port through which one calls the component management methods.
- *
- * <p><strong>Description</strong></p>
- * 
- * <p><strong>Invariant</strong></p>
- * 
- * <pre>
- * invariant	true
- * </pre>
- * 
- * <p>Created on : May 5, 2015</p>
- * 
- * @author	<a href="mailto:Jacques.Malenfant@lip6.fr">Jacques Malenfant</a>
+ * Classe reprit de BCM et modifié.
  */
 public class				RequestGeneratorManagementOutboundPort
 extends		AbstractOutboundPort
@@ -128,6 +115,15 @@ implements	RequestGeneratorManagementI
 												setMeanInterArrivalTime(miat) ;
 	}
 
+	/**
+	 * Cette méthode correspond à la demande de l'application au centre de calcul, d'héberger son application.
+	 * En effet, le RequestGenerator envoit une demande d'hébergement au Controlleur d'admission via un port configuré dans le constructeur et y 
+	 * envoit en même temps son port de notification lorsqu'il reçoit la réponse, le RequestGenerator connecte son port de soumission avec l'uri fournit
+	 * par la réponse du Controlleur d'admission, ici nous faisont la connection avec un connecteur générer par Javassist, nous avons intentionnellement changé la 
+	 * méthode soumission de requête afin d'utiliser Javassist.
+	 * @return true si le controlleur d'admission accepte/ false sinon
+	 * @throws Exception
+	 */
 	@Override
 	public boolean askAdmissionControler() throws Exception {
 		return ((RequestGeneratorManagementI)this.connector).
@@ -135,6 +131,10 @@ implements	RequestGeneratorManagementI
 		
 	}
 
+	/**
+	 * Cette méthode demande au controlleur d'admission de libérer les ressources qui ont été alloué pour ce RequestGenerator, car
+	 * celui-ci a terminé ses demandes de tâches.
+	 */
 	@Override
 	public void freeAdmissionControlerRessources() throws Exception {
 		((RequestGeneratorManagementI)this.connector).

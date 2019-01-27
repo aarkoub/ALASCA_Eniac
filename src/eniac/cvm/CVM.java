@@ -19,49 +19,131 @@ import fr.sorbonne_u.datacenter.hardware.processors.Processor;
 import fr.sorbonne_u.datacenter.hardware.processors.Processor.ProcessorPortTypes;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 
+/**
+ * La classe CVM correspond à la classe permettant de démarrer le projet en Mono-JVM, c'est-à-dire de lancer le centre de calcul et des demandes de d'hébergement d'applications.
+ * Cela correspond donc à la création de tout les composants nécessaire c'est-à-dire les Computer, le contrôleur d'admission, les contrôleurs de performances et les RequestGenerator.
+ * La classe a été configuré ici afin de lancer 2 applications.
+ * @author L-C
+ *
+ */
 
 public class CVM extends AbstractCVM {
 	
-
+	
+	/**
+	 * URI pour le contrôle des RequestGenerator
+	 */
 	protected static final String	RequestGeneratorManagementInboundPortURI = "requestGenerator_in_port" ;
 		
 
+	/**
+	 * URI pour les RequestGenerator
+	 */
 	protected static final String URI_RequestGenerator = "uri_requestGenerator";
 	
+	/**
+	 * URI pour les soumissions de requêtes
+	 */
+	protected static final String requestSubmissionInboundPortURI = "request_sub_inbound_port";
 	
+	/**
+	 * URI pour les notifications de requêtes
+	 */
+	protected static final String requestNotificationInboundPortURI = "request_notification_inbound_port";
 	
+	/**
+	 * URI du contrôleur d'admission
+	 */
+	protected static final String admissionControlerURI = "admission_controler";
+	
+	/**
+	 * URI pour le contrôle du controlleur d'admission
+	 */
+	protected static final String admissionControlerManagementInboundURI = "admission_controler_management_inbound_uri";
+	
+	/**
+	 * RequestGenerator
+	 */
 	protected RequestGenerator requestGenerator ;
+	/**
+	 * Intégrateur pour le RequestGenerator
+	 */
 	protected Integrator integrator;
+	/**
+	 * Moniteur pour les ordinateurs
+	 */
 	protected ComputerMonitor computerMonitor;
+	
+	/**
+	 * Controlleur d'admission
+	 */
 	protected AdmissionControler admissionControler;
+	/**
+	 * Controlleur de performance
+	 */
 	protected AutomaticHandler automaticHandler;
 	
 	
-	protected static final String requestSubmissionInboundPortURI = "request_sub_inbound_port";
-	protected static final String requestNotificationInboundPortURI = "request_notification_inbound_port";
-	
-		
-	protected static final String admissionControlerURI = "admission_controler";
-	protected static final String admissionControlerManagementInboundURI = "admission_controler_management_inbound_uri";
+	/**
+	 * Liste des URIs pour la soumission de demandes d'hébergements
+	 */
 	protected static final List<String> requestAdmissionSubmissionInboundPortURIS = new ArrayList<>();
+	
+	/**
+	 * Liste des URIs pour la notifications de demandes d'hébergements
+	 */
 	protected static final List<String> requestAdmissionNotificationInboundPortURIS = new ArrayList<>();
 	
-	
+	/**
+	 * Ordinateurs du centre de calcul
+	 */
 	protected List<Computer> computers = new ArrayList<>();
+	/**
+	 * Moniteur d'ordinateurs du centre de calcul
+	 */
 	protected List<ComputerMonitor> computerMonitors = new ArrayList<>();
+	/**
+	 * Liste des URIs pour les moniteurs d'ordinateurs
+	 */
 	protected List<String> computerMonitorsURI = new ArrayList<>();
+	/**
+	 * Liste des URIs des ordinateurs
+	 */
 	protected List<String> computersURI = new ArrayList<>();
+	/**
+	 * Liste des Générateur de requêtes
+	 */
 	protected List<RequestGenerator> requestGenerators = new ArrayList<>();
+	/**
+	 * Liste des intégrateurs des générateurs de requêtes
+	 */
 	protected List<Integrator> integrators = new ArrayList<>();
 
 
+	/**
+	 * URI de soumission pour l'admission d'un générateur de requêtes
+	 */
 	protected final String requestAdmissionSubmissionInboundPortURI ="request_admission_submission_inbound_port_uri";
+	/**
+	 * URI de notification pour l'admission d'un générateur de requêtes
+	 */
 	protected final String requestAdmissionNotificationInboundPortURI = "request_admission_notification_inbound_port_uri";
+	/**
+	 * URI pour la création de composant dynamique
+	 */
 	protected static final String dynamicComponentCreationInboundPortURI = "dynamicComponentCreationInboundPortURI";
 	
+	/**
+	 * URI pour les distributeurs de requêtes
+	 */
 	protected String requestDispatcherListenerInboundPortURI = "req_disp_listener_inport";
-	
+	/**
+	 * URI du contrôleur de performance
+	 */
 	protected String automaticHandlerURI = "automatic_handler";
+	/**
+	 * URI de contrôme du contrôleur de performance
+	 */
 	protected String automaticHandlerManagementInboundPortURI = "automatic_handler_managament_inport";
 	
 	public CVM(boolean isDistributed) throws Exception {
@@ -72,6 +154,10 @@ public class CVM extends AbstractCVM {
 		super();
 	}
 	
+	
+	/**
+	 * On instancie tout les composants et on démarre l'exécution du scénario.
+	 */
 	@Override
 	public void deploy() throws Exception{
 		
@@ -83,7 +169,7 @@ public class CVM extends AbstractCVM {
 		int freq_threshold = 1500;
 		
 		/*
-		 * Cr�ation des computeurs (en ressources du contr�leur d'admission)
+		 * Création des computeurs (en ressources du contrôleur d'admission)
 		 */
 		
 		List<ComputerURI> computeruris = new ArrayList<>();
@@ -170,7 +256,7 @@ public class CVM extends AbstractCVM {
 		
 		
 		/*
-		 * Creation du controleur d'admission
+		 * Création du controleur d'admission
 		 */
 		admissionControler = new AdmissionControler(admissionControlerURI,
 				max_ressources, 
@@ -191,7 +277,7 @@ public class CVM extends AbstractCVM {
 			
 
 			/*
-			 * Creation du g�n�rateur de requetes
+			 * Creation du générateur de requêtes
 			 */
 		
 			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 100, 2000000000L, 
@@ -208,7 +294,7 @@ public class CVM extends AbstractCVM {
 			requestGenerators.add(requestGenerator);
 			
 			/*
-			 * Creation du l'int�grateur 2
+			 * Création de l'intégrateur de générateur de requêtes
 			 */
 			integrator = new Integrator(RequestGeneratorManagementInboundPortURI+i);
 			
@@ -217,7 +303,7 @@ public class CVM extends AbstractCVM {
 				
 		
 		/*
-		 * D�ploiement
+		 * Déploiment
 		 */
 		
 		
