@@ -12,7 +12,15 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
+
+/**
+ * Classe permettant d'afficher graphiquement le temps moyens d'exécution des requêtes.
+ * Nous utilisons la librairie JFreeChart afin de pouvoir afficher et mettre à jours simplement les données.
+ * La barre horizontale bleu correspond à la moyenne qu'on cherche à obtenir et les barres vertes
+ * correpondent à la tolérance d'écart accepté avant de faire une action.
+ * @author L-C
+ *
+ */
 
 public class ComputeTimeCharts extends ApplicationFrame {
 	/**
@@ -39,25 +47,22 @@ public class ComputeTimeCharts extends ApplicationFrame {
 		ValueMarker marker = new ValueMarker(average);
 		marker.setPaint(Color.BLUE);
 		((XYPlot)chart.getPlot()).addRangeMarker(marker);
+		ValueMarker markerb = new ValueMarker(average-200);
+		markerb.setPaint(Color.GREEN);
+		((XYPlot)chart.getPlot()).addRangeMarker(markerb);
+		ValueMarker markert = new ValueMarker(average+200);
+		markert.setPaint(Color.GREEN);
+		((XYPlot)chart.getPlot()).addRangeMarker(markert);
 		setContentPane( chartPanel );	
 	}
 	
+	/**
+	 * Ajoute la nouvelle moyenne dans le graphe et mets ainsi à jours les données
+	 * @param x la nouvelle moyenne calculé l'instant t
+	 */
 	public void addData(double x) {
 		series.addOrUpdate(new Second(new Date()) , (double)x);
 	}
 	
-	public static void main(String[] args) throws InterruptedException {
-		String name = "nom";
-		ComputeTimeCharts chart = new ComputeTimeCharts(name, 100);
-		chart.pack();
-		RefineryUtilities.positionFrameRandomly(chart);
-		chart.setVisible(true);
-		
-		for(int i = 1; i < 100; i++) {
-			chart.addData(Math.random()*400);
-			Thread.sleep(1000);
-		}
-
-	}
 
 }
