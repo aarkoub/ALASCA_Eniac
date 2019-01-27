@@ -267,7 +267,13 @@ PushModeControllingI{
 	}
 	
 
-
+	
+	/**
+	 * Reçoit et transfère les requêtes reçut du requestGenerator vers les AVMs pour le traitement, 
+	 * l'AVM est choisit en fonction d'un score calculé. En même temps, on ajoute le temps de début
+	 * de la requête pour effectuer le calcul de la moyenne.
+	 * @param r la requête à traiter
+	 */
 	@Override
 	public void acceptRequestSubmission(RequestI r) throws Exception {
 		logMessage("RequestDispatcher "+rd_uri+" requete reçue "+r.getRequestURI());
@@ -280,6 +286,15 @@ PushModeControllingI{
 		
 	}
 
+	
+	/**
+	 * Reçoit et transfère les requêtes reçut du requestGenerator vers les AVMs pour le traitement, 
+	 * l'AVM est choisit en fonction d'un score calculé. En même temps, on ajoute le temps de début
+	 * de la requête pour effectuer le calcul de la moyenne.
+	 * A la différence de acceptRequestSubmission, on demande à l'AVM de notifier de la terminaison 
+	 * de la requête.
+	 * @param r la requête à traiter
+	 */
 	@Override
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
 		logMessage("RequestDispatcher "+rd_uri+" requete reçue avec notification: "+r.getRequestURI());
@@ -292,6 +307,14 @@ PushModeControllingI{
 		
 	}
 
+	/**
+	 * Cette méthode permet de recevoir les notifications des AVMs sur la terminaison
+	 * de la requêtes qu'ils ont traités, on retransfère cette notification au demandeur
+	 * de traitement c'est-à-dire le requestGenerator, dans le même temps cela nous permet
+	 * d'obtenir le temps de traitement de la requête depuis sa soumission et donc de 
+	 * calculer la moyenne.
+	 * @param r la requête terminé
+	 */
 	@Override
 	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
 		Date r2 = new Date();
@@ -306,8 +329,8 @@ PushModeControllingI{
 
 	/**
 	 * Retire une avm du request dispatcher, c'est-à-dire,
-	 * on l'a supprime de la pool et on la deconnecte
-	 * @param URI de l'AVM a retirer
+	 * on l'a supprime de la pool et on la déconnecte.
+	 * @param uri URI de l'AVM a retirer
 	 * @return true si elle à été retiré/false sinon
 	 */
 	@Override
@@ -358,7 +381,7 @@ PushModeControllingI{
 	/**
 	 * Ajoute et créer les différents ports pour l'AVM
 	 * mais ne les connectes pas encore.
-	 * @param les URIs des ports de l'AVM
+	 * @param avmuris les URIs des ports de l'AVM
 	 */
 	@Override
 	public void addAVM(AVMUris avmuris) throws Exception {
@@ -397,7 +420,7 @@ PushModeControllingI{
 	 * Dans cette méthode, on effectue les connections entre ports pour démarrer l'AVM, 
 	 * ceci n'est pas fait dans l'ajout car il faut vérifier que l'Objet AVM est instancier avant
 	 * toute connection
-	 * @param URI de l'AVM
+	 * @param uri URI de l'AVM
 	 */
 	@Override
 	public void connectAVM(String uri) throws Exception {
@@ -427,7 +450,12 @@ PushModeControllingI{
 	}
 	
 	
-
+	/**
+	 * Méthode permettant de recevoir les données statiques des AVMs, ce sont notamment
+	 * des données sur les coeurs et les fréquences.
+	 * @param avmURI l'uri de l'AVM
+	 * @param staticState les données
+	 */
 	@Override
 	public void acceptApplicationVMStaticData(String avmURI, ApplicationVMStaticStateI staticState) throws Exception {
 		avmStaticStateMap.put(avmURI, staticState);
@@ -443,7 +471,14 @@ PushModeControllingI{
 
 		
 	}
-
+	
+	/**
+	 * Méthode permettant de recevoir les données dynamiques des AVMs, ce sont notamment
+	 * des données sur les coeurs et les fréquences mais aussi les données des scores, c'est-à-dire
+	 * le nombre de requêtes par coeur.
+	 * @param avmURI l'uri de l'AVM
+	 * @param dynamicState les données
+	 */
 	@Override
 	public void acceptApplicationVMDynamicData(String avmURI, ApplicationVMDynamicStateI dynamicState)
 			throws Exception {
@@ -454,12 +489,20 @@ PushModeControllingI{
 		logMessage("isIdle : "+dynamicState.isIdle());
 		
 	}
-
+	
+	/**
+	 * Methode permettant de récupérer l'objet contenant les données dynamiques du requestDispatcher
+	 * @return données dynamiques du requestDispatcher
+	 */
 	public RequestDispatcherDynamicStateI getDynamicState() {
 		
 		return new RequestDispatcherDynamicState(avgcompute.getAverage(), avmDynamicStateMap, avmScores);
 	}
 	
+	/**
+	 * Methode permettant de récupérer l'objet contenant les données statiques du requestDispatcher
+	 * @return données dynamiques du requestDispatcher
+	 */
 	public RequestDispatcherStaticStateI getStaticState() {
 		return new RequestDispatcherStaticState(avmStaticStateMap);
 	}
@@ -491,7 +534,7 @@ PushModeControllingI{
 	
 	/**
 	 * Envoit des données dynamique du répartiteur de requêtes
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	public void sendDynamicState() throws Exception {
 		if (this.requestDispatcherDynamicStateDataInboundPort.connected()) {

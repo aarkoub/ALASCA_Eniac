@@ -1,11 +1,35 @@
 package eniac.requestdispatcher.data;
 
+/**
+ * Cette classe est un conteneur d'URI, il regroupe l'enemble des URIs utilisés pour connecter cette AVM avec d'autres composants.
+ * @author L-C
+ *
+ */
+
 public class AVMUris {
+	/**
+	 * URI correspondant à l'adresse d'envoit de requête.
+	 */
 	private String RequestSubmissionInboundPortVM;
+	/**
+	 * URI correspondant à l'adresse de notification.
+	 */
 	private String RequestNotificationInboundPortVM;
+	/**
+	 * URI correspondant à l'adresse pour contrôler l'AVM depuis un autre composant
+	 */
 	private String ApplicationVMManagementInboundPortVM;
+	/**
+	 * URI de l'AVM
+	 */
 	private String AVMUri;
+	/**
+	 * URI correspondant à l'adresse d'envoit des données dynamiques
+	 */
 	private String applicationVMDynamicStateDataInboundPortURI;
+	/**
+	 * URI correspondant à l'adresse d'envoit des données statiques
+	 */
 	private String applicationVMStaticStateDataInboundPortURI;
 	
 	public AVMUris(String RequestSubmissionInboundPortVM, String RequestNotificationInboundPortVM, String ApplicationVMManagementInboundPortVM,
