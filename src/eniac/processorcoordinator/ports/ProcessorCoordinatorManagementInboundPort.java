@@ -90,5 +90,19 @@ implements ProcessorCoordinatorManagementI
 			
 		}
 
+		@Override
+		public void notifyCoreRestitution(String handler_uri, int coreNum) throws Exception {
+			this.getOwner().handleRequestSync(
+					new AbstractComponent.AbstractService<Void>() {
+						@Override
+						public Void call() throws Exception {
+							((ProcessorCoordinator)this.getOwner()).notifyCoreRestitution(handler_uri, coreNum);
+							return null;
+							
+						}
+					});		
+			
+		}
+
 	
 }

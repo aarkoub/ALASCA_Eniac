@@ -280,11 +280,13 @@ ProcessorCoordinatorOrderI{
 				//System.out.println(avm+" "+admissibleFreqCoresAVM);
 				Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
 				
+				
+				
 				for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
 					
 					int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 					int freq = getNextFreq(currentFreq, admissibleFreq);
-					
+					System.out.println("core "+core+" current freq "+currentFreq+" next freq "+freq);
 					if(currentFreq == freq) return false;
 					System.out.println("ok "+autoHand_uri+" "+proc_uri+" "+core);
 					//if(proc_coord_freq_map.get(proc_uri)!=null)

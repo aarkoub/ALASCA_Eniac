@@ -2,8 +2,10 @@ package eniac.admissioncontroler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import eniac.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionI;
@@ -79,7 +81,7 @@ AutomaticHandlerRequestI{
 
 	protected Map<String, String> proc_coord_management_inport_map;
 	
-	protected Map<String, Map<String, Integer>> current_cores_handlers_map ;
+	protected Map<String, Map<String, Set<Integer>>> current_cores_handlers_map ;
 	
 	
 	public AdmissionControler(String uri, 
@@ -301,7 +303,7 @@ AutomaticHandlerRequestI{
 			alloc.setCores(newAlloc);
 			avm_management_port_map.get(avm_uri).removeProcDataStatePorts(c.processorURI);
 			List<String> res = new ArrayList<>();
-			 removeCoresMap(handler_uri, c.processorURI, res);
+			 removeCoresMap(handler_uri, c.processorURI, res, c.coreNo);
 			 return res;
 			
 			
@@ -598,7 +600,7 @@ AutomaticHandlerRequestI{
 	
 	private void getProcessorCoordinatorFreqURIS(String handler_uri, AllocatedCore[] allocatedCores, Map<String, String> proc_coord_manage_inport_map) {
 
-		Map<String, Integer> cores_map = current_cores_handlers_map.get(handler_uri);
+		Map<String, Set<Integer>> cores_map = current_cores_handlers_map.get(handler_uri);
 		
 		System.out.println("allocated Cores "+handler_uri);
 		
@@ -615,10 +617,10 @@ AutomaticHandlerRequestI{
 			System.out.println("allocatedCores "+handler_uri+" "+allocatedCores[i].coreNo+" "+allocatedCores[i].processorURI);
 			
 			if(cores_map!=null){
-				if(cores_map.get(allocatedCores[i].processorURI)!=null){
-					System.out.println("ICI "+cores_map.get(allocatedCores[i].processorURI));
+				Set<Integer> cores ;
+				if((cores=cores_map.get(allocatedCores[i].processorURI))!=null){
 					cores_map.put(allocatedCores[i].processorURI,
-							cores_map.get(allocatedCores[i].processorURI)+1);
+							cores_map.get(cores.add(allocatedCores[i].coreNo)));
 					
 					continue;
 				}
@@ -628,8 +630,9 @@ AutomaticHandlerRequestI{
 				current_cores_handlers_map.put(handler_uri, cores_map);
 			}
 			
-			
-			cores_map.put(allocatedCores[i].processorURI, 1);
+			Set<Integer> cores = new HashSet<>();
+			cores.add(allocatedCores[i].coreNo);
+ 			cores_map.put(allocatedCores[i].processorURI,  cores);
 			
 			
 		
@@ -752,15 +755,19 @@ AutomaticHandlerRequestI{
 
 	
 	private void removeCoresMap(String handler_uri, String processorURI,
-			List<String> procURIS){
+			List<String> procURIS, int coreNum){
 
-		Map<String, Integer> cores_map = current_cores_handlers_map.get(handler_uri);
-		int nb_cores = cores_map.get(processorURI);
+		Map<String, Set<Integer>> cores_map = current_cores_handlers_map.get(handler_uri);
+		int nb_cores = cores_map.get(processorURI).size();
+		Set<Integer> cores = cores_map.get(processorURI);
+		ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(processorURI);
 		if(nb_cores==1){
+			
 			cores_map.remove(processorURI);
-			ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(processorURI);
+			
 			try {
 				System.out.println("removing "+handler_uri+" "+processorURI+cores_map.get(processorURI));
+				outport.notifyCoreRestitution(handler_uri, coreNum);
 				outport.removeOrderOutport(handler_uri);
 				System.out.println("removed "+handler_uri+" "+processorURI+cores_map.get(processorURI));
 			} catch (Exception e) {
@@ -770,7 +777,13 @@ AutomaticHandlerRequestI{
 			procURIS.add(processorURI);
 		}
 		else{
-			cores_map.put(processorURI, nb_cores-1);
+			try {
+				outport.notifyCoreRestitution(handler_uri, coreNum);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			cores.remove(coreNum);
 			
 		}
 				

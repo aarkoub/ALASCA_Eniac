@@ -108,7 +108,7 @@ implements	ProcessorManagementI
 					coreNo + ", " + frequency + ")") ;
 		}
 
-		this.getOwner().handleRequestAsync(
+		this.getOwner().handleRequestSync(
 				new AbstractComponent.AbstractService<Void>() {
 					@Override
 					public Void call() throws Exception {

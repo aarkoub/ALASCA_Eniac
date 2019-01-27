@@ -1007,11 +1007,14 @@ implements	PushModeControllingI
 		if (!this.isAdmissibleFrequency(frequency)) {
 			throw new UnavailableFrequencyException(frequency) ;
 		}
+		
 		if (!this.isCurrentlyPossibleFrequencyForCore(coreNo, frequency)) {
 			throw new UnacceptableFrequencyException(frequency) ;
 		}
 
 		this.cores[coreNo].setFrequency(frequency) ;
+		
+		System.out.println("ici "+this.cores[coreNo].currentFrequency);
 		
 	}
 	

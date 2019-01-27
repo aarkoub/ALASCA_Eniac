@@ -28,6 +28,12 @@ implements ProcessorCoordinatorManagementI{
 		
 	}
 
+	@Override
+	public void notifyCoreRestitution(String handler_uri, int coreNum) throws Exception {
+		((ProcessorCoordinatorManagementI)offering).notifyCoreRestitution(handler_uri, coreNum);
+		
+	}
+
 	
 
 }

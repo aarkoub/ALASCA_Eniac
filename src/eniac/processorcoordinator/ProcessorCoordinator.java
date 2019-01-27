@@ -150,9 +150,9 @@ ProcessorStateDataConsumerI{
 	@Override
 	public void setCoreFrequency(String handler_uri, int coreNo, int frequency) {
 		try {
-		
-			processorManagementOutboundPort.setCoreFrequency(coreNo, frequency);
 			
+			processorManagementOutboundPort.setCoreFrequency(coreNo, frequency);
+
 			if(isNew){
 				isNew = false;
 				if(isFreqGapTooBig(coreNo, frequency)){
@@ -160,8 +160,14 @@ ProcessorStateDataConsumerI{
 	
 						for(Integer core :  corePerHandler.get(handler_uri)){
 							if(currentFreqs[core]!=frequency){
-								System.out.println(currentFreqs[core]);
-								procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, core, frequency);
+								int next ;
+								if(currentFreqs[core]-frequency > 0){
+									next = getPreviousFreq(currentFreqs[core], admissibleFreqs);
+								}
+								else
+									next = getNextFreq(currentFreqs[core], admissibleFreqs);
+								System.out.println("next "+next);
+								procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, core, next);
 							
 							}
 	
@@ -302,6 +308,45 @@ ProcessorStateDataConsumerI{
 			cores.add(coreNum);
 		}
 			
+	}
+	
+	@Override
+	public void notifyCoreRestitution(String handler_uri, int coreNum) throws Exception{
+		
+		corePerHandler.get(handler_uri).remove(coreNum);
+	
+	}
+	
+	public int getNextFreq(int currentFreq, Set<Integer> freqs) {
+		
+		int next = currentFreq;
+		
+		for(Integer i : freqs) {
+			System.out.println(i);
+			if(i>next) {
+				next = i;
+				break;
+			}
+			
+		}
+		System.out.println("current "+currentFreq+" next "+next);
+		return next;
+	}
+	
+	public int getPreviousFreq(int currentFreq, Set<Integer> freqs) {
+	
+		int previous = currentFreq;
+		
+		for(Integer i : freqs) {
+			
+			if(i<previous) {
+				previous = i;
+				break;
+			}
+			
+		}
+		return previous;
+		
 	}
 
 }
