@@ -5,7 +5,6 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.interfaces.DataOfferedI;
 import fr.sorbonne_u.components.interfaces.DataOfferedI.DataI;
-import fr.sorbonne_u.datacenter.hardware.processors.Processor;
 import fr.sorbonne_u.datacenter.ports.AbstractControlledDataInboundPort;
 
 public class RequestDispatcherDynamicStateDataInboundPort

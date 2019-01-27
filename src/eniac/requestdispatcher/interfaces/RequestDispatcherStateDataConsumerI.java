@@ -1,7 +1,5 @@
 package eniac.requestdispatcher.interfaces;
 
-import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMDynamicStateI;
-import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateI;
 
 public interface RequestDispatcherStateDataConsumerI {
 	

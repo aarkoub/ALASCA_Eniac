@@ -7,7 +7,7 @@ public interface RequestDispatcherIntrospectionI
 extends		OfferedI,
 RequiredI{
 	
-	public RequestDispatcherStaticStateI	getStaticState() throws Exception ;
+	public RequestDispatcherStaticStateI getStaticState() throws Exception ;
 	
 	public RequestDispatcherDynamicStateI getDynamicState() throws Exception;
 }

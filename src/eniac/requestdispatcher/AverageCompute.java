@@ -14,9 +14,13 @@ import java.util.Map;
  */
 
 public class AverageCompute {
-	//permet de garder en mémoire les débuts de tâches
+	/**
+	 * permet de garder en mémoire les débuts de tâches
+	 */
 	private Map<String, Date> startTime;
-	//moyenne calculé à l'instant t
+	/**
+	 * moyenne calculé à l'instant t
+	 */
 	private int average;
 	/**
 	 * Il s'agit du paramètre qu'on utilise pour le calcul du filtre exponentiel et doit être comprit entre 0 et 1

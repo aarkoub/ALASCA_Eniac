@@ -43,20 +43,7 @@ import fr.sorbonne_u.datacenter.software.interfaces.RequestI;
 import fr.sorbonne_u.datacenter.software.interfaces.RequestSubmissionI;
 
 /**
- * The class <code>RequestSubmissionOutboundPort</code> implements the
- * inbound port requiring the interface <code>RequestSubmissionI</code>.
- *
- * <p><strong>Description</strong></p>
- * 
- * <p><strong>Invariant</strong></p>
- * 
- * <pre>
- * invariant	true
- * </pre>
- * 
- * <p>Created on : April 9, 2015</p>
- * 
- * @author	<a href="mailto:Jacques.Malenfant@lip6.fr">Jacques Malenfant</a>
+ * Cette classe correspond au port de sortie des soumissions du RequestGenerator (afin d'utiliser Javassist)
  */
 public class				SendSubmissionOutboundPort
 extends		AbstractOutboundPort

@@ -70,41 +70,14 @@ import javassist.CtClass;
 import javassist.CtMethod;
 
 /**
- * The class <code>RequestGenerator</code> implements a component that generates
- * requests for an application and submit them to an Application VM component.
- *
- * <p><strong>Description</strong></p>
- * 
- * A request has a processing time and an arrival process that both follow an
- * exponential probability distribution.  The generation process is started by
- * executing the method <code>generateNextRequest</code> as a component task.
- * It generates an instance of the class <code>Request</code>, with a processing
- * time generated from its exponential distribution, and then schedule its next
- * run after the inter-arrival time also generated from its exponential
- * distribution.  To stop the generation process, the method
- * <code>shutdown</code> uses the future returned when scheduling the next
- * request generation to cancel its execution.
- * 
- * Time is managed through the <code>TimeManagement</code> class which allows to
- * accelerated the simulation time compared to the real time. Hence, using this
- * feature, a simulation scenario of some duration can be executed either faster
- * or slower in real (physical) processor time.
- * 
- * The static variable <code>DEBUG</code> controls the amount of logging done
- * during execution. When 0, no logging is done at all. When 1, a logging
- * message is issued when starting and stopping the generation. When 2, the
- * component provides information about the running of the generator helping
- * to understand its behavior.
- * 
- * <p><strong>Invariant</strong></p>
- * 
- * <pre>
- * invariant	true
- * </pre>
- * 
- * <p>Created on : May 5, 2015</p>
- * 
- * @author	<a href="mailto:Jacques.Malenfant@lip6.fr">Jacques Malenfant</a>
+ * La classe RequestGenerator est une classe qui à été reprise BCM écrit par Mr. Jacques Malenfant
+ * pour nos besoin, cette classe simule une application qui demande si un datacenter (controlleur d'admission) peut prendre en charge
+ * ses requêtes si c'est le cas, il connecte son port de submission au requestDispatcher dont l'URI est donnée
+ * lors de la réponse du controller d'admission et envoit des séries de correctes plus ou moins longue avec un délai qui peut varier.
+ * Il est à noter que nous avons essayé d'utiliser Javassist afin de faire de la génération de code en exécution.
+ * En effet, nous générons une classe de "connecteur" pour connecter les soumissions de requêtes entre le RequestGenerator et le RequestDispatcher car
+ * l'envoit de requête du côté du RequestGenerator est différent de celui du RequestDispatcher et nous n'avons pas auparavant écrit une classe Connecteur qui permet de faire
+ * la correspondance entre les deux, nous l'avons généré dynamiquement avec Javassist.
  */
 public class				RequestGenerator
 extends		AbstractComponent
@@ -176,6 +149,9 @@ implements	RequestNotificationHandlerI
 	 * @param managementInboundPortURI			URI of the management inbound port.
 	 * @param requestSubmissionInboundPortURI	URI of the inbound port to connect to the request processor.
 	 * @param requestNotificationInboundPortURI	URI of the inbound port to receive notifications of the request execution progress.
+	 * @param requestAdmissionSubmissionInboundPortURI URI de soumission du controlleur d'admission
+	 * @param requestAdmissionNotificationInboundPortURI URI de notification du controlleur d'admission
+	 * @param averageResponseTime				Le temps de calcul moyen souhaité
 	 * @throws Exception							<i>todo.</i>
 	 */
 	public				RequestGenerator(
@@ -293,7 +269,24 @@ implements	RequestNotificationHandlerI
 		}
 			
 	}
+	
+	/**
+	 * Compteur permettant de créer un connecteur d'indice unique.
+	 */
 	public static int cpt = 0;
+	
+	/**
+	 * Méthode permettant de générer une classe à l'aide de Javassist, plus particulièrement cette méthode
+	 * génère une classe Connecteur afin de relier deux méthodes différentes.
+	 *  
+	 * @param connectorCanonicalClassName Le nom de classe à générer
+	 * @param connectorSuperClass La superclasse
+	 * @param connectorImplementedInterface L'interface qu'il doit implanter
+	 * @param offeredInterface L'interface qu'il offre
+	 * @param methodNamesMap La correspondance des appels de méthodes
+	 * @return la classe
+	 * @throws Exception exception
+	 */
 	public static Class<?> makeConnectorClassJavassist(String connectorCanonicalClassName,
 			Class<?> connectorSuperClass,
 			Class<?> connectorImplementedInterface,
@@ -585,6 +578,16 @@ implements	RequestNotificationHandlerI
 		}
 	}
 	
+	
+	/**
+	 * Cette méthode correspond à la demande de l'application au centre de calcul, d'héberger son application.
+	 * En effet, le RequestGenerator envoit une demande d'hébergement au Controlleur d'admission via un port configuré dans le constructeur et y 
+	 * envoit en même temps son port de notification lorsqu'il reçoit la réponse, le RequestGenerator connecte son port de soumission avec l'uri fournit
+	 * par la réponse du Controlleur d'admission, ici nous faisont la connection avec un connecteur générer par Javassist, nous avons intentionnellement changé la 
+	 * méthode soumission de requête afin d'utiliser Javassist.
+	 * @return true si le controlleur d'admission accepte/ false sinon
+	 * @throws Exception exception
+	 */
 	public boolean askAdmissionControler() throws Exception{
 
 	
@@ -643,6 +646,11 @@ implements	RequestNotificationHandlerI
 		return true;
 	}
 
+	
+	/**
+	 * Cette méthode demande au controlleur d'admission de libérer les ressources qui ont été alloué pour ce RequestGenerator, car
+	 * celui-ci a terminé ses demandes de tâches.
+	 */
 	public void freeAdmissionControlerRessources() {
 		try {
 		
