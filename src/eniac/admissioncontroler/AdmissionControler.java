@@ -604,6 +604,14 @@ AutomaticHandlerRequestI{
 		
 		for(int i = 0; i < allocatedCores.length; i++) {
 			
+			ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(allocatedCores[i].processorURI);
+			try {
+				outport.notifyCorePossession(handler_uri, allocatedCores[i].coreNo);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
 			System.out.println("allocatedCores "+handler_uri+" "+allocatedCores[i].coreNo+" "+allocatedCores[i].processorURI);
 			
 			if(cores_map!=null){
@@ -623,7 +631,7 @@ AutomaticHandlerRequestI{
 			
 			cores_map.put(allocatedCores[i].processorURI, 1);
 			
-			ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(allocatedCores[i].processorURI);
+			
 		
 			try {
 				proc_coord_manage_inport_map.put(allocatedCores[i].processorURI, outport.addCoordInboundPort());

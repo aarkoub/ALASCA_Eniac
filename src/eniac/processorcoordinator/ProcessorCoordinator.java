@@ -48,6 +48,8 @@ ProcessorStateDataConsumerI{
 	protected int[] currentFreqs;
 	protected int freq_threshold;
 	
+	protected Map<String, Set<Integer>> corePerHandler = new HashMap<>();
+	private boolean isNew;
 	
 	public ProcessorCoordinator(String coordinatorURI,
 			String procURI,
@@ -151,17 +153,21 @@ ProcessorStateDataConsumerI{
 		
 			processorManagementOutboundPort.setCoreFrequency(coreNo, frequency);
 			
-			if(currentlyChangingFreqHandler.contains(handler_uri))
-				currentlyChangingFreqHandler.remove(handler_uri);
-			
-			
-			if(isFreqGapTooBig(coreNo, frequency)){
-				for(String hand_uri : procCoordinatorOrderPortMap.keySet()){
-					if(!currentlyChangingFreqHandler.contains(hand_uri)){
-						procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, coreNo, frequency);
-						currentlyChangingFreqHandler.add(hand_uri);
+			if(isNew){
+				isNew = false;
+				if(isFreqGapTooBig(coreNo, frequency)){
+					for(String hand_uri : procCoordinatorOrderPortMap.keySet()){
+	
+						for(Integer core :  corePerHandler.get(handler_uri)){
+							if(currentFreqs[core]!=frequency){
+								System.out.println(currentFreqs[core]);
+								procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, core, frequency);
+							
+							}
+	
+						}
+					
 					}
-				
 				}
 			}
 				
@@ -272,8 +278,9 @@ ProcessorStateDataConsumerI{
 	public void acceptProcessorDynamicData(String processorURI, ProcessorDynamicStateI currentDynamicState)
 			throws Exception {
 		
-		currentFreqs = currentDynamicState.getCurrentCoreFrequencies();
 		
+		currentFreqs = currentDynamicState.getCurrentCoreFrequencies();
+		isNew = true;
 	}
 
 	@Override
@@ -281,6 +288,20 @@ ProcessorStateDataConsumerI{
 		
 		currentlyChangingFreqHandler.remove(handler_uri);
 		
+	}
+
+	@Override
+	public void notifyCorePossession(String handler_uri, int coreNum) throws Exception {
+		Set<Integer> cores = corePerHandler.get(handler_uri);
+		if(cores==null){
+			cores = new HashSet<>();
+			cores.add(coreNum);
+			corePerHandler.put(handler_uri, cores);
+		}
+		else{
+			cores.add(coreNum);
+		}
+			
 	}
 
 }
