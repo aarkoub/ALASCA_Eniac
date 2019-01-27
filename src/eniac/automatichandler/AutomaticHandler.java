@@ -554,13 +554,14 @@ ProcessorCoordinatorOrderI{
 		int next = currentFreq;
 		
 		for(Integer i : freqs) {
-			
+			System.out.println(i);
 			if(i>next) {
 				next = i;
 				break;
 			}
 			
 		}
+		System.out.println("current "+currentFreq+" next "+next);
 		return next;
 	}
 	
@@ -583,35 +584,52 @@ ProcessorCoordinatorOrderI{
 
 	@Override
 	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
-		//System.out.println("GOT IT "+this.autoHand_uri+" "+procURI+" "+coreNo+" "+frequency);
 		
-		/*Set<Entry<String, ApplicationVMDynamicStateI>> avm_ds = current_ds.getAVMDynamicStateMap().entrySet();
-		
-		Iterator<Entry<String, ApplicationVMDynamicStateI>> avm_ite = avm_ds.iterator();
-		
-		while(avm_ite.hasNext()){
-			Entry<String, ApplicationVMDynamicStateI> avm_entry = avm_ite.next();
-			Map<Integer, Integer> core_map = avm_entry.getValue().getProcCurrentFreqCoresMap().get(procURI);
-			if(core_map !=null){
-				Set<Entry<Integer, Integer>> core_freq = core_map.entrySet();
+		Thread t = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				System.out.println("GOT IT "+procURI+" "+coreNo+" "+frequency);
+				
+				Set<Entry<String, ApplicationVMDynamicStateI>> avm_ds = current_ds.getAVMDynamicStateMap().entrySet();
+				
+				Iterator<Entry<String, ApplicationVMDynamicStateI>> avm_ite = avm_ds.iterator();
+				
+				while(avm_ite.hasNext()){
+					Entry<String, ApplicationVMDynamicStateI> avm_entry = avm_ite.next();
+					Map<Integer, Integer> core_map = avm_entry.getValue().getProcCurrentFreqCoresMap().get(procURI);
+					if(core_map !=null){
+						Set<Entry<Integer, Integer>> core_freq = core_map.entrySet();
 
-				for(Iterator<Entry<Integer, Integer>> core_ite=core_freq.iterator(); core_ite.hasNext();){
-					Entry<Integer, Integer> core_entry = core_ite.next();
-					
-					if(core_entry.getKey()!=coreNo){
-						
-						if(core_entry.getValue()!=null && core_entry.getValue()!=frequency){
-							System.out.println(procURI+" "+core_entry.getValue());
-							proc_coord_freq_map.get(procURI).setCoreFrequency(autoHand_uri, core_entry.getKey(), frequency);
+						for(Iterator<Entry<Integer, Integer>> core_ite=core_freq.iterator(); core_ite.hasNext();){
+							Entry<Integer, Integer> core_entry = core_ite.next();
+							
+							if(core_entry.getKey()!=coreNo){
+								
+								if(core_entry.getValue()!=null && core_entry.getValue()!=frequency){
+									System.out.println(procURI+" "+core_entry.getValue()+" "+frequency);
+									try {
+										proc_coord_freq_map.get(procURI).setCoreFrequency(autoHand_uri, core_entry.getKey(), frequency);
+										
+									} catch (Exception e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								}
+							}
 						}
+						
+						
+					
 					}
 				}
 				
 				
-			
 			}
-		}*/
+		});
 		
+	
+		t.start();
 		
 		
 	}

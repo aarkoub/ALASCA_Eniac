@@ -80,6 +80,7 @@ public class CVM extends AbstractCVM {
 		assert	!this.deploymentDone() ;
 		
 		int max_ressources = 3;
+		int freq_threshold = 1500;
 		
 		/*
 		 * Cr�ation des computeurs (en ressources du contr�leur d'admission)
@@ -97,9 +98,11 @@ public class CVM extends AbstractCVM {
 			Set<Integer> admissibleFrequencies = new HashSet<Integer>() ;
 			admissibleFrequencies.add(1500) ;	// Cores can run at 1,5 GHz
 			admissibleFrequencies.add(3000) ;	// and at 3 GHz
+			admissibleFrequencies.add(4500) ;
 			Map<Integer,Integer> processingPower = new HashMap<Integer,Integer>() ;
 			processingPower.put(1500, 1500000) ;	// 1,5 GHz executes 1,5 Mips
 			processingPower.put(3000, 3000000) ;	// 3 GHz executes 3 Mips
+			processingPower.put(4500, 4500000) ;
 			Computer c = new Computer(
 								computerURI,
 								admissibleFrequencies,

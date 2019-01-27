@@ -17,6 +17,11 @@ implements ProcessorCoordinatorManagementI{
 		((ProcessorCoordinatorManagementI)offering).removeOrderOutport(handler_uri);		
 	}
 
+	@Override
+	public void notifyFreqChanged(String handler_uri) throws Exception {
+		((ProcessorCoordinatorManagementI)offering).notifyFreqChanged(handler_uri);
+	}
+
 	
 
 }

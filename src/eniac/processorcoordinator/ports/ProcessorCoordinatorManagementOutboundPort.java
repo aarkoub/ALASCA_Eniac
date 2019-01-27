@@ -30,7 +30,13 @@ implements ProcessorCoordinatorManagementI{
 
 	@Override
 	public void removeOrderOutport(String handler_uri) throws Exception {
-		// TODO Auto-generated method stub
+		((ProcessorCoordinatorManagementI)connector).removeOrderOutport(handler_uri);
+		
+	}
+
+	@Override
+	public void notifyFreqChanged(String handler_uri) throws Exception {
+		((ProcessorCoordinatorManagementI)connector).notifyFreqChanged(handler_uri);
 		
 	}
 	

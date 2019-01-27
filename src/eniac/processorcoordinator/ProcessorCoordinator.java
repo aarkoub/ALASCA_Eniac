@@ -2,6 +2,7 @@ package eniac.processorcoordinator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,10 +39,14 @@ ProcessorStateDataConsumerI{
 	protected ProcessorCoordinatorManagementInboundPort management_inport;
 	protected ProcessorStaticStateDataOutboundPort static_outport;
 	protected ProcessorDynamicStateDataOutboundPort dynamic_outport;
+	protected Set<String> currentlyChangingFreqHandler = new HashSet<>() ;
 	
 	protected int number = 0;
 	protected Map<String, ProcessorCoordinatorFreqInboundPort> proc_cord_freq_map = new HashMap<>();
 	
+	protected Set<Integer> admissibleFreqs;
+	protected int[] currentFreqs;
+	protected int freq_threshold;
 	
 	
 	public ProcessorCoordinator(String coordinatorURI,
@@ -143,27 +148,54 @@ ProcessorStateDataConsumerI{
 	@Override
 	public void setCoreFrequency(String handler_uri, int coreNo, int frequency) {
 		try {
+			
+		
 			processorManagementOutboundPort.setCoreFrequency(coreNo, frequency);
 			
-			/*
-			 * Miss : if ecart trop grand, alors order les autres
-			 * get dynamic state from proc
-			 */
-			for(String hand_uri : procCoordinatorOrderPortMap.keySet()){
+			if(currentlyChangingFreqHandler.contains(handler_uri))
+				currentlyChangingFreqHandler.remove(handler_uri);
+			
+			
+			if(isFreqGapTooBig(coreNo, frequency)){
+				for(String hand_uri : procCoordinatorOrderPortMap.keySet()){
+					if(!currentlyChangingFreqHandler.contains(hand_uri)){
+						procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, coreNo, frequency);
+						currentlyChangingFreqHandler.add(hand_uri);
+					}
 				
-				procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, coreNo, frequency);
-
+				}
 			}
-			
-			
+				
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
+		
 	}
 	
 	
+	private boolean isFreqGapTooBig(int coreNum, int frequency) {
+		
+		int currentFreq = currentFreqs[coreNum];
+		
+		boolean isFreqAdmissible = false;
+		for(Integer freq : admissibleFreqs){
+			if(frequency==freq){
+				isFreqAdmissible = true;
+				break;
+			}
+		}
+		
+		if(isFreqAdmissible){
+			if( Math.abs(frequency-currentFreq)>freq_threshold){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
 	@Override
 	public void finalise() throws Exception{
 		
@@ -232,6 +264,8 @@ ProcessorStateDataConsumerI{
 	@Override
 	public void acceptProcessorStaticData(String processorURI, ProcessorStaticStateI staticState) throws Exception {
 		
+		admissibleFreqs = staticState.getAdmissibleFrequencies();
+		freq_threshold = staticState.getMaxFrequencyGap();
 		
 	}
 
@@ -239,6 +273,14 @@ ProcessorStateDataConsumerI{
 	public void acceptProcessorDynamicData(String processorURI, ProcessorDynamicStateI currentDynamicState)
 			throws Exception {
 		
+		currentFreqs = currentDynamicState.getCurrentCoreFrequencies();
+		
+	}
+
+	@Override
+	public void notifyFreqChanged(String handler_uri) throws Exception {
+		
+		currentlyChangingFreqHandler.remove(handler_uri);
 		
 	}
 
