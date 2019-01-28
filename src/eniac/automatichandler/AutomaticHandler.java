@@ -66,9 +66,9 @@ ProcessorCoordinatorOrderI{
 	
 	public static final double ALPHA = 0.5;
 	
-	private double last = upper_bound-1;
+	private double last;
 	public static final int MAX_QUEUE = 3;
-	private double lavg = upper_bound;
+	private double lavg ;
 
 	protected Map<String, ProcessorCoordinatorFreqOutboundPort> proc_coord_freq_map;
 	protected Map<String, ProcessorCoordinatorManagementOutboundPort>
@@ -131,8 +131,8 @@ ProcessorCoordinatorOrderI{
 		RefineryUtilities.positionFrameRandomly(chart);
 		chart.setVisible(true);
 		
-		lower_bound = averageResponseTime-200;
-		upper_bound = averageResponseTime+200;
+		lower_bound = averageResponseTime-1000;
+		upper_bound = averageResponseTime+2000;
 		
 		proc_coord_order_map = new HashMap<>();	
 		coord_map = new HashMap<>();
@@ -434,9 +434,9 @@ ProcessorCoordinatorOrderI{
 							
 							logMessage(avm+" removed 1 core");
 						}
-						if((proc_freqs_list=requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm))!=null) {
+						/*if((proc_freqs_list=requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm))!=null) {
 							logMessage(avm+" removed 1 core");
-						}
+						}*/
 					}
 					//removeUnusedAVM(dynamicstate);
 					/*for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
