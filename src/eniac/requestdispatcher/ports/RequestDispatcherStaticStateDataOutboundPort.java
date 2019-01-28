@@ -6,7 +6,11 @@ import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.interfaces.DataRequiredI;
 import fr.sorbonne_u.components.ports.AbstractDataOutboundPort;
-
+/**
+ * La classe RequestDispatcherStaticStateDataOutboundPort correspond au port de sortie afin d'envoyer les données statiques relatives du RequestDispatcher
+ * @author L-C
+ *
+ */
 public class RequestDispatcherStaticStateDataOutboundPort	
 extends		AbstractDataOutboundPort
 implements RequestDispatcherStaticStateDataI{

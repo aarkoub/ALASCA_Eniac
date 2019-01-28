@@ -6,7 +6,7 @@ import fr.sorbonne_u.components.interfaces.RequiredI;
 
 /**
  * Interface définissant les méthodes que l'ont peut appeler sur le requestDispatcher.
- * Ce sont des méthodes notamment pour contrôler l'ajoute et le retranchement d'AVM.
+ * Ce sont des méthodes notamment pour contrôler l'ajout et le retranchement d'AVM.
  * @author L-C
  *
  */

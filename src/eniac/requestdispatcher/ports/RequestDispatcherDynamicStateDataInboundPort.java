@@ -7,6 +7,12 @@ import fr.sorbonne_u.components.interfaces.DataOfferedI;
 import fr.sorbonne_u.components.interfaces.DataOfferedI.DataI;
 import fr.sorbonne_u.datacenter.ports.AbstractControlledDataInboundPort;
 
+
+/**
+ * La classe RequestDispatcherDynamicStateDataInboundPort correspond au port d'entrée afin d'envoyer les données dynamiques relatives du RequestDispatcher
+ * @author L-C
+ *
+ */
 public class RequestDispatcherDynamicStateDataInboundPort
 extends AbstractControlledDataInboundPort {
 

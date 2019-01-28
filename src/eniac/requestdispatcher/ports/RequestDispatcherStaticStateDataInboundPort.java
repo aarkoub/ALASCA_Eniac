@@ -6,7 +6,11 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.interfaces.DataOfferedI;
 import fr.sorbonne_u.datacenter.ports.AbstractControlledDataInboundPort;
-
+/**
+ * La classe RequestDispatcherStaticStateDataInboundPort correspond au port d'entrée afin d'envoyer les données statiques relatives du RequestDispatcher
+ * @author L-C
+ *
+ */
 public class RequestDispatcherStaticStateDataInboundPort 
 extends AbstractControlledDataInboundPort
 implements RequestDispatcherStaticStateDataI{
