@@ -151,22 +151,37 @@ ProcessorStateDataConsumerI{
 	public void setCoreFrequency(String handler_uri, int coreNo, int frequency) {
 		try {
 			
-			processorManagementOutboundPort.setCoreFrequency(coreNo, frequency);
+			int freq = frequency ;
+			
+			if(isFreqGapTooBig(coreNo, frequency)){
+				if(currentFreqs[coreNo]-frequency>0){
+					freq = getPreviousFreq(currentFreqs[coreNo], admissibleFreqs);
+				}
+				else
+					freq = getNextFreq(currentFreqs[coreNo], admissibleFreqs);
+			}
+			
+			processorManagementOutboundPort.setCoreFrequency(coreNo, freq);
 
 			if(isNew){
 				isNew = false;
-				if(isFreqGapTooBig(coreNo, frequency)){
+				
+					Set<Integer> occupied_cores = new HashSet<>();
+				
 					for(String hand_uri : procCoordinatorOrderPortMap.keySet()){
 	
 						for(Integer core :  corePerHandler.get(handler_uri)){
-							if(currentFreqs[core]!=frequency){
+							
+							occupied_cores.add(core);
+							
+							if(currentFreqs[core]!=freq){
 								int next ;
 								if(currentFreqs[core]-frequency > 0){
 									next = getPreviousFreq(currentFreqs[core], admissibleFreqs);
 								}
 								else
 									next = getNextFreq(currentFreqs[core], admissibleFreqs);
-								System.out.println("next "+next);
+								System.out.println("core "+core+" next "+next);
 								procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, core, next);
 							
 							}
@@ -174,7 +189,24 @@ ProcessorStateDataConsumerI{
 						}
 					
 					}
-				}
+					
+					for(int i=0 ; i<currentFreqs.length ; i++){
+						if(!occupied_cores.contains(i)){
+							if(currentFreqs[i]!=freq){
+								
+								int next ;
+								if(currentFreqs[i]-frequency > 0){
+									next = getPreviousFreq(currentFreqs[i], admissibleFreqs);
+								}
+								else
+									next = getNextFreq(currentFreqs[i], admissibleFreqs);
+								System.out.println("core "+i+" next "+next);
+								processorManagementOutboundPort.setCoreFrequency(i, next);							
+								
+							}
+						}
+					}
+				
 			}
 				
 		} catch (Exception e) {
@@ -319,33 +351,44 @@ ProcessorStateDataConsumerI{
 	
 	public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 		
-		int next = currentFreq;
+		int ret = currentFreq;
+		
+		
+		for(Integer i : freqs){
+			if(i>ret)
+				ret = i;
+		}
 		
 		for(Integer i : freqs) {
-			System.out.println(i);
-			if(i>next) {
-				next = i;
-				break;
+			if(i>currentFreq){
+				if(i<ret){
+					ret = i;
+				}
 			}
-			
 		}
-		System.out.println("current "+currentFreq+" next "+next);
-		return next;
+
+		System.out.println("current "+currentFreq+" next "+ret);
+		return ret;
 	}
 	
 	public int getPreviousFreq(int currentFreq, Set<Integer> freqs) {
 	
-		int previous = currentFreq;
+		int ret = currentFreq;
 		
 		for(Integer i : freqs) {
 			
-			if(i<previous) {
-				previous = i;
-				break;
-			}
-			
+			if(i<ret)
+				ret = i;			
 		}
-		return previous;
+		
+		for(Integer i : freqs){
+			if(i<currentFreq){
+				if(i>ret)
+					ret = i;
+			}
+		}
+		
+		return ret;
 		
 	}
 

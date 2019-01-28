@@ -581,6 +581,10 @@ implements	PushModeControllingI
 			if (i != coreNo &&
 					Math.abs(frequency - this.cores[i].getCurrentFrequency())
 													> this.maxFrequencyGap) {
+				
+				System.out.println("core "+i+" current freq "+cores[i].getCurrentFrequency()+" to freq "+frequency+
+						" maxFrequecyGap "+maxFrequencyGap);
+				
 				ret = false ;
 			}
 		}
@@ -1013,8 +1017,7 @@ implements	PushModeControllingI
 		}
 
 		this.cores[coreNo].setFrequency(frequency) ;
-		
-		System.out.println("ici "+this.cores[coreNo].currentFrequency);
+	
 		
 	}
 	

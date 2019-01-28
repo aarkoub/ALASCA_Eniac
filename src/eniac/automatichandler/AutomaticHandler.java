@@ -552,35 +552,46 @@ ProcessorCoordinatorOrderI{
 	}
 	
 	
-	public int getNextFreq(int currentFreq, Set<Integer> freqs) {
+public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 		
-		int next = currentFreq;
+		int ret = currentFreq;
+		
+		
+		for(Integer i : freqs){
+			if(i>ret)
+				ret = i;
+		}
 		
 		for(Integer i : freqs) {
-			System.out.println(i);
-			if(i>next) {
-				next = i;
-				break;
+			if(i>currentFreq){
+				if(i<ret){
+					ret = i;
+				}
 			}
-			
 		}
-		System.out.println("current "+currentFreq+" next "+next);
-		return next;
+
+		System.out.println("current "+currentFreq+" next "+ret);
+		return ret;
 	}
 	
 	public int getPreviousFreq(int currentFreq, Set<Integer> freqs) {
 	
-		int previous = currentFreq;
+		int ret = currentFreq;
 		
 		for(Integer i : freqs) {
 			
-			if(i<previous) {
-				previous = i;
-				break;
-			}
-			
+			if(i<ret)
+				ret = i;			
 		}
-		return previous;
+		
+		for(Integer i : freqs){
+			if(i<currentFreq){
+				if(i>ret)
+					ret = i;
+			}
+		}
+		
+		return ret;
 		
 	}
 
