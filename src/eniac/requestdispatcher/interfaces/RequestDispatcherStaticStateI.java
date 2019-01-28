@@ -12,7 +12,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMS
  *
  */
 
-public interface RequestDispatcherStaticStateI extends		DataOfferedI.DataI,
+public interface RequestDispatcherStaticStateI extends DataOfferedI.DataI,
 DataRequiredI.DataI{
 
 	/**

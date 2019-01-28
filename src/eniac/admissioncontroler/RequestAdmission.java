@@ -33,7 +33,7 @@ public class RequestAdmission implements RequestAdmissionI {
 	 * Temps de réponse souhaités par le demandeur d'hébergement
 	 */
 	private double requestAverageResponseTime = 0;
-	
+
 	
 	public RequestAdmission(String requestNotificationPortURI) {
 		this.requestNotificationPortURI = requestNotificationPortURI;
@@ -75,6 +75,10 @@ public class RequestAdmission implements RequestAdmissionI {
 		
 	}
 
+	/**
+	 * Créer une copie de l'objet l'appelant.
+	 * @return copie de l'objet
+	 */
 	@Override
 	public RequestAdmissionI copy() {
 		RequestAdmission newRequestAdmission = new RequestAdmission(requestNotificationPortURI);

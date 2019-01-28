@@ -4,6 +4,13 @@ import eniac.admissioncontroler.interfaces.AdmissionControlerManagementI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 
+/**
+ * La classe AdmissionControlerManagementOutboundPort est un port de sortie pour des appels de contrôle sur le contrôleur d'admission.
+ * Cette classe a été créer pour préparer un éventuel besoin, cependant, nous n'en avons malheureusement pas eu le besoin d'où le fait qu'elle soit vide.
+ * @author L-C
+ *
+ */
+
 public class AdmissionControlerManagementOutboundPort extends AbstractOutboundPort
 implements AdmissionControlerManagementI {
 

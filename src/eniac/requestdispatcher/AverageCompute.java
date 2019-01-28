@@ -19,7 +19,7 @@ public class AverageCompute {
 	 */
 	private Map<String, Date> startTime;
 	/**
-	 * moyenne calculé à l'instant t
+	 * moyenne calculée à l'instant t
 	 */
 	private int average;
 	/**
