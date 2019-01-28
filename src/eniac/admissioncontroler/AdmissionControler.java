@@ -288,11 +288,7 @@ AutomaticHandlerRequestI{
 			if(alloc.getCores().length <= 1) return null;
 			
 			AllocatedCore c = alloc.getCores()[0];
-			
-			for(AllocatedCore core : alloc.getCores()){
-				System.out.println("\t"+c.processorURI);
-			}
-			
+
 			computer.releaseCore(c);
 			AllocatedCore[] newAlloc = new AllocatedCore[alloc.getCores().length-1];
 			int j = 0;
@@ -619,9 +615,7 @@ AutomaticHandlerRequestI{
 			if(cores_map!=null){
 				Set<Integer> cores ;
 				if((cores=cores_map.get(allocatedCores[i].processorURI))!=null){
-					cores_map.put(allocatedCores[i].processorURI,
-							cores_map.get(cores.add(allocatedCores[i].coreNo)));
-					
+					cores.add(allocatedCores[i].coreNo);
 					continue;
 				}
 			}
@@ -661,12 +655,12 @@ AutomaticHandlerRequestI{
 		RequestDispatcherManagementOutboundPort rqout = rd_management_port_map.get(RequestDispatcherURI);
 		try {
 			rqout.removeAVM(avmURI);
-			
+			System.out.println("removing avm from "+handler_uri);
 			List<String> proc_freqs = new ArrayList<>();
 			
-			/*for(AllocatedCore core : allocationVMCores_map.get(avmURI).getCores() ){
-				removeCoresMap(handler_uri, core.processorURI, proc_freqs);
-			}*/
+			for(AllocatedCore core : allocationVMCores_map.get(avmURI).getCores() ){
+				removeCoresMap(handler_uri, core.processorURI, proc_freqs, core.processorNo);
+			}
 			
 			allocationVMCores_map.get(avmURI).freeCores();
 			
@@ -758,6 +752,7 @@ AutomaticHandlerRequestI{
 			List<String> procURIS, int coreNum){
 
 		Map<String, Set<Integer>> cores_map = current_cores_handlers_map.get(handler_uri);
+		
 		int nb_cores = cores_map.get(processorURI).size();
 		Set<Integer> cores = cores_map.get(processorURI);
 		ProcessorCoordinatorManagementOutboundPort outport = proc_coord_map.get(processorURI);

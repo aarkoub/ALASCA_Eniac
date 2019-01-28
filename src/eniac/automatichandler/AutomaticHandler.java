@@ -382,17 +382,17 @@ ProcessorCoordinatorOrderI{
 							logMessage(entry.getKey()+" frequency increased");
 							
 						}
-						//sinon on ajoute 2 cores aux avms
+						//sinon on ajoute 1 core aux avms
 						else{
 							
 							
 							if( (proc_coord_freq_inport_uri_map=
 									requestDispatcherHandlerOutboundPort.addCoreToAvm
-									(autoHand_uri, entry.getKey(), 2))!=null) {
+									(autoHand_uri, entry.getKey(), 1))!=null) {
 								
 								addNewPortCoord(proc_coord_freq_inport_uri_map);
 								System.out.println(autoHand_uri+" new cores = new ports added");
-								logMessage(entry.getKey()+" 2 core added");	
+								logMessage(entry.getKey()+" 1 core added");	
 							}
 							//sinon on ajoute une avm 
 							else{
