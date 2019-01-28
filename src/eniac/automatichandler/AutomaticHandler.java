@@ -78,6 +78,8 @@ ProcessorCoordinatorOrderI{
 
 	protected Map<String, String> processorCoordinatorFreqInportURIS;
 	
+	protected int modWait = 20;
+	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
 			String requestDispatcherUri,
@@ -131,8 +133,8 @@ ProcessorCoordinatorOrderI{
 		RefineryUtilities.positionFrameRandomly(chart);
 		chart.setVisible(true);
 		
-		lower_bound = averageResponseTime-1000;
-		upper_bound = averageResponseTime+2000;
+		lower_bound = averageResponseTime-500;
+		upper_bound = averageResponseTime+500;
 		
 		proc_coord_order_map = new HashMap<>();	
 		coord_map = new HashMap<>();
@@ -286,9 +288,10 @@ ProcessorCoordinatorOrderI{
 					
 					int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 					int freq = getNextFreq(currentFreq, admissibleFreq);
-					System.out.println("core "+core+" current freq "+currentFreq+" next freq "+freq);
+										
+					//System.out.println("core "+core+" current freq "+currentFreq+" next freq "+freq);
 					if(currentFreq == freq) return false;
-					System.out.println("ok "+autoHand_uri+" "+proc_uri+" "+core);
+					//System.out.println("ok "+autoHand_uri+" "+proc_uri+" "+core);
 					//if(proc_coord_freq_map.get(proc_uri)!=null)
 					if(proc_coord_freq_map.get(proc_uri)==null)System.out.println(proc_coord_freq_map.get(proc_uri));
 						proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
@@ -321,6 +324,7 @@ ProcessorCoordinatorOrderI{
 				if(currentFreq == freq) return false;
 				
 				try {
+					System.out.println("Decreasing ");
 					this.proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
 				
 				} catch (UnavailableFrequencyException e) {
@@ -347,7 +351,7 @@ ProcessorCoordinatorOrderI{
 		lavg = dynamicState.getAverageRequestTime();
 		chart.addData(lavg);
 
-		if(wait%20 == 0) {
+		if(wait%modWait == 0) {
 			logMessage("Modulation possible");
 			modulateAVM(dynamicState, lavg);
 		}
@@ -368,6 +372,7 @@ ProcessorCoordinatorOrderI{
 		if(avg > upper_bound) {
 			if(last > avg) {
 				last = avg;
+				modWait = 10;
 			}
 			else{
 				
@@ -393,6 +398,7 @@ ProcessorCoordinatorOrderI{
 								addNewPortCoord(proc_coord_freq_inport_uri_map);
 								System.out.println(autoHand_uri+" new cores = new ports added");
 								logMessage(entry.getKey()+" 1 core added");	
+								modWait = 50;
 							}
 							//sinon on ajoute une avm 
 							else{
@@ -400,6 +406,7 @@ ProcessorCoordinatorOrderI{
 									addNewPortCoord(proc_coord_freq_inport_uri_map);
 									System.out.println(autoHand_uri+" new avm = new ports added");
 									//logMessage(avmUri+" added");
+									modWait = 100;
 								}
 							}
 
@@ -410,6 +417,7 @@ ProcessorCoordinatorOrderI{
 							addNewPortCoord(proc_coord_freq_inport_uri_map);
 							System.out.println(autoHand_uri+" new avm = new ports added");
 							//logMessage(avmUri+" added");
+							modWait = 100;
 						}
 						
 					}
@@ -426,7 +434,11 @@ ProcessorCoordinatorOrderI{
 				else{
 					//System.out.println(dynamicstate.getScoresMap().toString());
 					logMessage("Response time too fast: "+avg+"ms (>"+ lower_bound +" ms wanted)");
-					if(removeUnusedAVM(dynamicstate)) return;
+					if(removeUnusedAVM(dynamicstate)) {
+						modWait = 10;
+						return;
+					}
+					
 					String avm = lowestScore(dynamicstate);
 					List<String> proc_freqs_list ;
 					if(avm != null) {
@@ -438,14 +450,16 @@ ProcessorCoordinatorOrderI{
 							logMessage(avm+" removed 1 core");
 						}*/
 					}
-					//removeUnusedAVM(dynamicstate);
-					/*for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
-						if(entry.getValue() < MAX_QUEUE) {
-							if(decreaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey())) {
-								logMessage(entry.getKey()+" speed decreased");
+					else{
+					
+						for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
+							if(entry.getValue() < MAX_QUEUE) {
+								if(decreaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey())) {
+									logMessage(entry.getKey()+" speed decreased");
+								}
 							}
 						}
-					}*/
+					}
 					
 				}
 				
