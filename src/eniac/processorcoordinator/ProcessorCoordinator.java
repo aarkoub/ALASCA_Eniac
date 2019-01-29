@@ -159,7 +159,7 @@ ProcessorStateDataConsumerI{
 			
 				
 			Integer prevFreq ;
-			
+
 			if( (prevFreq = previousFreqs.get(coreNo))!=null && prevFreq != frequency) {
 				if(currentFreqs[coreNo] != prevFreq) {
 					processorManagementOutboundPort.setCoreFrequency(coreNo, prevFreq);
@@ -187,8 +187,9 @@ ProcessorStateDataConsumerI{
 				}
 				
 				try{
-					System.out.println("Set core frequency for "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
+					System.out.println("Set core frequency for "+procURI+" "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
 					processorManagementOutboundPort.setCoreFrequency(coreNo, freq);
+					System.out.println("done");
 				}
 				catch(UnacceptableFrequencyException e){
 				System.out.println("Warning Exception catched "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
@@ -240,15 +241,18 @@ ProcessorStateDataConsumerI{
 							}
 						}
 					}
+					return  true;
 				
 			}
+			
+			
 				
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		return true;
+		return false;
 		
 		
 	}
@@ -353,8 +357,11 @@ ProcessorStateDataConsumerI{
 			throws Exception {
 		
 		
-		currentFreqs = currentDynamicState.getCurrentCoreFrequencies();
+		currentFreqs = currentDynamicState.getCurrentCoreFrequencies();		
 		isNew = true;
+		
+		System.out.println("ICI recep "+processorURI);
+		
 	}
 
 	@Override
