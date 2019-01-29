@@ -390,10 +390,17 @@ ProcessorCoordinatorOrderI{
 						//sinon on ajoute 1 core aux avms
 						else{
 							
+							int nbCoreToAdd ;
+							
+							if(lavg>2*avg) {
+								nbCoreToAdd = 2;
+							}
+							else
+								nbCoreToAdd = 1;
 							
 							if( (proc_coord_freq_inport_uri_map=
 									requestDispatcherHandlerOutboundPort.addCoreToAvm
-									(autoHand_uri, entry.getKey(), 1))!=null) {
+									(autoHand_uri, entry.getKey(), nbCoreToAdd))!=null) {
 								
 								addNewPortCoord(proc_coord_freq_inport_uri_map);
 								System.out.println(autoHand_uri+" new cores = new ports added");
