@@ -345,11 +345,16 @@ ProcessorCoordinatorOrderI{
 	}
 	
 	private int wait = 15;
+
+	private RequestDispatcherDynamicStateI currentDynamicState;
 	@Override
 	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
 			RequestDispatcherDynamicStateI dynamicState) throws Exception {
 		lavg = dynamicState.getAverageRequestTime();
 		chart.addData(lavg);
+		
+		
+		currentDynamicState = dynamicState;
 
 		if(wait%modWait == 0) {
 			logMessage("Modulation possible");
@@ -606,6 +611,26 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
 
 		System.out.println("GOT IT "+procURI+" "+coreNo+" "+frequency);
+		
+		
+		for(String avmURI : currentDynamicState.getAVMDynamicStateMap().keySet()){
+			
+			Map<String, Map<Integer, Integer>> currentFreqProc = 
+					currentDynamicState.getAVMDynamicStateMap().get(avmURI).getProcCurrentFreqCoresMap();
+			
+					Map<Integer, Integer > currentFreqs = currentFreqProc.get(procURI);
+					if(currentFreqs!=null){
+						
+						if(currentFreqs.get(coreNo)==frequency){
+							System.out.println("Do nothing");
+							return;
+						}
+						
+						break;
+					}
+			
+			
+		}
 		
 		proc_coord_freq_map.get(procURI).setCoreFrequency(autoHand_uri, coreNo, frequency);
 

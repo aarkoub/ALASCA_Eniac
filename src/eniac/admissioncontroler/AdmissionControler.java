@@ -740,10 +740,10 @@ AutomaticHandlerRequestI{
 			cores_map.remove(processorURI);
 			
 			try {
-				System.out.println("removing order outport "+handler_uri+" "+processorURI+cores_map.get(processorURI));
+				
 				outport.notifyCoreRestitution(handler_uri, coreNum);
 				outport.removeOrderOutport(handler_uri);
-				System.out.println("removed order outport "+handler_uri+" "+processorURI+cores_map.get(processorURI));
+				System.out.println("removed order outport "+handler_uri+" "+processorURI);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
