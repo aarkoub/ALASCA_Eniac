@@ -442,10 +442,13 @@ ProcessorCoordinatorOrderI{
 					String avm = lowestScore(dynamicstate);
 					List<String> proc_freqs_list ;
 					if(avm != null) {
+						
+						System.out.println("ENTREE");
 						if((proc_freqs_list=requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm))!=null) {
 							
 							logMessage(avm+" removed 1 core");
 						}
+						System.out.println("SORTIE");
 				
 					}
 					else{
