@@ -294,7 +294,7 @@ ProcessorCoordinatorOrderI{
 					//System.out.println("ok "+autoHand_uri+" "+proc_uri+" "+core);
 					//if(proc_coord_freq_map.get(proc_uri)!=null)
 					if(proc_coord_freq_map.get(proc_uri)==null)System.out.println(proc_coord_freq_map.get(proc_uri));
-						proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
+						return proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
 					
 					/*requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
 								core, freq);*/
@@ -304,7 +304,7 @@ ProcessorCoordinatorOrderI{
 			e.printStackTrace();
 		}
 		
-		return true;
+		return false;
 	}
 	
 	private boolean decreaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
@@ -325,7 +325,7 @@ ProcessorCoordinatorOrderI{
 				
 				try {
 					System.out.println("Decreasing ");
-					this.proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
+					return this.proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
 				
 				} catch (UnavailableFrequencyException e) {
 					// TODO Auto-generated catch block
@@ -341,7 +341,7 @@ ProcessorCoordinatorOrderI{
 				}
 			}
 		}
-		return true;
+		return false;
 	}
 	
 	private int wait = 15;

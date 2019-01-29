@@ -36,14 +36,13 @@ implements ProcessorCoordinatorFreqI
 		}
 
 		@Override
-		public void setCoreFrequency(String handler_uri, int coreNo, int frequency) throws Exception {
-			this.getOwner().handleRequestSync(
-					new AbstractComponent.AbstractService<Void>() {
+		public boolean setCoreFrequency(String handler_uri, int coreNo, int frequency) throws Exception {
+			return this.getOwner().handleRequestSync(
+					new AbstractComponent.AbstractService<Boolean>() {
 						@Override
-						public Void call() throws Exception {
-							((ProcessorCoordinator)this.getOwner()).
+						public Boolean call() throws Exception {
+							return ((ProcessorCoordinator)this.getOwner()).
 									setCoreFrequency(handler_uri, coreNo, frequency) ;
-							return null;
 						}
 					});			
 			

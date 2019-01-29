@@ -8,8 +8,8 @@ extends AbstractConnector
 implements ProcessorCoordinatorFreqI{
 
 	@Override
-	public void setCoreFrequency(String handler_uri, int coreNo, int frequency) throws Exception {
-		((ProcessorCoordinatorFreqI)this.offering).setCoreFrequency(handler_uri, coreNo, frequency);
+	public boolean setCoreFrequency(String handler_uri, int coreNo, int frequency) throws Exception {
+		return ((ProcessorCoordinatorFreqI)this.offering).setCoreFrequency(handler_uri, coreNo, frequency);
 		
 	}
 

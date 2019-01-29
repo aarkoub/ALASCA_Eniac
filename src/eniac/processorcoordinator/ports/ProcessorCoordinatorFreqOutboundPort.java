@@ -25,8 +25,8 @@ implements ProcessorCoordinatorFreqI{
 	}
 
 	@Override
-	public void setCoreFrequency(String handler_uri, int coreNo, int frequency) throws Exception {
-		((ProcessorCoordinatorFreqI)connector).setCoreFrequency(handler_uri, coreNo, frequency);
+	public boolean setCoreFrequency(String handler_uri, int coreNo, int frequency) throws Exception {
+		return ((ProcessorCoordinatorFreqI)connector).setCoreFrequency(handler_uri, coreNo, frequency);
 		
 	}
 

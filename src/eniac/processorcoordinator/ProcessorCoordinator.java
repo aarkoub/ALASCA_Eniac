@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import eniac.processorcoordinator.connectors.ProcessorCoordinatorOrderConnector;
@@ -51,6 +52,10 @@ ProcessorStateDataConsumerI{
 	
 	protected Map<String, Set<Integer>> corePerHandler = new HashMap<>();
 	private boolean isNew;
+	
+	protected Map<Integer, Integer> previousFreqs = new HashMap<>();
+	
+	Set<Integer> toBeChanged = new HashSet<>();
 	
 	public ProcessorCoordinator(String coordinatorURI,
 			String procURI,
@@ -149,8 +154,20 @@ ProcessorStateDataConsumerI{
 	}
 	
 	@Override
-	public void setCoreFrequency(String handler_uri, int coreNo, int frequency) {
+	public boolean setCoreFrequency(String handler_uri, int coreNo, int frequency) {
 		try {
+			
+			if(previousFreqs.size()!=0){
+				
+				Set<Entry<Integer, Integer>> entrySet = previousFreqs.entrySet();
+				
+				for(Entry<Integer,Integer> entry : entrySet){
+					if(currentFreqs[entry.getKey()]!=previousFreqs.get(entry.getValue())){
+						return false;
+					}
+				}
+				previousFreqs.clear();
+			}
 			
 			int freq = frequency ;
 			
@@ -193,6 +210,7 @@ ProcessorStateDataConsumerI{
 								else
 									next = getNextFreq(currentFreqs[core], admissibleFreqs);
 								//System.out.println("core "+core+" next "+next);
+								previousFreqs.put(core, next);
 								procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, core, next);
 							
 							}
@@ -224,6 +242,8 @@ ProcessorStateDataConsumerI{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		return true;
 		
 		
 	}
