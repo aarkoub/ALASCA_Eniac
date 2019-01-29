@@ -18,6 +18,7 @@ import fr.sorbonne_u.components.connectors.DataConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.datacenter.connectors.ControlledDataConnector;
+import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
 import fr.sorbonne_u.datacenter.hardware.processors.connectors.ProcessorManagementConnector;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorDynamicStateI;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorStateDataConsumerI;
@@ -153,15 +154,25 @@ ProcessorStateDataConsumerI{
 			
 			int freq = frequency ;
 			
-			if(isFreqGapTooBig(coreNo, frequency)){
-				if(currentFreqs[coreNo]-frequency>0){
-					freq = getPreviousFreq(currentFreqs[coreNo], admissibleFreqs);
+			if(freq!=currentFreqs[coreNo]){
+			
+				if(isFreqGapTooBig(coreNo, frequency)){
+					if(currentFreqs[coreNo]-frequency>0){
+						freq = getPreviousFreq(currentFreqs[coreNo], admissibleFreqs);
+					}
+					else
+						freq = getNextFreq(currentFreqs[coreNo], admissibleFreqs);
 				}
-				else
-					freq = getNextFreq(currentFreqs[coreNo], admissibleFreqs);
+				
+				try{
+					System.out.println("Set core frequency for "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
+					processorManagementOutboundPort.setCoreFrequency(coreNo, freq);
+				}
+				catch(UnacceptableFrequencyException e){
+				System.out.println("Warning Exception catched "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
+				}
 			}
 			
-			processorManagementOutboundPort.setCoreFrequency(coreNo, freq);
 
 			if(isNew){
 				isNew = false;
@@ -181,7 +192,7 @@ ProcessorStateDataConsumerI{
 								}
 								else
 									next = getNextFreq(currentFreqs[core], admissibleFreqs);
-								System.out.println("core "+core+" next "+next);
+								//System.out.println("core "+core+" next "+next);
 								procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, core, next);
 							
 							}
@@ -200,7 +211,7 @@ ProcessorStateDataConsumerI{
 								}
 								else
 									next = getNextFreq(currentFreqs[i], admissibleFreqs);
-								System.out.println("core "+i+" next "+next);
+								//System.out.println("core "+i+" next "+next);
 								processorManagementOutboundPort.setCoreFrequency(i, next);							
 								
 							}
@@ -345,7 +356,8 @@ ProcessorStateDataConsumerI{
 	@Override
 	public void notifyCoreRestitution(String handler_uri, int coreNum) throws Exception{
 		
-		corePerHandler.get(handler_uri).remove(coreNum);
+		
+		System.out.println("removing "+handler_uri+" "+corePerHandler.get(handler_uri).remove(coreNum)+" from corePerHandler");
 	
 	}
 	
@@ -367,7 +379,6 @@ ProcessorStateDataConsumerI{
 			}
 		}
 
-		System.out.println("current "+currentFreq+" next "+ret);
 		return ret;
 	}
 	

@@ -360,19 +360,14 @@ ProcessorCoordinatorOrderI{
 		current_ds = dynamicState;
 		
 	}
-	
-	
-	
-	public double exponentialSmoothing(double avgraw) {
-		return ALPHA*avgraw + (1-ALPHA)*this.lavg;
-	}
+
 	
 	public void modulateAVM(RequestDispatcherDynamicStateI dynamicstate, double avg) throws Exception {
 		Map<String, String> proc_coord_freq_inport_uri_map;
 		if(avg > upper_bound) {
 			if(last > avg) {
 				last = avg;
-				modWait = 10;
+				//modWait = 10;
 			}
 			else{
 				
@@ -398,7 +393,7 @@ ProcessorCoordinatorOrderI{
 								addNewPortCoord(proc_coord_freq_inport_uri_map);
 								System.out.println(autoHand_uri+" new cores = new ports added");
 								logMessage(entry.getKey()+" 1 core added");	
-								modWait = 50;
+								//modWait = 50;
 							}
 							//sinon on ajoute une avm 
 							else{
@@ -406,7 +401,7 @@ ProcessorCoordinatorOrderI{
 									addNewPortCoord(proc_coord_freq_inport_uri_map);
 									System.out.println(autoHand_uri+" new avm = new ports added");
 									//logMessage(avmUri+" added");
-									modWait = 100;
+									//modWait = 100;
 								}
 							}
 
@@ -417,7 +412,7 @@ ProcessorCoordinatorOrderI{
 							addNewPortCoord(proc_coord_freq_inport_uri_map);
 							System.out.println(autoHand_uri+" new avm = new ports added");
 							//logMessage(avmUri+" added");
-							modWait = 100;
+							//modWait = 100;
 						}
 						
 					}
@@ -435,7 +430,7 @@ ProcessorCoordinatorOrderI{
 					//System.out.println(dynamicstate.getScoresMap().toString());
 					logMessage("Response time too fast: "+avg+"ms (>"+ lower_bound +" ms wanted)");
 					if(removeUnusedAVM(dynamicstate)) {
-						modWait = 10;
+						//modWait = 10;
 						return;
 					}
 					
@@ -446,9 +441,7 @@ ProcessorCoordinatorOrderI{
 							
 							logMessage(avm+" removed 1 core");
 						}
-						/*if((proc_freqs_list=requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm))!=null) {
-							logMessage(avm+" removed 1 core");
-						}*/
+				
 					}
 					else{
 					
@@ -584,7 +577,6 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 			}
 		}
 
-		System.out.println("current "+currentFreq+" next "+ret);
 		return ret;
 	}
 	
@@ -614,7 +606,7 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
 
 		System.out.println("GOT IT "+procURI+" "+coreNo+" "+frequency);
-				
+		
 		proc_coord_freq_map.get(procURI).setCoreFrequency(autoHand_uri, coreNo, frequency);
 
 		

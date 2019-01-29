@@ -355,6 +355,8 @@ AutomaticHandlerRequestI{
 			}
 			
 			avm_management_port_map.get(avm_uri).allocateCores(cores);
+			
+			
 			return proc_coord_manage_inport_map;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -371,6 +373,7 @@ AutomaticHandlerRequestI{
 				cores = cd.getCsop().allocateCores(nbcores);
 				if(cores.length == nbcores) {
 					allocores.add(new AllocationCore(cd.getComputer(), cores, ""));
+									
 					break;
 				}
 				for(AllocatedCore alloc: cores) {
@@ -390,31 +393,6 @@ AutomaticHandlerRequestI{
 		
 	}
 	
-	@SuppressWarnings("unused")
-	private AllocationCore allocateCoreFromComputers(int nbcores) throws Exception {
-		AllocatedCore[] cores;
-		for(ComputerData cd: computerdata_map.values()) {
-			cores = cd.getCsop().allocateCores(nbcores);
-			if(cores.length == nbcores) return new AllocationCore(cd.getComputer(), cores, "");
-			for(AllocatedCore alloc: cores) {
-				cd.getComputer().releaseCore(alloc);
-			}
-		}
-		return null;
-	}
-	
-	@SuppressWarnings("unused")
-	private AllocationCore allocateCoreFromComputers(int nbcores, String VMuri) throws Exception {
-		AllocatedCore[] cores;
-		for(ComputerData cd: computerdata_map.values()) {
-			cores = cd.getCsop().allocateCores(nbcores);
-			if(cores.length == nbcores) return new AllocationCore(cd.getComputer(), cores, VMuri);
-			for(AllocatedCore alloc: cores) {
-				cd.getComputer().releaseCore(alloc);
-			}
-		}
-		return null;
-	}
 	
 	@Override
 	public RequestAdmissionI getNewRequestAdmission(RequestAdmissionI requestAdmission) throws Exception {
@@ -598,7 +576,6 @@ AutomaticHandlerRequestI{
 
 		Map<String, Set<Integer>> cores_map = current_cores_handlers_map.get(handler_uri);
 		
-		System.out.println("allocated Cores "+handler_uri);
 		
 		for(int i = 0; i < allocatedCores.length; i++) {
 			
@@ -655,11 +632,13 @@ AutomaticHandlerRequestI{
 		RequestDispatcherManagementOutboundPort rqout = rd_management_port_map.get(RequestDispatcherURI);
 		try {
 			rqout.removeAVM(avmURI);
-			System.out.println("removing avm from "+handler_uri);
+		
 			List<String> proc_freqs = new ArrayList<>();
-			
+
+
 			for(AllocatedCore core : allocationVMCores_map.get(avmURI).getCores() ){
-				removeCoresMap(handler_uri, core.processorURI, proc_freqs, core.processorNo);
+				
+				removeCoresMap(handler_uri, core.processorURI, proc_freqs, core.coreNo);
 			}
 			
 			allocationVMCores_map.get(avmURI).freeCores();
@@ -761,10 +740,10 @@ AutomaticHandlerRequestI{
 			cores_map.remove(processorURI);
 			
 			try {
-				System.out.println("removing "+handler_uri+" "+processorURI+cores_map.get(processorURI));
+				System.out.println("removing order outport "+handler_uri+" "+processorURI+cores_map.get(processorURI));
 				outport.notifyCoreRestitution(handler_uri, coreNum);
 				outport.removeOrderOutport(handler_uri);
-				System.out.println("removed "+handler_uri+" "+processorURI+cores_map.get(processorURI));
+				System.out.println("removed order outport "+handler_uri+" "+processorURI+cores_map.get(processorURI));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -773,6 +752,7 @@ AutomaticHandlerRequestI{
 		}
 		else{
 			try {
+				System.out.println("core restitution "+handler_uri+" coreNum"+coreNum);
 				outport.notifyCoreRestitution(handler_uri, coreNum);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
