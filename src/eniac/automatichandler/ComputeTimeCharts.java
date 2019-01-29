@@ -47,10 +47,10 @@ public class ComputeTimeCharts extends ApplicationFrame {
 		ValueMarker marker = new ValueMarker(average);
 		marker.setPaint(Color.BLUE);
 		((XYPlot)chart.getPlot()).addRangeMarker(marker);
-		ValueMarker markerb = new ValueMarker(average-1000);
+		ValueMarker markerb = new ValueMarker(average-500);
 		markerb.setPaint(Color.GREEN);
 		((XYPlot)chart.getPlot()).addRangeMarker(markerb);
-		ValueMarker markert = new ValueMarker(average+2000);
+		ValueMarker markert = new ValueMarker(average+500);
 		markert.setPaint(Color.GREEN);
 		((XYPlot)chart.getPlot()).addRangeMarker(markert);
 		setContentPane( chartPanel );	
