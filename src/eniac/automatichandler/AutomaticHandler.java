@@ -288,16 +288,12 @@ ProcessorCoordinatorOrderI{
 					
 					int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 					int freq = getNextFreq(currentFreq, admissibleFreq);
-										
-					//System.out.println("core "+core+" current freq "+currentFreq+" next freq "+freq);
+
 					if(currentFreq == freq) return false;
-					//System.out.println("ok "+autoHand_uri+" "+proc_uri+" "+core);
-					//if(proc_coord_freq_map.get(proc_uri)!=null)
+
 					if(proc_coord_freq_map.get(proc_uri)==null)System.out.println(proc_coord_freq_map.get(proc_uri));
 						return proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
-					
-					/*requestDispatcherHandlerOutboundPort.setCoreFrequency(proc_uri, 
-								core, freq);*/
+
 					}
 				}
 		}catch(Exception e) {

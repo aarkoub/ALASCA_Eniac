@@ -162,7 +162,7 @@ ProcessorStateDataConsumerI{
 				Set<Entry<Integer, Integer>> entrySet = previousFreqs.entrySet();
 				
 				for(Entry<Integer,Integer> entry : entrySet){
-					if(currentFreqs[entry.getKey()]!=previousFreqs.get(entry.getValue())){
+					if(currentFreqs[entry.getKey()]!=entry.getValue()){
 						return false;
 					}
 				}
