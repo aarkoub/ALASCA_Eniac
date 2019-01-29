@@ -78,6 +78,7 @@ ProcessorCoordinatorOrderI{
 
 	protected Map<String, String> processorCoordinatorFreqInportURIS;
 	
+	protected double averageResponseTime;
 	protected int modWait = 20;
 	
 	public AutomaticHandler(String autoHand_uri,
@@ -159,6 +160,9 @@ ProcessorCoordinatorOrderI{
 		}
 		
 		this.processorCoordinatorFreqInportURIS = processorCoordinatorFreqInportURIS;
+		
+		this.averageResponseTime = averageResponseTime;
+		
 		
 	}
 		
@@ -368,7 +372,7 @@ ProcessorCoordinatorOrderI{
 		if(avg > upper_bound) {
 			if(last > avg) {
 				last = avg;
-				//modWait = 10;
+				
 			}
 			else{
 				
@@ -388,7 +392,7 @@ ProcessorCoordinatorOrderI{
 							
 							int nbCoreToAdd ;
 							
-							if(lavg>2*avg) {
+							if(lavg>2*averageResponseTime) {
 								nbCoreToAdd = 2;
 							}
 							else
@@ -471,6 +475,7 @@ ProcessorCoordinatorOrderI{
 			else{
 				last = avg;
 				logMessage("Response time correct");
+				wait = 19;
 				
 			}
 		}
@@ -617,27 +622,7 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
 
 		System.out.println("GOT IT "+procURI+" "+coreNo+" "+frequency);
-		
-		
-		for(String avmURI : currentDynamicState.getAVMDynamicStateMap().keySet()){
-			
-			Map<String, Map<Integer, Integer>> currentFreqProc = 
-					currentDynamicState.getAVMDynamicStateMap().get(avmURI).getProcCurrentFreqCoresMap();
-			
-					Map<Integer, Integer > currentFreqs = currentFreqProc.get(procURI);
-					if(currentFreqs!=null){
-						
-						if(currentFreqs.get(coreNo)==frequency){
-							System.out.println("Do nothing");
-							return;
-						}
-						
-						break;
-					}
-			
-			
-		}
-		
+				
 		proc_coord_freq_map.get(procURI).setCoreFrequency(autoHand_uri, coreNo, frequency);
 
 		

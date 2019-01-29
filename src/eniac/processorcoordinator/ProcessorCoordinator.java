@@ -157,17 +157,22 @@ ProcessorStateDataConsumerI{
 	public boolean setCoreFrequency(String handler_uri, int coreNo, int frequency) {
 		try {
 			
-			if(previousFreqs.size()!=0){
 				
-				Set<Entry<Integer, Integer>> entrySet = previousFreqs.entrySet();
-				
-				for(Entry<Integer,Integer> entry : entrySet){
-					if(currentFreqs[entry.getKey()]!=entry.getValue()){
-						return false;
-					}
+			Integer prevFreq ;
+			
+			if( (prevFreq = previousFreqs.get(coreNo))!=null && prevFreq != frequency) {
+				if(currentFreqs[coreNo] != prevFreq) {
+					processorManagementOutboundPort.setCoreFrequency(coreNo, prevFreq);
+					
+					previousFreqs.remove(coreNo);
+					
+					return false;
+					
+					
 				}
-				previousFreqs.clear();
 			}
+			
+			
 			
 			int freq = frequency ;
 			
