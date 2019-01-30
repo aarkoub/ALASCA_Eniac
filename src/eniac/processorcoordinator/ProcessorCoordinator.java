@@ -359,8 +359,7 @@ ProcessorStateDataConsumerI{
 		
 		currentFreqs = currentDynamicState.getCurrentCoreFrequencies();		
 		isNew = true;
-		
-		System.out.println("ICI recep "+processorURI);
+
 		
 	}
 

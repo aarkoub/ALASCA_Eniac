@@ -709,17 +709,26 @@ implements	PushModeControllingI
 	{
 		ProcessorDynamicStateI pds = this.getDynamicState() ;
 		this.processorDynamicStateDataInboundPort.send(pds) ;
+
 		
 		for(String avmURI : processorDynamicStateDataInboundPortAVMMap.keySet()){
 			
+			
 			ProcessorDynamicStateDataInboundPort processorDynamicStateDataInboundPortAVM = processorDynamicStateDataInboundPortAVMMap.get(avmURI);
-			processorDynamicStateDataInboundPortAVM.send(pds) ;
+			
+			
+			if(processorDynamicStateDataInboundPortAVM.connected())
+				processorDynamicStateDataInboundPortAVM.send(pds) ;
+			else {
+				processorDynamicStateDataInboundPortAVM.unpublishPort();
+				processorDynamicStateDataInboundPortAVMMap.remove(avmURI);
+			}
 			
 		}
+
 		
 		coord_dynamic_inport.send(pds);
-		
-	
+
 		
 	}
 

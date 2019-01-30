@@ -742,7 +742,7 @@ AutomaticHandlerRequestI{
 			try {
 				
 				outport.notifyCoreRestitution(handler_uri, coreNum);
-				outport.removeOrderOutport(handler_uri);
+				//outport.removeOrderOutport(handler_uri);
 				System.out.println("removed order outport "+handler_uri+" "+processorURI);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
