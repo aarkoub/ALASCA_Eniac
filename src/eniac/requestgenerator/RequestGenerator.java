@@ -1,4 +1,4 @@
-package eniac.requestgenarator;
+package eniac.requestgenerator;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -49,10 +49,10 @@ import eniac.admissioncontroler.interfaces.RequestAdmissionNotificationI;
 import eniac.admissioncontroler.interfaces.RequestAdmissionSubmissionI;
 import eniac.requestadmission.ports.RequestAdmissionNotificationOutboundPort;
 import eniac.requestadmission.ports.RequestAdmissionSubmissionOutboundPort;
-import eniac.requestgenarator.interfaces.RequestGeneratorManagementI;
-import eniac.requestgenarator.interfaces.SubmissionISend;
-import eniac.requestgenarator.ports.RequestGeneratorManagementInboundPort;
-import eniac.requestgenarator.ports.SendSubmissionOutboundPort;
+import eniac.requestgenerator.interfaces.RequestGeneratorManagementI;
+import eniac.requestgenerator.interfaces.SubmissionISend;
+import eniac.requestgenerator.ports.RequestGeneratorManagementInboundPort;
+import eniac.requestgenerator.ports.SendSubmissionOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.AbstractConnector;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;

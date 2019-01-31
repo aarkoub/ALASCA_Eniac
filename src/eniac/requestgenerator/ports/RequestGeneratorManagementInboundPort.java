@@ -1,7 +1,7 @@
-package eniac.requestgenarator.ports;
+package eniac.requestgenerator.ports;
 
-import eniac.requestgenarator.RequestGenerator;
-import eniac.requestgenarator.interfaces.RequestGeneratorManagementI;
+import eniac.requestgenerator.RequestGenerator;
+import eniac.requestgenerator.interfaces.RequestGeneratorManagementI;
 
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //

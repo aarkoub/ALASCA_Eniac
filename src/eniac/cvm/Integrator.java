@@ -1,7 +1,7 @@
 package eniac.cvm;
 
-import eniac.requestgenarator.connector.RequestGeneratorManagementConnector;
-import eniac.requestgenarator.ports.RequestGeneratorManagementOutboundPort;
+import eniac.requestgenerator.connector.RequestGeneratorManagementConnector;
+import eniac.requestgenerator.ports.RequestGeneratorManagementOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;

@@ -1,7 +1,7 @@
-package eniac.requestgenarator.ports;
+package eniac.requestgenerator.ports;
 
 
-import eniac.requestgenarator.interfaces.SubmissionISend;
+import eniac.requestgenerator.interfaces.SubmissionISend;
 
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //

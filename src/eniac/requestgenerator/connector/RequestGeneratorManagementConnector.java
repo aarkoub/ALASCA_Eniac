@@ -1,6 +1,6 @@
-package eniac.requestgenarator.connector;
+package eniac.requestgenerator.connector;
 
-import eniac.requestgenarator.interfaces.RequestGeneratorManagementI;
+import eniac.requestgenerator.interfaces.RequestGeneratorManagementI;
 
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //

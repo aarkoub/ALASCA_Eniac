@@ -1,4 +1,6 @@
-package eniac.requestgenarator.interfaces;
+package eniac.requestgenerator.ports;
+
+import eniac.requestgenerator.interfaces.RequestGeneratorManagementI;
 
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
@@ -34,76 +36,85 @@ package eniac.requestgenarator.interfaces;
 //The fact that you are presently reading this means that you have had
 //knowledge of the CeCILL-C license and that you accept its terms.
 
-import fr.sorbonne_u.components.interfaces.OfferedI;
-import fr.sorbonne_u.components.interfaces.RequiredI;
+import fr.sorbonne_u.components.ComponentI;
+import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 
 /**
- * Cette classe à été reprise de BCM, nous avons dû légèrement faire quelques ajouts pour nos besoins.
+ * Classe reprit de BCM et modifié.
  */
-public interface			RequestGeneratorManagementI
-extends		OfferedI,
-			RequiredI
+public class				RequestGeneratorManagementOutboundPort
+extends		AbstractOutboundPort
+implements	RequestGeneratorManagementI
 {
-	/**
-	 * start the generation of the requests.
-	 * 
-	 * <p><strong>Contract</strong></p>
-	 * 
-	 * <pre>
-	 * pre	true			// no precondition.
-	 * post	true			// no postcondition.
-	 * </pre>
-	 *
-	 * @throws Exception	<i>todo.</i>
-	 */
-	public void			startGeneration() throws Exception ;
+	private static final long serialVersionUID = 1L;
+
+	// ------------------------------------------------------------------------
+	// Constructors
+	// ------------------------------------------------------------------------
+
+	public				RequestGeneratorManagementOutboundPort(
+		ComponentI owner
+		) throws Exception
+	{
+		super(RequestGeneratorManagementI.class, owner) ;
+
+		assert	owner != null ;
+	}
+
+	public				RequestGeneratorManagementOutboundPort(
+		String uri,
+		ComponentI owner
+		) throws Exception
+	{
+		super(uri, RequestGeneratorManagementI.class, owner) ;
+
+		assert	uri != null && owner != null ;
+	}
+
+	// ------------------------------------------------------------------------
+	// Methods
+	// ------------------------------------------------------------------------
 
 	/**
-	 * stop the generation of the requests.
-	 * 
-	 * <p><strong>Contract</strong></p>
-	 * 
-	 * <pre>
-	 * pre	true			// no precondition.
-	 * post	true			// no postcondition.
-	 * </pre>
-	 *
-	 * @throws Exception	<i>todo.</i>
+	 * @see fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI#startGeneration()
 	 */
-	public void			stopGeneration() throws Exception ;
+	@Override
+	public void			startGeneration() throws Exception
+	{
+		((RequestGeneratorManagementI)this.connector).startGeneration() ;
+	}
 
 	/**
-	 * get the current value of the mean inter-arrival time used to generate
-	 * requests.
-	 * 
-	 * <p><strong>Contract</strong></p>
-	 * 
-	 * <pre>
-	 * pre	true			// no precondition.
-	 * post	true			// no postcondition.
-	 * </pre>
-	 *
-	 * @return				the current value of the mean inter-arrival time.
-	 * @throws Exception		<i>todo.</i>
+	 * @see fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI#stopGeneration()
 	 */
-	public double		getMeanInterArrivalTime() throws Exception ;
+	@Override
+	public void			stopGeneration() throws Exception
+	{
+		((RequestGeneratorManagementI)this.connector).stopGeneration() ;
+	}
 
 	/**
-	 * set the value of the mean inter-arrival time used to generate requests.
-	 * 
-	 * <p><strong>Contract</strong></p>
-	 * 
-	 * <pre>
-	 * pre	miat &gt; 0.0
-	 * post	true			// no postcondition.
-	 * </pre>
-	 *
-	 * @param miat			new value for the mean inter-arrival time.
-	 * @throws Exception		<i>todo.</i>
+	 * @see fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI#getMeanInterArrivalTime()
 	 */
-	public void			setMeanInterArrivalTime(double miat) throws Exception ;
+	@Override
+	public double		getMeanInterArrivalTime()
+	throws Exception
+	{
+		return ((RequestGeneratorManagementI)this.connector).
+												getMeanInterArrivalTime() ;
+	}
 
-	
+	/**
+	 * @see fr.sorbonne_u.datacenterclient.requestgenerator.interfaces.RequestGeneratorManagementI#setMeanInterArrivalTime(double)
+	 */
+	@Override
+	public void			setMeanInterArrivalTime(double miat)
+	throws Exception
+	{
+		((RequestGeneratorManagementI)this.connector).
+												setMeanInterArrivalTime(miat) ;
+	}
+
 	/**
 	 * Cette méthode correspond à la demande de l'application au centre de calcul, d'héberger son application.
 	 * En effet, le RequestGenerator envoit une demande d'hébergement au Controlleur d'admission via un port configuré dans le constructeur et y 
@@ -113,12 +124,24 @@ extends		OfferedI,
 	 * @return true si le controlleur d'admission accepte/ false sinon
 	 * @throws Exception exception
 	 */
-	public boolean askAdmissionControler() throws Exception;
+	@Override
+	public boolean askAdmissionControler() throws Exception {
+		return ((RequestGeneratorManagementI)this.connector).
+		askAdmissionControler();
+		
+	}
 
 	/**
 	 * Cette méthode demande au controlleur d'admission de libérer les ressources qui ont été alloué pour ce RequestGenerator, car
 	 * celui-ci a terminé ses demandes de tâches.
 	 * @throws Exception exception
 	 */
-	public void freeAdmissionControlerRessources() throws Exception;
+	@Override
+	public void freeAdmissionControlerRessources() throws Exception {
+		((RequestGeneratorManagementI)this.connector).
+				freeAdmissionControlerRessources();
+		
+	}
+
+
 }

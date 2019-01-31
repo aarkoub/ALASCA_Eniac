@@ -12,7 +12,7 @@ import eniac.admissioncontroler.AdmissionControler;
 import eniac.admissioncontroler.ComputerURI;
 import eniac.automatichandler.AutomaticHandler;
 import eniac.processorcoordinator.ProcessorCoordinator;
-import eniac.requestgenarator.RequestGenerator;
+import eniac.requestgenerator.RequestGenerator;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.processors.Processor;

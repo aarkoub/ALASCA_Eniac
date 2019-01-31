@@ -71,9 +71,7 @@ ProcessorCoordinatorOrderI{
 	private double lavg ;
 
 	protected Map<String, ProcessorCoordinatorFreqOutboundPort> proc_coord_freq_map;
-	protected Map<String, ProcessorCoordinatorManagementOutboundPort>
-		coord_map;
-	
+
 	protected Map<String, String> proc_coord_order_map;
 
 	protected Map<String, String> processorCoordinatorFreqInportURIS;
@@ -138,7 +136,7 @@ ProcessorCoordinatorOrderI{
 		upper_bound = averageResponseTime+500;
 		
 		proc_coord_order_map = new HashMap<>();	
-		coord_map = new HashMap<>();
+		
 		proc_coord_freq_map = new HashMap<>();
 		
 		for(String proc_uri : processorCoordinatorFreqInportURIS.keySet()){
