@@ -538,6 +538,7 @@ AutomaticHandlerRequestI{
 		Object[] argumentsAutomaticHandler = {ah_uri,
 				ah_management_inport_uri, 
 				rd_uri,
+				distribInPortURI,
 				requestDispatcherHandlerInboundPortURI,
 				requestDispatcherDynamicStateDataInboundPortURI,
 				requestDispatcherStaticStateDataInboundPortURI,

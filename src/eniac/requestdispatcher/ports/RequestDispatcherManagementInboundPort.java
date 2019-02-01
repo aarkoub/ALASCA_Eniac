@@ -131,5 +131,19 @@ public class RequestDispatcherManagementInboundPort extends AbstractInboundPort
 			
 		}
 
+		@Override
+		public void stopSendingRequestToOneAVM() throws Exception {
+			this.getOwner().handleRequestAsync(
+					new AbstractComponent.AbstractService<Void>() {
+						@Override
+						public Void call() throws Exception {
+							((RequestDispatcher)this.getOwner()).
+							stopSendingRequestToOneAVM();
+							return null;
+						}
+					}) ;
+			
+		}
+
 
 }

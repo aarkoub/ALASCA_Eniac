@@ -60,5 +60,11 @@ public class RequestDispatcherManagementConnector extends AbstractConnector
 		
 	}
 
+	@Override
+	public void stopSendingRequestToOneAVM() throws Exception {
+		((RequestDispatcherManagementI)this.offering).stopSendingRequestToOneAVM();
+		
+	}
+
 
 }

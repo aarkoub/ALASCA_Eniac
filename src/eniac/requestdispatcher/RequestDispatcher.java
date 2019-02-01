@@ -126,6 +126,7 @@ PushModeControllingI{
 	 * Tableau des scores des AVMs (charge de requêtes de chaque AVM)
 	 */
 	protected Map<String, Double> avmScores;
+	private String notToChoose;
 	
 	
 	public RequestDispatcher(String rd_uri,
@@ -258,12 +259,28 @@ PushModeControllingI{
 		String avm = avms.keySet().stream().findFirst().get();
 		double score = avmScores.get(avm);
 		for(Map.Entry<String, Double> entry: avmScores.entrySet()) {
+			
+			if(entry.getKey().equals(notToChoose))
+				continue;
+			
 			if(entry.getValue() < score && avms.get(entry.getKey()) != null) {
 				score = entry.getValue();
 				avm = entry.getKey();
 			}
 		}
 		return avm;
+	}
+	
+	public void stopSendingRequestToOneAVM(){
+
+		if(avms.size() != 1){
+		
+			for(String avmURI : avms.keySet()){
+				notToChoose = avmURI;
+				break;
+			}
+		}
+		
 	}
 	
 

@@ -189,7 +189,7 @@ ProcessorStateDataConsumerI{
 				try{
 					System.out.println("Set core frequency for "+procURI+" "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
 					processorManagementOutboundPort.setCoreFrequency(coreNo, freq);
-					System.out.println("done");
+					System.out.println("done set freq");
 				}
 				catch(UnacceptableFrequencyException e){
 				System.out.println("Warning Exception catched "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
@@ -376,11 +376,14 @@ ProcessorStateDataConsumerI{
 		if(cores==null){
 			cores = new HashSet<>();
 			cores.add(coreNum);
+			
 			corePerHandler.put(handler_uri, cores);
 		}
 		else{
 			cores.add(coreNum);
 		}
+		
+		System.out.println("core possession "+handler_uri+" "+coreNum);
 			
 	}
 	
@@ -388,7 +391,7 @@ ProcessorStateDataConsumerI{
 	public void notifyCoreRestitution(String handler_uri, int coreNum) throws Exception{
 		
 		
-		System.out.println("removing "+handler_uri+" "+corePerHandler.get(handler_uri).remove(coreNum)+" from corePerHandler");
+		System.out.println(procURI+" removing "+handler_uri+" "+corePerHandler.get(handler_uri).remove(coreNum)+" from corePerHandler");
 	
 	}
 	

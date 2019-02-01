@@ -52,4 +52,6 @@ public interface RequestDispatcherManagementI extends OfferedI, RequiredI {
 	 */
 	public void startPortConnection() throws Exception;
 	
+	public void stopSendingRequestToOneAVM() throws Exception;
+	
 }

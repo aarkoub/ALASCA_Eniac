@@ -22,10 +22,12 @@ import eniac.processorcoordinator.interfaces.ProcessorCoordinatorOrderI;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorFreqOutboundPort;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementOutboundPort;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorOrderInboundPort;
+import eniac.requestdispatcher.connectors.RequestDispatcherManagementConnector;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStateDataConsumerI;
 import eniac.requestdispatcher.interfaces.RequestDispatcherStaticStateI;
 import eniac.requestdispatcher.ports.RequestDispatcherDynamicStateDataOutboundPort;
+import eniac.requestdispatcher.ports.RequestDispatcherManagementOutboundPort;
 import eniac.requestdispatcher.ports.RequestDispatcherStaticStateDataOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.connectors.DataConnector;
@@ -54,6 +56,8 @@ ProcessorCoordinatorOrderI{
 	protected String requestDispatcherStaticStateDataInboundPortURI;
 	protected String requestDispatcherURI;
 	
+	protected RequestDispatcherManagementOutboundPort dispatcher_management_outport;
+	
 	protected RequestDispatcherDynamicStateI current_ds;
 	
 	protected Map<String, Map<String,Set<Integer>>> admissibleFreqCores;
@@ -76,12 +80,15 @@ ProcessorCoordinatorOrderI{
 
 	protected Map<String, String> processorCoordinatorFreqInportURIS;
 	
+	protected String requestDispatcherManagementInboundPortURI;
+	
 	protected double averageResponseTime;
 	protected int modWait = 20;
 	
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
 			String requestDispatcherUri,
+			String requestDispatcherManagementInboundPortURI,
 			String requestDispatcherHandlerInboundPortURI,
 			String requestDispatcherDynamicStateDataInboundPortURI,
 			String requestDispatcherStaticStateDataInboundPortURI,
@@ -96,6 +103,9 @@ ProcessorCoordinatorOrderI{
 		assert requestDispatcherStaticStateDataInboundPortURI != null;
 		assert requestDispatcherUri != null;
 		assert processorCoordinatorFreqInportURIS != null;
+		assert requestDispatcherManagementInboundPortURI != null;
+		
+		this.requestDispatcherManagementInboundPortURI = requestDispatcherManagementInboundPortURI;
 			
 		this.requestDispatcherURI = requestDispatcherUri;
 		this.autoHand_uri = autoHand_uri;
@@ -160,6 +170,10 @@ ProcessorCoordinatorOrderI{
 		this.processorCoordinatorFreqInportURIS = processorCoordinatorFreqInportURIS;
 		
 		this.averageResponseTime = averageResponseTime;
+		
+		dispatcher_management_outport = new RequestDispatcherManagementOutboundPort(this);
+		addPort(dispatcher_management_outport);
+		dispatcher_management_outport.publishPort();
 		
 		
 	}
@@ -239,9 +253,14 @@ ProcessorCoordinatorOrderI{
 						
 			}
 			
+			doPortConnection(dispatcher_management_outport.getPortURI(),
+					requestDispatcherManagementInboundPortURI, 
+					RequestDispatcherManagementConnector.class.getCanonicalName());
+			
 		System.out.println(this.autoHand_uri+" "+requestDispatcherURI);
 		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(500);
-			
+		
+		
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -322,7 +341,7 @@ ProcessorCoordinatorOrderI{
 				if(currentFreq == freq) return false;
 				
 				try {
-					System.out.println("Decreasing "+proc_uri);
+					System.out.println("Decreasing "+proc_uri+" "+autoHand_uri);
 					return this.proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
 				
 				} catch (UnavailableFrequencyException e) {
@@ -345,6 +364,9 @@ ProcessorCoordinatorOrderI{
 	private int wait = 15;
 
 	private RequestDispatcherDynamicStateI currentDynamicState;
+
+	private boolean avmWaitingToRemove;
+	
 	@Override
 	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
 			RequestDispatcherDynamicStateI dynamicState) throws Exception {
@@ -536,6 +558,7 @@ ProcessorCoordinatorOrderI{
 			try {
 				if(requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(autoHand_uri, requestDispatcherURI, avm)!=null) {
 					logMessage(avm+" removed.");
+					avmWaitingToRemove = false;
 					return true;
 				}
 			} catch (Exception e) {
@@ -553,6 +576,17 @@ ProcessorCoordinatorOrderI{
 				avms.add(entry.getKey());
 			}
 		}
+		
+		if(avms.size()==0 && !avmWaitingToRemove)
+			try {
+				dispatcher_management_outport.stopSendingRequestToOneAVM();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		else
+			avmWaitingToRemove = true;
+		
 		return avms;
 	}
 	
@@ -603,8 +637,8 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 	@Override
 	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
 
-		System.out.println("GOT IT "+procURI+" "+coreNo+" "+frequency);
-				
+		System.out.println("GOT IT "+autoHand_uri+" "+procURI+" "+coreNo+" "+frequency);
+		
 		proc_coord_freq_map.get(procURI).setCoreFrequency(autoHand_uri, coreNo, frequency);
 
 		

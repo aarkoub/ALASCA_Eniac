@@ -92,5 +92,11 @@ public class RequestDispatcherManagementOutboundPort extends AbstractOutboundPor
 			((RequestDispatcherManagementI)this.connector).startPortConnection();
 		}
 
+		@Override
+		public void stopSendingRequestToOneAVM() throws Exception {
+			((RequestDispatcherManagementI)this.connector).stopSendingRequestToOneAVM();
+			
+		}
+
 
 }
