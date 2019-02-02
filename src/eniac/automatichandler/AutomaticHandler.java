@@ -292,7 +292,7 @@ ProcessorCoordinatorOrderI{
 	}
 	
 	private boolean increaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
-		boolean ret = false;
+		
 		List<Boolean> rets = new ArrayList<>();
 		ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);	
 		Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
@@ -544,12 +544,10 @@ ProcessorCoordinatorOrderI{
 			try {
 				if(requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(autoHand_uri, requestDispatcherURI, avm)!=null) {
 					logMessage(avm+" removed.");
-					System.out.println(avm+" removed from "+autoHand_uri);
 					avmWaitingToRemove = false;
 					return true;
 				}
-				else
-					System.out.println("cant remove");
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

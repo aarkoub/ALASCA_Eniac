@@ -143,7 +143,6 @@ ProcessorStateDataConsumerI{
 			doPortConnection(proc_order_outport.getPortURI(),
 					processorCoordinatorOrderInboundPortURI, 
 					ProcessorCoordinatorOrderConnector.class.getCanonicalName());
-			System.out.println(automaticHandlerURI);
 			procCoordinatorOrderPortMap.put(automaticHandlerURI, proc_order_outport);
 			
 			
@@ -184,7 +183,7 @@ ProcessorStateDataConsumerI{
 				}
 				else{
 					t2 = new Date();
-					if(t1!=null && t2.getTime()-t1.getTime()>500){
+					if(t1!=null && t2.getTime()-t1.getTime()<1000){
 						return false;
 					}
 					else
@@ -200,9 +199,7 @@ ProcessorStateDataConsumerI{
 				}
 				
 				try{
-					System.out.println("Set core frequency for "+procURI+" "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
 					processorManagementOutboundPort.setCoreFrequency(coreNo, freq);
-					System.out.println("done set freq");
 				}
 				catch(UnacceptableFrequencyException e){
 				System.out.println("Warning Exception catched "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
@@ -393,16 +390,14 @@ ProcessorStateDataConsumerI{
 		else{
 			cores.add(coreNum);
 		}
-		
-		System.out.println("core possession "+handler_uri+" "+coreNum);
-			
+				
 	}
 	
 	@Override
 	public void notifyCoreRestitution(String handler_uri, int coreNum) throws Exception{
 		
 		
-		System.out.println(procURI+" removing "+handler_uri+" "+coreNum+" from corePerHandler");
+		System.out.println(procURI+" removing "+handler_uri+" "+corePerHandler.get(handler_uri).remove(coreNum)+" from corePerHandler");
 	
 	}
 	
