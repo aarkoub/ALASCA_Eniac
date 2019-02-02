@@ -301,7 +301,7 @@ AutomaticHandlerRequestI{
 			alloc.setCores(newAlloc);
 			avm_management_port_map.get(avm_uri).removeProcDataStatePorts(c.processorURI);
 			List<String> res = new ArrayList<>();
-			 removeCoresMap(handler_uri, c.processorURI, res, c.coreNo);
+			 //removeCoresMap(handler_uri, c.processorURI, res, c.coreNo);
 			 return res;
 			
 			
@@ -648,7 +648,7 @@ AutomaticHandlerRequestI{
 
 			for(AllocatedCore core : allocationVMCores_map.get(avmURI).getCores() ){
 				
-				removeCoresMap(handler_uri, core.processorURI, proc_freqs, core.coreNo);
+				//removeCoresMap(handler_uri, core.processorURI, proc_freqs, core.coreNo);
 			}
 			
 			allocationVMCores_map.get(avmURI).freeCores();

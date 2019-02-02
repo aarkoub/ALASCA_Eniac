@@ -258,7 +258,7 @@ ProcessorCoordinatorOrderI{
 					RequestDispatcherManagementConnector.class.getCanonicalName());
 			
 		System.out.println(this.autoHand_uri+" "+requestDispatcherURI);
-		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(100);
+		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(500);
 		
 		
 		} catch (Exception e) {
@@ -405,7 +405,8 @@ ProcessorCoordinatorOrderI{
 			RequestDispatcherDynamicStateI dynamicState) throws Exception {
 		lavg = dynamicState.getAverageRequestTime();
 		chart.addData(lavg);
-
+		
+		
 		currentDynamicState = dynamicState;
 
 		if(wait%modWait == 0) {
@@ -422,7 +423,12 @@ ProcessorCoordinatorOrderI{
 	public void modulateAVM(RequestDispatcherDynamicStateI dynamicstate, double avg) throws Exception {
 		Map<String, String> proc_coord_freq_inport_uri_map;
 		if(avg > upper_bound) {
-			
+			if(last > avg) {
+				last = avg;
+				
+			}
+			else{
+				
 				logMessage("Response time too long: "+avg+"ms (<"+ upper_bound +" ms wanted)");
 							
 				//si la fréquence a pu etre augmentee
@@ -451,8 +457,7 @@ ProcessorCoordinatorOrderI{
 							addNewPortCoord(proc_coord_freq_inport_uri_map);
 							System.out.println(autoHand_uri+" new cores = new ports added");
 							logMessage(avmToAddCore+" 1 core added");	
-
-
+							wait = 10;
 						}
 						
 						else
@@ -465,15 +470,16 @@ ProcessorCoordinatorOrderI{
 							addNewPortCoord(proc_coord_freq_inport_uri_map);
 							System.out.println(autoHand_uri+" new avm = new ports added");
 							logMessage("avm added");
+							wait = 10;
 					
 						}
 					
 				
 					
 				
-					}
+			}
 
-			
+			}
 
 
 			
@@ -481,10 +487,15 @@ ProcessorCoordinatorOrderI{
 		else{
 		
 			if(avg < lower_bound) {
-
+				if(last < avg) {
+					last = avg;
+				
+				}
+				else{
 					//System.out.println(dynamicstate.getScoresMap().toString());
 					logMessage("Response time too fast: "+avg+"ms (>"+ lower_bound +" ms wanted)");
 					if(removeUnusedAVM(dynamicstate)) {
+						wait = 15;
 						return;
 					}
 					
@@ -493,6 +504,7 @@ ProcessorCoordinatorOrderI{
 					for(String avm : dynamicstate.getAVMDynamicStateMap().keySet())
 						if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm)!=null) {	
 								logMessage(avm+" removed 1 core");
+								wait = 15;
 								ok = true;
 						}
 					
@@ -501,14 +513,16 @@ ProcessorCoordinatorOrderI{
 							//logMessage(avmUri+" speed decreased");
 							System.out.println("speed decreased");
 						}
+						wait = 10;
 					}
 					
 				}
 				
-			
+			}
 			else{
 				last = avg;
 				logMessage("Response time correct");
+				wait = 19;
 				
 			}
 		}

@@ -273,7 +273,7 @@ PushModeControllingI{
 	
 	public void stopSendingRequestToOneAVM(){
 
-		if(avms.size() != 1){
+		if(avms.size() > 1){
 		
 			for(String avmURI : avms.keySet()){
 				notToChoose = avmURI;
