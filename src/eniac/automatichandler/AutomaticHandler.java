@@ -403,7 +403,15 @@ ProcessorCoordinatorOrderI{
 			else{
 				
 				logMessage("Response time too long: "+avg+"ms (<"+ upper_bound +" ms wanted)");
-				
+				if(3*upper_bound > avg) {
+					if(getUnusedAVMs(dynamicstate).size() == 0 && (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(autoHand_uri, requestDispatcherURI))!=null){
+						addNewPortCoord(proc_coord_freq_inport_uri_map);
+						System.out.println(autoHand_uri+" new avm = new ports added");
+						logMessage("avm added");
+						wait = 10;
+
+					}
+				}
 				for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
 							
 						//si la fréquence a pu etre augmentee
