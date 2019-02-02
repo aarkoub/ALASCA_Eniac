@@ -88,8 +88,8 @@ AutomaticHandlerRequestI{
 			int nbComputers,
 			String admissionControlerManagementInboundURI,
 			String dynamicComponentCreationInboundPortURI,
-			String requestAdmissionSubmissionInboundPortURI,
-			String requestAdmissionNotificationInboundPortURI,
+			ArrayList<String> req_admission_sub,
+			ArrayList<String> req_admission_not,
 			Map<String, String> processorCoordinatorManagementInboundPortURIS,
 			List<Computer> computers,
 			List<ComputerURI> computeruris,
@@ -99,8 +99,8 @@ AutomaticHandlerRequestI{
 		assert nbComputers > 0;
 		assert uri != null;
 		assert admissionControlerManagementInboundURI != null;
-		assert requestAdmissionSubmissionInboundPortURI != null;
-		assert requestAdmissionNotificationInboundPortURI != null;
+		assert req_admission_sub != null;
+		assert req_admission_not != null;
 		assert dynamicComponentCreationInboundPortURI != null;
 		
 		
@@ -111,17 +111,19 @@ AutomaticHandlerRequestI{
 		addPort(admissionControlerManagementInboundPort);
 		admissionControlerManagementInboundPort.publishPort();
 		
+		for(String sub_uri : req_admission_sub){
+			addOfferedInterface(RequestAdmissionSubmissionI.class);
+			requestAdmissionSubmissionInboundPort = new RequestAdmissionSubmissionInboundPort(sub_uri, this);
+			addPort(requestAdmissionSubmissionInboundPort);
+			requestAdmissionSubmissionInboundPort.publishPort();
+		}
 		
-		addOfferedInterface(RequestAdmissionSubmissionI.class);
-		requestAdmissionSubmissionInboundPort = new RequestAdmissionSubmissionInboundPort(requestAdmissionSubmissionInboundPortURI, this);
-		addPort(requestAdmissionSubmissionInboundPort);
-		requestAdmissionSubmissionInboundPort.publishPort();
-		
-		
-		addOfferedInterface(RequestAdmissionNotificationI.class);
-		requestAdmissionNotificationInboundPort = new RequestAdmissionNotificationInboundPort(requestAdmissionNotificationInboundPortURI, this);
-		addPort(requestAdmissionNotificationInboundPort);
-		requestAdmissionNotificationInboundPort.publishPort();
+		for(String not_uri : req_admission_not){
+			addOfferedInterface(RequestAdmissionNotificationI.class);
+			requestAdmissionNotificationInboundPort = new RequestAdmissionNotificationInboundPort(not_uri, this);
+			addPort(requestAdmissionNotificationInboundPort);
+			requestAdmissionNotificationInboundPort.publishPort();
+		}
 		
 		addRequiredInterface(DynamicComponentCreationI.class);
 		dynamicComponentCreationOutboundPort = new DynamicComponentCreationOutboundPort(this);
@@ -632,10 +634,17 @@ AutomaticHandlerRequestI{
 		l.remove(avmURI);
 		RequestDispatcherManagementOutboundPort rqout = rd_management_port_map.get(RequestDispatcherURI);
 		try {
-			rqout.removeAVM(avmURI);
+			if(!rqout.removeAVM(avmURI)) return null;
 		
 			List<String> proc_freqs = new ArrayList<>();
-
+			
+			if(allocationVMCores_map.get(avmURI)==null){
+				return null;
+			}
+			
+			if(allocationVMCores_map.get(avmURI).getCores()==null){
+				return null;
+			}
 
 			for(AllocatedCore core : allocationVMCores_map.get(avmURI).getCores() ){
 				

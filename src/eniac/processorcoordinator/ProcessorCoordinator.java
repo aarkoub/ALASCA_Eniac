@@ -1,6 +1,7 @@
 package eniac.processorcoordinator;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,6 +57,8 @@ ProcessorStateDataConsumerI{
 	protected Map<Integer, Integer> previousFreqs = new HashMap<>();
 	
 	Set<Integer> toBeChanged = new HashSet<>();
+	
+	protected Date t1, t2;
 	
 	public ProcessorCoordinator(String coordinatorURI,
 			String procURI,
@@ -159,25 +162,35 @@ ProcessorStateDataConsumerI{
 			
 				
 			Integer prevFreq ;
-
-			if( (prevFreq = previousFreqs.get(coreNo))!=null && prevFreq != frequency) {
-				if(currentFreqs[coreNo] != prevFreq) {
-					processorManagementOutboundPort.setCoreFrequency(coreNo, prevFreq);
-					
+			
+			if( (prevFreq = previousFreqs.get(coreNo))!=null) {
+				
+					if(currentFreqs[coreNo] != prevFreq) {
+						processorManagementOutboundPort.setCoreFrequency(coreNo, prevFreq);						
+						
+					}
 					previousFreqs.remove(coreNo);
-					
 					return false;
-					
-					
-				}
-			}
-			
-			
+			}		
 			
 			int freq = frequency ;
 			
-			if(freq!=currentFreqs[coreNo]){
+			if(freq==currentFreqs[coreNo]) return false;
 			
+			if(freq!=currentFreqs[coreNo]){
+				
+				if(currentFreqs[coreNo]-frequency>0){
+					t1 = new Date();
+				}
+				else{
+					t2 = new Date();
+					if(t1!=null && t2.getTime()-t1.getTime()>500){
+						return false;
+					}
+					else
+						t1 = null;
+				}
+				
 				if(isFreqGapTooBig(coreNo, frequency)){
 					if(currentFreqs[coreNo]-frequency>0){
 						freq = getPreviousFreq(currentFreqs[coreNo], admissibleFreqs);
@@ -215,7 +228,7 @@ ProcessorStateDataConsumerI{
 								}
 								else
 									next = getNextFreq(currentFreqs[core], admissibleFreqs);
-								//System.out.println("core "+core+" next "+next);
+								
 								previousFreqs.put(core, next);
 								procCoordinatorOrderPortMap.get(hand_uri).setCoreFreqNextTime(procURI, core, next);
 							
@@ -358,9 +371,7 @@ ProcessorStateDataConsumerI{
 		
 		
 		currentFreqs = currentDynamicState.getCurrentCoreFrequencies();		
-		isNew = true;
-
-		
+		isNew = true;		
 	}
 
 	@Override
@@ -391,7 +402,7 @@ ProcessorStateDataConsumerI{
 	public void notifyCoreRestitution(String handler_uri, int coreNum) throws Exception{
 		
 		
-		System.out.println(procURI+" removing "+handler_uri+" "+corePerHandler.get(handler_uri).remove(coreNum)+" from corePerHandler");
+		System.out.println(procURI+" removing "+handler_uri+" "+coreNum+" from corePerHandler");
 	
 	}
 	

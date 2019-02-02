@@ -352,6 +352,9 @@ PushModeControllingI{
 	 */
 	@Override
 	public boolean removeAVM(String uri) {
+		
+		if(avms.size()<=1) return false;
+		
 		AVMData data = null;
 		for(AVMData tmp: avms.values()) {
 			if(tmp.getAvmuris().getAVMUri() == uri) {
@@ -673,7 +676,7 @@ PushModeControllingI{
 				doPortConnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI(), data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(), DataConnector.class.getCanonicalName());
 				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(), ControlledDataConnector.class.getCanonicalName());
 				
-				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(500);
+				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(100);
 			
 			}
 		} catch (Exception e) {
