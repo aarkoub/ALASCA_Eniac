@@ -273,11 +273,17 @@ PushModeControllingI{
 	
 	public void stopSendingRequestToOneAVM(){
 
-		if(avms.size() > 1){
+		if(notToChoose!=null) {
 		
-			for(String avmURI : avms.keySet()){
-				notToChoose = avmURI;
-				break;
+			if(avms.size() > 1){
+			
+				for(String avmURI : avms.keySet()){
+					
+					
+					
+					notToChoose = avmURI;
+					break;
+				}
 			}
 		}
 		
@@ -352,6 +358,8 @@ PushModeControllingI{
 	 */
 	@Override
 	public boolean removeAVM(String uri) {
+		
+		notToChoose = null;
 		
 		if(avms.size()<=1) return false;
 		

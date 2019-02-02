@@ -64,7 +64,7 @@ implements ProcessorCoordinatorManagementI
 
 		@Override
 		public void notifyFreqChanged(String handler_uri) throws Exception {
-			this.getOwner().handleRequestAsync(
+			this.getOwner().handleRequestSync(
 					new AbstractComponent.AbstractService<Void>() {
 						@Override
 						public Void call() throws Exception {
