@@ -170,7 +170,7 @@ AutomaticHandlerRequestI{
 	 * @param computers	Liste de Computers qu'il a en ressources
 	 * @param computeruris	Liste des URIS associés au Computer
 	 * @param computerMonitors	Liste des ComputerMonitor associés
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	public AdmissionControler(String uri, 
 			int nbComputers,
@@ -428,7 +428,7 @@ AutomaticHandlerRequestI{
 	 * @param nbcores	nombre de coeurs à allouer par AVM
 	 * @param nbvm	nombre d'AVM 
 	 * @return la liste des AllocationCore correspondants
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	private List<AllocationCore> allocateCoreFromComputers(int nbcores, int nbvm) throws Exception {
 		List<AllocationCore> allocores = new ArrayList<>();

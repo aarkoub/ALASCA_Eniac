@@ -328,9 +328,9 @@ implements	PushModeControllingI
 	 * Création de inbound port pour les données dynamiques
 	 * et statiques
 	 * @param avmURI	URI de l'ApplicationVM
-	 * @param processorStaticStateDataInboundPortURIForAVM
-	 * @param processorDynamicStateDataInboundPortURIForAVM
-	 * @throws Exception
+	 * @param processorStaticStateDataInboundPortURIForAVM uri
+	 * @param processorDynamicStateDataInboundPortURIForAVM uri
+	 * @throws Exception exception
 	 */
 	public void createStateDataInboundPortAVM(
 			String avmURI,

@@ -15,7 +15,7 @@ public interface AutomaticHandlerRequestI {
 	 * @param handler_uri	URI de l'AutomaticHandler qui fait la demande
 	 * @param requestDispatcherURI	URI du RequestDispatcher
 	 * @return	true si l'AVM a été ajoutée, false sinon
-	 * @throws Exception
+	 * @throws Exception  exception
 	 */
 	 public Map<String, String> addAVMToRequestDispatcher(String handler_uri, String requestDispatcherURI) throws Exception;
 	 
@@ -25,7 +25,7 @@ public interface AutomaticHandlerRequestI {
 	  * @param requestDispatcherURI	URI du RequestDispatcher
 	  * @param avmURI	URI de l'AVM
 	  * @return true si l'AVM a pu être enlevée, false sinon
-	  * @throws Exception
+	  * @throws Exception exception
 	  */
 	 public List<String> removeAVMFromRequestDispatcher(String handler_uri, String requestDispatcherURI, String avmURI) throws Exception;
 	 
@@ -38,7 +38,7 @@ public interface AutomaticHandlerRequestI {
 	  * qui a été crée si c'est la première fois que le ResquestDispatcher a un coeur sur 
 	  * ce Processor
 	  * 
-	  * @throws Exception
+	  * @throws Exception exception
 	  */
 	 public Map<String, String> addCoreToAvm(String handler_uri, String avm_uri, int nbcores) throws Exception;
 	 
@@ -47,7 +47,7 @@ public interface AutomaticHandlerRequestI {
 	  * @param handler_uri URI de l'AutomaticHandler
 	  * @param avm_uri URI de l'AVM
 	  * @return la liste des URIS des Processor pour enlever le ProcessorCoordinatorFreqOutboundPort
-	  * @throws Exception
+	  * @throws Exception exception
 	  */
 	 public List<String> removeCoreFromAvm(String handler_uri, String avm_uri) throws Exception;
 

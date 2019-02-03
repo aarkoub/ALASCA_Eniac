@@ -13,14 +13,14 @@ public interface ProcessorCoordinatorOrderI {
 	 * @param procURI	URI du Processor
 	 * @param coreNo	Numéro du coeur concerné
 	 * @param frequency	Fréquence à laquelle le coeur doit être changé
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	public void setCoreFreqNextTime(String procURI, int coreNo, final int frequency) throws Exception;
 	
 	/**
 	 * Demande à l'AutomaticHandler d'enlever le port ProcessorCoordinatorFreqOutboundPort
 	 * @param procURI	URI du Processor
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	public void removeFreqPort(String procURI) throws Exception;
 

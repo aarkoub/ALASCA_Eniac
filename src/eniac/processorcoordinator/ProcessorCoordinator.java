@@ -134,7 +134,7 @@ ProcessorStateDataConsumerI{
 	 * @param procURI 	URI du Processor
 	 * @param processorManagementInboundPortURI 	URI de l'inbound port du management du Processor
 	 * @param processorCoordinatorManagementInboundPortURI 	URI de l'inbound port du management du ProcessorCoordinator
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	public ProcessorCoordinator(String coordinatorURI,
 			String procURI,

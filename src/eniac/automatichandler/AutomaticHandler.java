@@ -183,7 +183,7 @@ ProcessorCoordinatorOrderI{
 	 * @param requestDispatcherStaticStateDataInboundPortURI URI de requestDispatcherStaticStateDataInboundPort
 	 * @param averageResponseTime	temps moyen de réponse
 	 * @param processorCoordinatorFreqInportURIS Map des processorCoordinatorFreqInportURIS par Processor URI
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
@@ -498,9 +498,9 @@ ProcessorCoordinatorOrderI{
 	 * Si on est dans la borne, on ne fait rien.
 	 * Si on est en dessus de la borne, on va commencer par enlever les AVM qui n'ont pas de requêtes,
 	 * sinon, on va enlever un coeur à chaque avm, sinon on va dimunuer la fréquence des coeurs.
-	 * @param dynamicstate
-	 * @param avg
-	 * @throws Exception
+	 * @param dynamicstate données dynamique du RequestDispatcher
+	 * @param avg la moyenne
+	 * @throws Exception exception
 	 */
 	public void modulateAVM(RequestDispatcherDynamicStateI dynamicstate, double avg) throws Exception {
 		Map<String, String> proc_coord_freq_inport_uri_map;
@@ -655,7 +655,7 @@ ProcessorCoordinatorOrderI{
 	/**
 	 * Enlève les AVM qui n'ont aucune requête en cours de traitement.
 	 * @param dynamicstate Données dynamiques des AVM
-	 * @return
+	 * @return true s'il y a eut retrait
 	 */
 	private boolean removeUnusedAVM(RequestDispatcherDynamicStateI dynamicstate) {
 		List<String> unusedavms = getUnusedAVMs(dynamicstate);
@@ -681,7 +681,7 @@ ProcessorCoordinatorOrderI{
 	 *Demande au RequetDispatcher d'arreter d'envoyer des requetes sur une de ses AVM
 	 *quand cette liste est vide
 	 * @param dynamicstate Données dynamiques des AVM
-	 * @return
+	 * @return liste des uri des AVMs qui ne sont pas utilisés
 	 */
 	private List<String> getUnusedAVMs(RequestDispatcherDynamicStateI dynamicstate) {
 		List<String> avms = new ArrayList<>();

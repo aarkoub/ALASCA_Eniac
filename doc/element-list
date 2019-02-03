@@ -20,10 +20,10 @@ eniac.requestdispatcher.connectors
 eniac.requestdispatcher.data
 eniac.requestdispatcher.interfaces
 eniac.requestdispatcher.ports
-eniac.requestgenarator
-eniac.requestgenarator.connector
-eniac.requestgenarator.interfaces
-eniac.requestgenarator.ports
+eniac.requestgenerator
+eniac.requestgenerator.connector
+eniac.requestgenerator.interfaces
+eniac.requestgenerator.ports
 fr.sorbonne_u.datacenter
 fr.sorbonne_u.datacenter.connectors
 fr.sorbonne_u.datacenter.data
