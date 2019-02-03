@@ -36,12 +36,8 @@ package fr.sorbonne_u.datacenter.hardware.processors.ports;
 
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
-import fr.sorbonne_u.components.cvm.AbstractCVM;
-import fr.sorbonne_u.components.helpers.CVMDebugModes;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.Processor;
-import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.TaskI;
 
@@ -126,29 +122,7 @@ implements	ProcessorServicesI
 				}) ;
 	}
 
-	@Override
-	public String getProcessorDynamicStateDataURI() throws Exception {
-		return this.getOwner().handleRequestSync(
-				new AbstractComponent.AbstractService<String>() {
-					@Override
-					public String call() throws Exception {
-						return ((Processor)this.getOwner()).getProcessorDynamicStateDataURI();
-					
-					}
-				}) ;
-	}
 	
-	@Override
-	public String getProcessorStaticStateDataURI() throws Exception {
-		return this.getOwner().handleRequestSync(
-				new AbstractComponent.AbstractService<String>() {
-					@Override
-					public String call() throws Exception {
-						return ((Processor)this.getOwner()).getProcessorStaticStateDataURI();
-						
-					}
-				}) ;
-	}
 	
 	@Override
 	public void createStateDataInboundPortAVM(String avmURI, String processorStaticStateDataInboundPortURIForAVM,

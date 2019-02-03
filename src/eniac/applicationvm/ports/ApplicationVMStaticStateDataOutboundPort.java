@@ -10,7 +10,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMS
 /**
  * Cette classe correspond au port utilisé pour l'envoit des données statiques de l'AVM vers le RequestDispatcher.
  * Il a été prit exemple sur BCM.
- * @author L-C
+ * 
  *
  */
 

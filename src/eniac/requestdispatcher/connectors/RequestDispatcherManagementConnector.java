@@ -6,7 +6,7 @@ import fr.sorbonne_u.components.connectors.AbstractConnector;
 /**
  * Cette classe est un connecteur permettant de faire correspondre les méthodes appelés par le composant qui demande un service et les méthodes du composant
  * qui fournissent le services, car ceux-ci n'ont pas forcément les mêmes noms ou champs.
- * @author L-C
+ * 
  *
  */
 public class RequestDispatcherManagementConnector extends AbstractConnector

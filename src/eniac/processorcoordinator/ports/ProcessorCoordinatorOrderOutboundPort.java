@@ -32,8 +32,8 @@ implements ProcessorCoordinatorOrderI{
 	}
 
 	@Override
-	public void removeFreq(String procURI) throws Exception {
-		((ProcessorCoordinatorOrderI)connector).removeFreq(procURI);
+	public void removeFreqPort(String procURI) throws Exception {
+		((ProcessorCoordinatorOrderI)connector).removeFreqPort(procURI);
 		
 	}
 

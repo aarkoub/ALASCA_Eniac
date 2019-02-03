@@ -8,7 +8,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMS
 
 /**
  * Interface définissant la méthode pour récupérer les données statiques de chaque AVM lié au distributeur de requête.
- * @author L-C
+ * 
  *
  */
 

@@ -271,6 +271,9 @@ PushModeControllingI{
 		return avm;
 	}
 	
+	/**
+	 * Arrete d'envoyer des requetes à une AVM
+	 */
 	public void stopSendingRequestToOneAVM(){
 
 		if(avms.size() != 1){

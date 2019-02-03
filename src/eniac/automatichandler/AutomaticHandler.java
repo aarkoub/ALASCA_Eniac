@@ -2,16 +2,12 @@ package eniac.automatichandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 
 import org.jfree.ui.RefineryUtilities;
 
-import eniac.applicationvm.ApplicationVMDynamicState;
 import eniac.automatichandler.connectors.AutomaticHandlerRequestConnector;
 import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
 import eniac.automatichandler.interfaces.AutomaticHandlerRequestI;
@@ -20,7 +16,6 @@ import eniac.automatichandler.ports.AutomaticHandlerRequestOutboundPort;
 import eniac.processorcoordinator.connectors.ProcessorCoordinatorFreqConnector;
 import eniac.processorcoordinator.interfaces.ProcessorCoordinatorOrderI;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorFreqOutboundPort;
-import eniac.processorcoordinator.ports.ProcessorCoordinatorManagementOutboundPort;
 import eniac.processorcoordinator.ports.ProcessorCoordinatorOrderInboundPort;
 import eniac.requestdispatcher.connectors.RequestDispatcherManagementConnector;
 import eniac.requestdispatcher.interfaces.RequestDispatcherDynamicStateI;
@@ -38,58 +33,163 @@ import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyExceptio
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMDynamicStateI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMStaticStateI;
 
+/**
+ *Le gestionnaire automatique demande la modification de facteurs au controleur d'admission
+ *ou au coordinateur de fréquence en fonction des données du répartiteur de requête
+ *qu'il reçoit toutes les 500 ms. 
+ *
+ */
 public class AutomaticHandler extends AbstractComponent
 implements
 RequestDispatcherStateDataConsumerI,
 ProcessorCoordinatorOrderI{
 	
+	/**
+	 * URI de l'AutomaticHandler
+	 */
 	protected String autoHand_uri;
 	
-	protected AutomaticHandlerManagementInboundPort automaticHandlerManagementInboundPort;
 	
+	/**
+	 * Port pour recevoir dynamique des données du répartiteur de requêtes
+	 */
 	protected RequestDispatcherDynamicStateDataOutboundPort requestDispatcherDynamicStateDataOutboundPort;
-	protected RequestDispatcherStaticStateDataOutboundPort requestDispatcherStaticStateDataOutboundPort;
-	protected AutomaticHandlerRequestOutboundPort requestDispatcherHandlerOutboundPort;
 	
-	protected String requestDispatcherHandlerInboundPortURI;
+	/**
+	 * Port pour recevoir les donnéesd statiques du répartiteur de requêtes
+	 */
+	protected RequestDispatcherStaticStateDataOutboundPort requestDispatcherStaticStateDataOutboundPort;
+	
+	/**
+	 * Port pour envoyer des demandes à l'AdmissionController
+	 */
+	protected AutomaticHandlerRequestOutboundPort automaticHandlerRequestOutboundPort;
+	
+	/**
+	 * URI de automaticHandlerRequest inbound port sur lequel il faut se connecter
+	 */
+	protected String automaticHandlerRequestInboundPortURI;
+	
+	/**
+	 * URI de requestDispatcherDynamic inbound port sur lequel il faut se connecter
+	 */
 	protected String requestDispatcherDynamicStateDataInboundPortURI;
+	
+	/**
+	 * URI de requestDispatcherStatic inbound port sur lequel il faut se connecter
+	 */
 	protected String requestDispatcherStaticStateDataInboundPortURI;
+	
+	/**
+	 * URI du RequestDispatcher
+	 */
 	protected String requestDispatcherURI;
 	
+	/**
+	 * Port de management du RequestDispatcher
+	 */
 	protected RequestDispatcherManagementOutboundPort dispatcher_management_outport;
 	
+	/**
+	 * Dernieres données du RequestDispatcher reçues par le port dynamique 
+	 */
 	protected RequestDispatcherDynamicStateI current_ds;
 	
+	/**
+	 * Map des fréquences admissibles par processeurs présents sur le RequestDispatcher
+	 */
 	protected Map<String, Map<String,Set<Integer>>> admissibleFreqCores;
 	
+	/**
+	 * Affichage graphique
+	 */
 	private ComputeTimeCharts chart;
 	
-	
+	/**
+	 * borne inferieure pour la moyenne
+	 */
 	private double lower_bound;
+	
+	/**
+	 * borne supérieure pour la moyenne
+	 */
 	private double upper_bound;
 	
-	public static final double ALPHA = 0.5;
-	
+	/**
+	 * dernière moyenne recue
+	 */
 	private double last;
+	
+	/**
+	 * Taille maximal des queues de requetes des avms
+	 */
 	public static final int MAX_QUEUE = 3;
+	
+	/**
+	 * 
+	 */
 	private double lavg ;
-
+	
+	/**
+	 * Map Processor URI / ProcessorCoordinatorFreqOutboundPort 
+	 */
 	protected Map<String, ProcessorCoordinatorFreqOutboundPort> proc_coord_freq_map;
-
+	
+	/**
+	 * Map qui contient l'URI du ProcessorCoordinatorOrderInboundPort par Processor URI
+	 */
 	protected Map<String, String> proc_coord_order_map;
-
+	
+	/**
+	 * Map qui contient l'URI du processorCoordinatorFreqInportURIS par Processor URI
+	 */
 	protected Map<String, String> processorCoordinatorFreqInportURIS;
 	
+	/**
+	 * URI du port de management du RequestDispatcher
+	 */
 	protected String requestDispatcherManagementInboundPortURI;
 	
+	/**
+	 * Temps moyen de réponse
+	 */
 	protected double averageResponseTime;
+	
+	/**
+	 * Modulation de prise de décisions par l'AutomaticHandler
+	 */
 	protected int modWait = 20;
 	
+	/**
+	 * Indice de modulation
+	 */
+	private int wait = 15;
+
+	
+	/**
+	 * Booléen indiquant si on a déjà demandé de stop l'envoie de requetes à
+	 * une AVM
+	 */
+	private boolean avmWaitingToRemove;
+	
+	/**
+	 * Contructeur de l'AutomaticHandler
+	 * @param autoHand_uri	URI de l'AutomaticHandler
+	 * @param managementInboundPortURI	URI du port de management de l'AutomaticHandler
+	 * @param requestDispatcherUri	URI du RequestDispatcher
+	 * @param requestDispatcherManagementInboundPortURI	URI du port de management du RequestDispatcher
+	 * @param automaticHandlerRequestInboundPortURI URI de automaticHandlerRequestInboundPortURI
+	 * @param requestDispatcherDynamicStateDataInboundPortURI URI de requestDispatcherDynamicStateDataInboundPort
+	 * @param requestDispatcherStaticStateDataInboundPortURI URI de requestDispatcherStaticStateDataInboundPort
+	 * @param averageResponseTime	temps moyen de réponse
+	 * @param processorCoordinatorFreqInportURIS Map des processorCoordinatorFreqInportURIS par Processor URI
+	 * @throws Exception
+	 */
 	public AutomaticHandler(String autoHand_uri,
 			String managementInboundPortURI,
 			String requestDispatcherUri,
 			String requestDispatcherManagementInboundPortURI,
-			String requestDispatcherHandlerInboundPortURI,
+			String automaticHandlerRequestInboundPortURI,
 			String requestDispatcherDynamicStateDataInboundPortURI,
 			String requestDispatcherStaticStateDataInboundPortURI,
 			Double averageResponseTime,
@@ -98,7 +198,7 @@ ProcessorCoordinatorOrderI{
 		super(autoHand_uri,1,1);
 		assert autoHand_uri!=null;
 		assert managementInboundPortURI!=null;
-		assert requestDispatcherHandlerInboundPortURI != null;
+		assert automaticHandlerRequestInboundPortURI != null;
 		assert requestDispatcherDynamicStateDataInboundPortURI != null;
 		assert requestDispatcherStaticStateDataInboundPortURI != null;
 		assert requestDispatcherUri != null;
@@ -112,17 +212,17 @@ ProcessorCoordinatorOrderI{
 		
 		this.requestDispatcherDynamicStateDataInboundPortURI = requestDispatcherDynamicStateDataInboundPortURI;
 		this.requestDispatcherStaticStateDataInboundPortURI = requestDispatcherStaticStateDataInboundPortURI;
-		this.requestDispatcherHandlerInboundPortURI = requestDispatcherHandlerInboundPortURI;
+		this.automaticHandlerRequestInboundPortURI = automaticHandlerRequestInboundPortURI;
 		
 		addOfferedInterface(AutomaticHandlerManagementI.class);
-		automaticHandlerManagementInboundPort = new AutomaticHandlerManagementInboundPort(autoHand_uri, this);		
+		AutomaticHandlerManagementInboundPort automaticHandlerManagementInboundPort = new AutomaticHandlerManagementInboundPort(autoHand_uri, this);		
 		addPort(automaticHandlerManagementInboundPort);
 		automaticHandlerManagementInboundPort.publishPort();
 		
 		addRequiredInterface(AutomaticHandlerRequestI.class);
-		requestDispatcherHandlerOutboundPort = new AutomaticHandlerRequestOutboundPort(this);
-		addPort(requestDispatcherHandlerOutboundPort);
-		requestDispatcherHandlerOutboundPort.publishPort();
+		automaticHandlerRequestOutboundPort = new AutomaticHandlerRequestOutboundPort(this);
+		addPort(automaticHandlerRequestOutboundPort);
+		automaticHandlerRequestOutboundPort.publishPort();
 		
 		addRequiredInterface(RequestDispatcherDynamicStateI.class);
 		requestDispatcherDynamicStateDataOutboundPort = new RequestDispatcherDynamicStateDataOutboundPort(this, requestDispatcherUri);
@@ -182,7 +282,7 @@ ProcessorCoordinatorOrderI{
 	@Override
 	public void finalise() throws Exception {
 		
-		requestDispatcherHandlerOutboundPort.doDisconnection();
+		automaticHandlerRequestOutboundPort.doDisconnection();
 		requestDispatcherDynamicStateDataOutboundPort.doDisconnection();
 		requestDispatcherStaticStateDataOutboundPort.doDisconnection();
 		
@@ -199,7 +299,7 @@ ProcessorCoordinatorOrderI{
 	public void shutdown() throws ComponentShutdownException{
 
 		try {
-			requestDispatcherHandlerOutboundPort.unpublishPort();
+			automaticHandlerRequestOutboundPort.unpublishPort();
 			requestDispatcherDynamicStateDataOutboundPort.unpublishPort();
 			requestDispatcherStaticStateDataOutboundPort.unpublishPort();
 			
@@ -222,8 +322,8 @@ ProcessorCoordinatorOrderI{
 		
 		try {
 			
-			doPortConnection(requestDispatcherHandlerOutboundPort.getPortURI(),
-					requestDispatcherHandlerInboundPortURI,
+			doPortConnection(automaticHandlerRequestOutboundPort.getPortURI(),
+					automaticHandlerRequestInboundPortURI,
 					AutomaticHandlerRequestConnector.class.getCanonicalName()
 				);
 			
@@ -257,7 +357,6 @@ ProcessorCoordinatorOrderI{
 					requestDispatcherManagementInboundPortURI, 
 					RequestDispatcherManagementConnector.class.getCanonicalName());
 			
-		System.out.println(this.autoHand_uri+" "+requestDispatcherURI);
 		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(500);
 		
 		
@@ -276,7 +375,6 @@ ProcessorCoordinatorOrderI{
 		admissibleFreqCores = new HashMap<>();
 		for(String avmUri : avmStaticStateMap.keySet()){
 			
-			//System.out.println(avmUri + " "+avmStaticStateMap.get(avmUri));
 			
 			ApplicationVMStaticStateI avmStaticState = avmStaticStateMap.get(avmUri);
 			
@@ -291,6 +389,12 @@ ProcessorCoordinatorOrderI{
 		
 	}
 	
+	/**
+	 * Augmentation de la fréquence des coeurs des AVM
+	 * @param avmdynamicstate	Données dynamiques des AVM
+	 * @param avm	URI de l'AVM
+	 * @return true si la fréquence d'un coeur d'une AVM a pu être augmentée, false sinon
+	 */
 	private boolean increaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
 		
 		try {
@@ -300,7 +404,6 @@ ProcessorCoordinatorOrderI{
 			
 			for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
 				
-				//System.out.println(avm+" "+admissibleFreqCoresAVM);
 				Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
 				
 				
@@ -310,10 +413,9 @@ ProcessorCoordinatorOrderI{
 					int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 					int freq = getNextFreq(currentFreq, admissibleFreq);
 
-					if(currentFreq == freq) return false;
+					if(currentFreq == freq) continue;
 
-					if(proc_coord_freq_map.get(proc_uri)==null)System.out.println(proc_coord_freq_map.get(proc_uri));
-						return proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
+						return (proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq));
 
 					}
 				}
@@ -324,6 +426,12 @@ ProcessorCoordinatorOrderI{
 		return false;
 	}
 	
+	/**
+	 * Diminution de la fréquence des coeurs des AVM
+	 * @param avmdynamicstate	Données dynamiques des AVM
+	 * @param avm	URI de l'AVM
+	 * @return true si la fréquence d'un coeur d'une AVM a pu être diminuée, false sinon
+	 */
 	private boolean decreaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
 		
 		ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
@@ -338,11 +446,11 @@ ProcessorCoordinatorOrderI{
 				int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 				int freq = getPreviousFreq(currentFreq, admissibleFreq);
 				
-				if(currentFreq == freq) return false;
+				if(currentFreq == freq) continue;
 				
 				try {
-					System.out.println("Decreasing "+proc_uri+" "+autoHand_uri);
-					return this.proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
+					if(proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq))
+						return true;
 				
 				} catch (UnavailableFrequencyException e) {
 					// TODO Auto-generated catch block
@@ -361,11 +469,7 @@ ProcessorCoordinatorOrderI{
 		return false;
 	}
 	
-	private int wait = 15;
 
-	private RequestDispatcherDynamicStateI currentDynamicState;
-
-	private boolean avmWaitingToRemove;
 	
 	@Override
 	public void acceptRequestDispatcherDynamicData(String requestDisptacherURI,
@@ -374,7 +478,6 @@ ProcessorCoordinatorOrderI{
 		chart.addData(lavg);
 		
 		
-		currentDynamicState = dynamicState;
 
 		if(wait%modWait == 0) {
 			logMessage("Modulation possible");
@@ -387,6 +490,18 @@ ProcessorCoordinatorOrderI{
 	}
 
 	
+	/**
+	 * Statégie de modulation
+	 * Si on est au dessus de la borne supérieure on va commencer par essayer d'augmenter la fréquence.
+	 * Si ca n'a pas été fait, on va ajouter deux cores par avm si on est au dessus de 2 fois la moyenne, sinon un core.
+	 * Si ca n'a pas été fait, on va ajouter une avm.
+	 * Si on est dans la borne, on ne fait rien.
+	 * Si on est en dessus de la borne, on va commencer par enlever les AVM qui n'ont pas de requêtes,
+	 * sinon, on va enlever un coeur à chaque avm, sinon on va dimunuer la fréquence des coeurs.
+	 * @param dynamicstate
+	 * @param avg
+	 * @throws Exception
+	 */
 	public void modulateAVM(RequestDispatcherDynamicStateI dynamicstate, double avg) throws Exception {
 		Map<String, String> proc_coord_freq_inport_uri_map;
 		if(avg > upper_bound) {
@@ -419,20 +534,18 @@ ProcessorCoordinatorOrderI{
 								nbCoreToAdd = 1;
 							
 							if( (proc_coord_freq_inport_uri_map=
-									requestDispatcherHandlerOutboundPort.addCoreToAvm
+									automaticHandlerRequestOutboundPort.addCoreToAvm
 									(autoHand_uri, entry.getKey(), nbCoreToAdd))!=null) {
 								
 								addNewPortCoord(proc_coord_freq_inport_uri_map);
-								System.out.println(autoHand_uri+" new cores = new ports added");
 								logMessage(entry.getKey()+" 1 core added");	
 								wait = 10;
 								
 							}
 							//sinon on ajoute une avm 
 							else{
-								if(getUnusedAVMs(dynamicstate).size() == 0 && (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(autoHand_uri, requestDispatcherURI))!=null){
+								if(getUnusedAVMs(dynamicstate).size() == 0 && (proc_coord_freq_inport_uri_map=automaticHandlerRequestOutboundPort.addAVMToRequestDispatcher(autoHand_uri, requestDispatcherURI))!=null){
 									addNewPortCoord(proc_coord_freq_inport_uri_map);
-									System.out.println(autoHand_uri+" new avm = new ports added");
 									logMessage("avm added");
 									wait = 10;
 							
@@ -442,9 +555,8 @@ ProcessorCoordinatorOrderI{
 						}
 					//on ajoute directement une avm
 					}else {
-						if(getUnusedAVMs(dynamicstate).size() == 0 && (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(autoHand_uri, requestDispatcherURI))!=null){
+						if(getUnusedAVMs(dynamicstate).size() == 0 && (proc_coord_freq_inport_uri_map=automaticHandlerRequestOutboundPort.addAVMToRequestDispatcher(autoHand_uri, requestDispatcherURI))!=null){
 							addNewPortCoord(proc_coord_freq_inport_uri_map);
-							System.out.println(autoHand_uri+" new avm = new ports added");
 							logMessage("avm added");
 							
 							wait = 10;
@@ -462,7 +574,6 @@ ProcessorCoordinatorOrderI{
 				
 				}
 				else{
-					//System.out.println(dynamicstate.getScoresMap().toString());
 					logMessage("Response time too fast: "+avg+"ms (>"+ lower_bound +" ms wanted)");
 					if(removeUnusedAVM(dynamicstate)) {
 						wait = 15;
@@ -472,7 +583,7 @@ ProcessorCoordinatorOrderI{
 					boolean ok = false;
 					
 					for(String avm : dynamicstate.getAVMDynamicStateMap().keySet())
-						if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm)!=null) {	
+						if(automaticHandlerRequestOutboundPort.removeCoreFromAvm(autoHand_uri, avm)!=null) {	
 								logMessage(avm+" removed 1 core");
 								wait = 15;
 								ok = true;
@@ -500,6 +611,11 @@ ProcessorCoordinatorOrderI{
 	
 	}
 	
+	/**
+	 * Création des ProcessorCoordinatorFreqOutboundPort et connexion, puis
+	 * demande au ProcessorCoordinator d'ajouter les ProcessorCoordinatorOrderOutboundPort
+	 * @param proc_coord_freq_inport_uri_map contient les URIS des inbound port de ProcessorCoordinatorFreq
+	 */
 	private void addNewPortCoord(Map<String, String> proc_coord_freq_inport_uri_map) {
 		for(String proc_uri : proc_coord_freq_inport_uri_map.keySet()){
 			
@@ -513,7 +629,6 @@ ProcessorCoordinatorOrderI{
 				doPortConnection(outport.getPortURI(),proc_coord_freq_inport_uri_map.get(proc_uri), 
 						ProcessorCoordinatorFreqConnector.class.getCanonicalName());
 				
-				System.out.println("PUT FREQ OUTPORT "+proc_uri);
 				proc_coord_freq_map.put(proc_uri, outport);
 				
 				String processorCoordinatorOrderInboundPortURI =
@@ -537,26 +652,18 @@ ProcessorCoordinatorOrderI{
 		
 	}
 
-
-	private String lowestScore(RequestDispatcherDynamicStateI dynamicstate) {
-		String avm = null;
-		double score = Double.MAX_VALUE;
-		for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
-			if(entry.getValue() != 0 && entry.getValue() < score) {
-				score = entry.getValue();
-				avm = entry.getKey();
-			}
-		}
-		return avm;
-	}
-	
+	/**
+	 * Enlève les AVM qui n'ont aucune requête en cours de traitement.
+	 * @param dynamicstate Données dynamiques des AVM
+	 * @return
+	 */
 	private boolean removeUnusedAVM(RequestDispatcherDynamicStateI dynamicstate) {
 		List<String> unusedavms = getUnusedAVMs(dynamicstate);
 		if(unusedavms.size() <= 1) return false;
 		for(String avm: unusedavms) {
 			
 			try {
-				if(requestDispatcherHandlerOutboundPort.removeAVMFromRequestDispatcher(autoHand_uri, requestDispatcherURI, avm)!=null) {
+				if(automaticHandlerRequestOutboundPort.removeAVMFromRequestDispatcher(autoHand_uri, requestDispatcherURI, avm)!=null) {
 					logMessage(avm+" removed.");
 					avmWaitingToRemove = false;
 					return true;
@@ -568,7 +675,14 @@ ProcessorCoordinatorOrderI{
 		return false;
 	}
 	
-
+	
+	/**
+	 *	Donne la liste des AVMS qui n'ont aucune requete en cours de traitemnet.
+	 *Demande au RequetDispatcher d'arreter d'envoyer des requetes sur une de ses AVM
+	 *quand cette liste est vide
+	 * @param dynamicstate Données dynamiques des AVM
+	 * @return
+	 */
 	private List<String> getUnusedAVMs(RequestDispatcherDynamicStateI dynamicstate) {
 		List<String> avms = new ArrayList<>();
 		for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
@@ -590,7 +704,12 @@ ProcessorCoordinatorOrderI{
 		return avms;
 	}
 	
-	
+	/**
+	 * Calcule la fréquence possible qui est plus basse que l'actuelle
+	 * @param currentFreq	fréquence actuelle
+	 * @param freqs	ensemble des fréquences possibles
+	 * @return la fréquence d'haut dessus
+	 */	
 public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 		
 		int ret = currentFreq;
@@ -612,6 +731,12 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 		return ret;
 	}
 	
+/**
+ * Calcule la fréquence possible qui est plus basse que l'actuelle
+ * @param currentFreq	fréquence actuelle
+ * @param freqs	ensemble des fréquences possibles
+ * @return la fréquence d'en dessous
+ */
 	public int getPreviousFreq(int currentFreq, Set<Integer> freqs) {
 	
 		int ret = currentFreq;
@@ -637,7 +762,6 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 	@Override
 	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
 
-		System.out.println("GOT IT "+autoHand_uri+" "+procURI+" "+coreNo+" "+frequency);
 		
 		proc_coord_freq_map.get(procURI).setCoreFrequency(autoHand_uri, coreNo, frequency);
 
@@ -646,9 +770,8 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 
 
 	@Override
-	public void removeFreq(String procURI) throws Exception {
+	public void removeFreqPort(String procURI) throws Exception {
 		
-		System.out.println("UNPUBLISH "+procURI);
 		
 		this.proc_coord_freq_map.remove(procURI).unpublishPort();
 		

@@ -8,9 +8,6 @@ import eniac.automatichandler.interfaces.AutomaticHandlerRequestI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
-import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
-import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 
 public class AutomaticHandlerRequestInboundPort
 extends AbstractInboundPort
@@ -95,19 +92,6 @@ implements AutomaticHandlerRequestI{
 					}) ;
 		}
 
-		@Override
-		public void setCoreFrequency(String processor_uri, int coreNo, int frequency)
-				throws UnavailableFrequencyException,
-				UnacceptableFrequencyException, Exception {
-			this.getOwner().handleRequestAsync(
-					new AbstractComponent.AbstractService<Void>() {
-						@Override
-						public Void call() throws Exception {
-							((AdmissionControler)this.getOwner()).
-									setCoreFrequency(processor_uri,coreNo, frequency) ;
-							return null;
-						}
-					});			
-		}
+		
 
 }

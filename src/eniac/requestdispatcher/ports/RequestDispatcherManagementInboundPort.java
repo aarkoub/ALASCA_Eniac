@@ -8,7 +8,7 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 /**
  * La classe RequestDispatcherManagementInboundPort est un port d'entrée pour contrôler l'ajout et le retranchement d'AVM du RequestDispatcher.
- * @author L-C
+ * 
  *
  */
 public class RequestDispatcherManagementInboundPort extends AbstractInboundPort

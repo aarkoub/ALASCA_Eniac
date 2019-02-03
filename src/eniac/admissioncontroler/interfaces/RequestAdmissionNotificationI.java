@@ -7,7 +7,7 @@ import fr.sorbonne_u.components.interfaces.RequiredI;
 /**
  * L'interface RequestAdmissionNotificationI définit le service du composant pour la notification de fin d'hébergement d'application.
  * Cela permet de demander au contrôleur d'admission de libérer les ressources.
- * @author L-C
+ * 
  *
  */
 public interface RequestAdmissionNotificationI extends OfferedI, RequiredI {

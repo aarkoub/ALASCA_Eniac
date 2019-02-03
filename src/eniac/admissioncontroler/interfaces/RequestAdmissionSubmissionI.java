@@ -5,7 +5,7 @@ import fr.sorbonne_u.components.interfaces.RequiredI;
 
 /**
  * L'interface RequestAdmissionSubmissionI définit le service du composant pour les demandes du RequestGenerator d'hébergement vers le Contrôleur d'admission.
- * @author L-C
+ * 
  *
  */
 

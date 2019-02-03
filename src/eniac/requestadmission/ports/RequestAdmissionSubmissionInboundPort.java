@@ -8,7 +8,7 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 /**
  * La classe RequestAdmissionSubmissionInboundPort est un port d'entrée pour les demandes du RequestGenerator d'hébergement vers le Contrôleur d'admission.
- * @author L-C
+ * 
  *
  */
 public class RequestAdmissionSubmissionInboundPort extends AbstractInboundPort implements RequestAdmissionSubmissionI {

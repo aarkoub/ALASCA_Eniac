@@ -11,7 +11,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMD
  * Cette interface définit les méthodes permettant de récupérer les données dynamiques du requestDispatcher.
  * On récupère notamment la moyenne calculé à l'instant t, les scores de chaque AVM c'est-à-dire la charge de l'AVM 
  * par rapport aux requêtes mais aussi les données dynamiques sur les AVMs concernant les coeurs et ses fréquences.
- * @author L-C
+ * 
  *
  */
 

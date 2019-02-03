@@ -2,7 +2,7 @@ package eniac.requestdispatcher.data;
 
 /**
  * Cette classe est un conteneur d'URI, il regroupe l'enemble des URIs utilisés pour connecter cette AVM avec d'autres composants.
- * @author L-C
+ * 
  *
  */
 

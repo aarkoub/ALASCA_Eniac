@@ -10,7 +10,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMD
 /**
  * Cette classe correspond aux données envoyées dynamiquement par le request Dispatcher à ceux qui le demandes, cela sert notamment à récupérer les
  * scores des AVMs liés au distributeur de requête, mais aussi la moyenne qui à été calculé localement  et ainsi que les données relatives aux AVMs.
- * @author L-C
+ * 
  *
  */
 public class RequestDispatcherDynamicState extends AbstractTimeStampedData implements RequestDispatcherDynamicStateI {

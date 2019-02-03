@@ -7,7 +7,7 @@ import fr.sorbonne_u.components.connectors.AbstractConnector;
 
 /**
  * La classe RequestAdmissionSubmissionConnector est un connecteur entre le port d'entrée et de sortie pour les demandes du RequestGenerator d'hébergement vers le Contrôleur d'admission.
- * @author L-C
+ * 
  *
  */
 public class RequestAdmissionSubmissionConnector extends AbstractConnector implements RequestAdmissionSubmissionI {

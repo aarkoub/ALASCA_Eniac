@@ -29,13 +29,7 @@ extends		OfferedI,
 	public void			allocateCores(AllocatedCore[] allocatedCores)
 	throws Exception ;
 	
-	/**
-	 * Connecte l'AVM avec le requestDispatcher pour envoyer des données
-	 * @throws Exception Exception
-	 */
-	public void			connectWithRequestSubmissioner()
-	throws Exception ;
-	
+		
 	/**
 	 * Retire le port entre l'AVM et le Processeur
 	 * @param processorUri processeur à retirer

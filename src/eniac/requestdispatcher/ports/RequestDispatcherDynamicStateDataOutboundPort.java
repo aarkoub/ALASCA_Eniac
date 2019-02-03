@@ -8,7 +8,7 @@ import fr.sorbonne_u.components.interfaces.DataRequiredI.DataI;
 import fr.sorbonne_u.datacenter.ports.AbstractControlledDataOutboundPort;
 /**
  * La classe RequestDispatcherDynamicStateDataOutboundPort correspond au port de sortie afin d'envoyer les données dynamiques relatives du RequestDispatcher
- * @author L-C
+ * 
  *
  */
 public class RequestDispatcherDynamicStateDataOutboundPort extends	

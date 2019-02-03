@@ -7,7 +7,7 @@ import fr.sorbonne_u.datacenter.hardware.computers.ports.ComputerServicesOutboun
  * La classe ComputerData est un conteneur de données relatif au Computer.
  * Celui-ci garde donc en mémoire l'instance Colputer, un port permettant d'effectuer des demandes sur celui-ci mais aussi les différents
  * URIs qui sont utilisés pour les connections avec le Computer.
- * @author L-C
+ * 
  *
  */
 

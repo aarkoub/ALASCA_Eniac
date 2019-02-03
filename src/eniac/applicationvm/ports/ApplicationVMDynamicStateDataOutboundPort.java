@@ -9,7 +9,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMD
 /**
  * Cette classe correspond au port utilisé pour l'envoit des données dynamiques de l'AVM vers le RequestDispatcher.
  * Il a été prit exemple sur BCM.
- * @author L-C
+ * 
  *
  */
 public class ApplicationVMDynamicStateDataOutboundPort extends	

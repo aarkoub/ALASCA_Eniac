@@ -7,7 +7,7 @@ import eniac.admissioncontroler.interfaces.RequestAdmissionI;
  * contrôleur d'admission et y contient le temps de réponse souhaitée, le port de notification du RequestGenerator.
  * L'objet est ensuite renvoyé par le contrôleur d'admission au RequestGenerator dans le cas où le contrôleur accepte la demande et dans cet objet contient l'URI du port de soumission 
  * du RequestDispatcher.
- * @author L-C
+ * 
  *
  */
 public class RequestAdmission implements RequestAdmissionI {

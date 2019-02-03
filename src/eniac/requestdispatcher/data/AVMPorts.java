@@ -9,7 +9,7 @@ import fr.sorbonne_u.datacenter.software.ports.RequestSubmissionOutboundPort;
  * Cela permet de regrouper logiquement les données et y accéder plus facilement mais aussi de le rendre plus lisible.
  * Etant données que c'est un simple conteneur il est inutile d'indiquer les le rôles de chaque méthodes, ce ne sont que des setters et getters.
  * Les attributs en revanches indiquent à quoi ils correspondent. 
- * @author L-C
+ * 
  *
  */
 public class AVMPorts {

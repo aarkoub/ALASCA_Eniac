@@ -906,17 +906,6 @@ implements	ProcessorServicesNotificationConsumerI,
 	
 
 
-	/**
-	 * @see fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMManagementI#connectWithRequestSubmissioner()
-	 */
-	@Override
-	public void			connectWithRequestSubmissioner()
-	throws Exception
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
 
 	@Override
 	public void acceptProcessorStaticData(String processorURI, ProcessorStaticStateI staticState) throws Exception {

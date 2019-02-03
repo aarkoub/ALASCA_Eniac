@@ -36,9 +36,6 @@ package fr.sorbonne_u.datacenter.hardware.processors.ports;
 
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
-import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorManagementI;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.TaskI;
 
@@ -118,15 +115,7 @@ implements	ProcessorServicesI
 				executeTaskOnCoreAndNotify(t, coreNo, notificationPortURI) ;
 	}
 	
-	@Override
-	public String getProcessorDynamicStateDataURI() throws Exception{
-		return ((ProcessorServicesI)this.connector).getProcessorDynamicStateDataURI();
-	}
 	
-	@Override
-	public String getProcessorStaticStateDataURI() throws Exception{
-		return ((ProcessorServicesI)this.connector).getProcessorStaticStateDataURI();
-	}
 	
 	@Override
 	public void createStateDataInboundPortAVM(String avmURI, String processorStaticStateDataInboundPortURIForAVM,

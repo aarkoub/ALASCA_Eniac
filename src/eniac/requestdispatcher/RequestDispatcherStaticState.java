@@ -9,7 +9,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMS
 /**
  * Cette classe correspond au données envoyés statiquement, celui-ci n'est effectué qu'une fois car ce sont des données qui ne sont pas
  * susceptible de changé au cours de l'exécution.
- * @author L-C
+ * 
  *
  */
 public class RequestDispatcherStaticState extends AbstractTimeStampedData implements RequestDispatcherStaticStateI {

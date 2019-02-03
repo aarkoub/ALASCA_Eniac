@@ -1,12 +1,10 @@
 package eniac.processorcoordinator;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import eniac.processorcoordinator.connectors.ProcessorCoordinatorOrderConnector;
@@ -29,37 +27,115 @@ import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorDynamicStateD
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorManagementOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorStaticStateDataOutboundPort;
 
+/**
+ * Le ProccessorCoordinator correspond à un cordinateur de processeur. 
+ * Chaque processeur a son coordinateur de sorte à ce que ses coeurs
+ * ait la même fréquence quand un gestionnaire automatique veut
+ * augmenter ou diminiuer la fréquence d'un des coeurs utilisés par
+ * une ApplicationVM. 
+ * 
+ *
+ */
+
 public class ProcessorCoordinator extends AbstractComponent
 implements ProcessorCoordinatorManagementI,
 ProcessorCoordinatorFreqI,
 ProcessorStateDataConsumerI{
-
+	
+	/**
+	 * URI du ProcessorCoordinator
+	 */
 	protected String coordinatorURI;
+	
+	/**
+	 * URI du port d'entrée du management du Processor
+	 */
 	protected String processorManagementInboundPortURI;
+	
+	/**
+	 * URI du Processor
+	 */
 	protected String procURI;
+	
+	/**
+	 * Port de sortie du management du Processor
+	 */
 	protected ProcessorManagementOutboundPort processorManagementOutboundPort;
+	
+	/**
+	 * Map qui les ports de sorties pour donner des ordres au AutomaticHandler
+	 */
 	protected Map<String, ProcessorCoordinatorOrderOutboundPort> procCoordinatorOrderPortMap;
-	protected ProcessorCoordinatorManagementInboundPort management_inport;
+	
+	/**
+	 * Port pour recevoir les données statiques du Processor
+	 */
 	protected ProcessorStaticStateDataOutboundPort static_outport;
+	
+	/**
+	 * Port pour recevoir les données dynamiques du Processor
+	 */
 	protected ProcessorDynamicStateDataOutboundPort dynamic_outport;
-	protected Set<String> currentlyChangingFreqHandler = new HashSet<>() ;
 	
+	/**
+	 * Ensemble des coeurs pour qui le coordinateur doit être notifié pour
+	 * modifier leur fréquences
+	 */
+	
+	/**
+	 * int pour donner des noms port de coordination de fréquence 
+	 * différents
+	 * 
+	 */
 	protected int number = 0;
-	protected Map<String, ProcessorCoordinatorFreqInboundPort> proc_cord_freq_map = new HashMap<>();
 	
+	/**
+	 * Ensemble des fréquences admissibles pour le Processor
+	 */
 	protected Set<Integer> admissibleFreqs;
+	
+	/**
+	 * Tableau des fréquences courantes des coeurs
+	 */
 	protected int[] currentFreqs;
+	
+	/**
+	 * Seuil qui détermine la différence de fréquence admissible
+	 */
 	protected int freq_threshold;
 	
+	/**
+	 * Map pour connaitre les coeurs qui appartiennent à telle AutomaticHandler
+	 */
 	protected Map<String, Set<Integer>> corePerHandler = new HashMap<>();
+	
+	/**
+	 * Booléen pour savoir si le coordinateur a recu de nouvelles données
+	 * par le Processor
+	 */
 	private boolean isNew;
 	
+	/**
+	 * Map qui sert à connaître à quelle fréquence un coeur doit
+	 * être mis si on devait le mettre à une certaine fréquence 
+	 * (par un précédant appel à la méthode)
+	 */
 	protected Map<Integer, Integer> previousFreqs = new HashMap<>();
 	
-	Set<Integer> toBeChanged = new HashSet<>();
-	
+	/**
+	 * Temps pour déterminer l'intervalle de temps où la fréquence des coeurs sont en train
+	 * de diminuer et pendant lequel on ne peut pas augmenter la fréquence
+	 */
 	protected Date t1, t2;
 	
+	/**
+	 * Constructeur du ProcessorCoordinator
+	 * @param coordinatorURI 	URI du ProcessorCoordinator
+	 * @param procURI 	URI du Processor
+	 * @param processorManagementInboundPortURI 	URI de l'inbound port du management du Processor
+	 * @param processorCoordinatorManagementInboundPortURI 	URI de l'inbound port du management du ProcessorCoordinator
+	 * @throws Exception
+	 */
 	public ProcessorCoordinator(String coordinatorURI,
 			String procURI,
 			String processorManagementInboundPortURI,
@@ -79,12 +155,17 @@ ProcessorStateDataConsumerI{
 		addPort(processorManagementOutboundPort);
 		processorManagementOutboundPort.publishPort();
 		
-		management_inport = new ProcessorCoordinatorManagementInboundPort(
+		ProcessorCoordinatorManagementInboundPort management_inport = new ProcessorCoordinatorManagementInboundPort(
 				processorCoordinatorManagementInboundPortURI, this);
 		addPort(management_inport);
 		management_inport.publishPort();
 		
 		procCoordinatorOrderPortMap = new HashMap<>();
+		
+		toggleLogging();
+		toggleTracing();
+		
+		logMessage("Coordinator for "+procURI);
 		
 		
 	}
@@ -123,7 +204,6 @@ ProcessorStateDataConsumerI{
 			
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -147,7 +227,6 @@ ProcessorStateDataConsumerI{
 			
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -159,14 +238,14 @@ ProcessorStateDataConsumerI{
 	public boolean setCoreFrequency(String handler_uri, int coreNo, int frequency) {
 		try {
 			
-				
 			Integer prevFreq ;
 			
 			if( (prevFreq = previousFreqs.get(coreNo))!=null) {
 				
 					if(currentFreqs[coreNo] != prevFreq) {
-						processorManagementOutboundPort.setCoreFrequency(coreNo, prevFreq);						
-						
+						processorManagementOutboundPort.setCoreFrequency(coreNo, prevFreq);	
+						logMessage("Set core frequency for "+coreNo+" : from "+currentFreqs[coreNo]+" to "+prevFreq);
+						return true;
 					}
 					previousFreqs.remove(coreNo);
 					return false;
@@ -200,6 +279,7 @@ ProcessorStateDataConsumerI{
 				
 				try{
 					processorManagementOutboundPort.setCoreFrequency(coreNo, freq);
+					logMessage("Set core frequency for "+coreNo+" : from "+currentFreqs[coreNo]+" to "+freq);
 				}
 				catch(UnacceptableFrequencyException e){
 				System.out.println("Warning Exception catched "+coreNo+" "+currentFreqs[coreNo]+" "+freq);
@@ -245,7 +325,7 @@ ProcessorStateDataConsumerI{
 								}
 								else
 									next = getNextFreq(currentFreqs[i], admissibleFreqs);
-								//System.out.println("core "+i+" next "+next);
+								
 								processorManagementOutboundPort.setCoreFrequency(i, next);							
 								
 							}
@@ -258,7 +338,6 @@ ProcessorStateDataConsumerI{
 			
 				
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -267,7 +346,14 @@ ProcessorStateDataConsumerI{
 		
 	}
 	
-	
+	/**
+	 * Regarde si la fréquence d'un coeur dépasse le seuil par rapport à 
+	 * une fréquence donnée.
+	 * @param coreNum	numéro du coeur
+	 * @param frequency	fréquence à comparer
+	 * @return true si l'intervalle est trop grand ou si la fréquence donnée
+	 * n'est pas une fréquence admissible, false sinon.
+	 */
 	private boolean isFreqGapTooBig(int coreNum, int frequency) {
 		
 		int currentFreq = currentFreqs[coreNum];
@@ -284,9 +370,10 @@ ProcessorStateDataConsumerI{
 			if( Math.abs(frequency-currentFreq)>freq_threshold){
 				return true;
 			}
+			return false;
 		}
 		
-		return false;
+		return true;
 	}
 
 	@Override
@@ -316,7 +403,6 @@ ProcessorStateDataConsumerI{
 			}
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -334,10 +420,8 @@ ProcessorStateDataConsumerI{
 			addPort(proc_freq_inport);
 			proc_freq_inport.publishPort();
 			
-			proc_cord_freq_map.put(inbound_port_uri, proc_freq_inport);
 						
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 				
@@ -346,12 +430,12 @@ ProcessorStateDataConsumerI{
 
 	@Override
 	public void removeOrderOutport(String handler_uri) throws Exception {
-		System.out.println("LETS REMOVE FREQ PROT VIA ORDER PORT FOR "+handler_uri);
 		
-		procCoordinatorOrderPortMap.get(handler_uri).removeFreq(this.procURI);
-		System.out.println("DONE");
-			
-		procCoordinatorOrderPortMap.remove(handler_uri).unpublishPort();		
+		procCoordinatorOrderPortMap.get(handler_uri).removeFreqPort(this.procURI);
+		procCoordinatorOrderPortMap.remove(handler_uri).unpublishPort();	
+		
+		logMessage("Remove ordre outbound port for "+handler_uri);
+		
 	}
 
 	@Override
@@ -371,12 +455,6 @@ ProcessorStateDataConsumerI{
 		isNew = true;		
 	}
 
-	@Override
-	public void notifyFreqChanged(String handler_uri) throws Exception {
-		
-		currentlyChangingFreqHandler.remove(handler_uri);
-		
-	}
 
 	@Override
 	public void notifyCorePossession(String handler_uri, int coreNum) throws Exception {
@@ -395,12 +473,16 @@ ProcessorStateDataConsumerI{
 	
 	@Override
 	public void notifyCoreRestitution(String handler_uri, int coreNum) throws Exception{
-		
-		
-		System.out.println(procURI+" removing "+handler_uri+" "+corePerHandler.get(handler_uri).remove(coreNum)+" from corePerHandler");
+		corePerHandler.get(handler_uri).remove(coreNum);
 	
 	}
 	
+	/**
+	 * Calcule la fréquence possible qui est plus basse que l'actuelle
+	 * @param currentFreq	fréquence actuelle
+	 * @param freqs	ensemble des fréquences possibles
+	 * @return la fréquence d'haut dessus
+	 */
 	public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 		
 		int ret = currentFreq;
@@ -422,6 +504,12 @@ ProcessorStateDataConsumerI{
 		return ret;
 	}
 	
+	/**
+	 * Calcule la fréquence possible qui est plus basse que l'actuelle
+	 * @param currentFreq	fréquence actuelle
+	 * @param freqs	ensemble des fréquences possibles
+	 * @return la fréquence d'en dessous
+	 */
 	public int getPreviousFreq(int currentFreq, Set<Integer> freqs) {
 	
 		int ret = currentFreq;

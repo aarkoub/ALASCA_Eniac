@@ -4,7 +4,7 @@ package eniac.admissioncontroler.interfaces;
 /**
  * L'interface RequestAdmissionNotificationI définit le service du composant qui aura pour charge la notification de fin d'hébergement d'application.
  * Cela permet de demander au contrôleur d'admission de libérer les ressources.
- * @author L-C
+ * 
  *
  */
 public interface RequestAdmissionNotificationHandlerI {

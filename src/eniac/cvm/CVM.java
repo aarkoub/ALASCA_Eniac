@@ -23,7 +23,7 @@ import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
  * La classe CVM correspond à la classe permettant de démarrer le projet en Mono-JVM, c'est-à-dire de lancer le centre de calcul et des demandes de d'hébergement d'applications.
  * Cela correspond donc à la création de tout les composants nécessaire c'est-à-dire les Computer, le contrôleur d'admission, les contrôleurs de performances et les RequestGenerator.
  * La classe a été configuré ici afin de lancer 2 applications.
- * @author L-C
+ * 
  *
  */
 

@@ -37,53 +37,141 @@ import fr.sorbonne_u.datacenter.hardware.computers.Computer;
 import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.sorbonne_u.datacenter.hardware.computers.connectors.ComputerServicesConnector;
 import fr.sorbonne_u.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
-import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorManagementOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.tests.ComputerMonitor;
 import fr.sorbonne_u.datacenter.software.applicationvm.ApplicationVM;
 import fr.sorbonne_u.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.sorbonne_u.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
 
-
+/**
+ *Le Controleur d'admission va gérer les ressources. 
+ *C'est à lui que les RequestGenerator vont demander les ressources nécessaires pour
+ *le calcul de leurs requêtes. En fonction de la disponibilité, le contrôleur d'admission
+ *va créer les RequestDispatcher et les ApplicationVM qui leur sont associés.
+ *Le controleur d'admission est notifié quand une ressource n'est plus utilisée, pour
+ *ensuite le mettre à la disponibilité des demandes ultérieures.
+ *
+ */
 public class AdmissionControler extends AbstractComponent implements AdmissionControlerManagementI, 
 RequestAdmissionSubmissionHandlerI,
 RequestAdmissionNotificationHandlerI,
 AutomaticHandlerRequestI{
 	
+	/**
+	 * URI de l'AdmissionControler
+	 */
 	protected String uri;
 	
+	/**
+	 * Id qui permet de créer des uris dynamiques différentes 
+	 */
 	protected int id=0;
-	protected AdmissionControlerManagementInboundPort admissionControlerManagementInboundPort;
-	protected DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
-	protected RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort;
-	protected RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort;
-	protected Map<String,AutomaticHandlerRequestInboundPort> requestDispatcherHandlerInboundPortMap;
 	
+	/**
+	 * Outbound port du DynamicComponentCreator
+	 */
+	protected DynamicComponentCreationOutboundPort dynamicComponentCreationOutboundPort;
+	
+	/**
+	 * Taille des avm par défaut
+	 */
 	protected static final int DEFAULT_AVM_SIZE = 2;
+	
+	/**
+	 * Map des RequestDispatcherManagementOutboundPort par RequestDispatcher
+	 */
 	protected Map<String, RequestDispatcherManagementOutboundPort> rd_management_port_map;
+	
+	/**
+	 * Map des RequestNotificationInboundPortURIVM qui appartiennent aux RequestDispatcher
+	 */
 	protected Map<String, String> rd_notification_inport_map;
+	
+	/**
+	 * Map contenant les datas par computer
+	 */
 	protected Map<String, ComputerData> computerdata_map;
+	
+	/**
+	 * Map des ApplicationVMManagementOutboundPort des avms créées
+	 */
 	protected Map<String, ApplicationVMManagementOutboundPort> avm_management_port_map;
+	
+	/**
+	 * Map des coeurs alloués pour les VM
+	 */
 	protected Map<String, AllocationCore> allocationVMCores_map;
+	
+	/**
+	 * Map des AMVS des RequestDispatcher
+	 */
 	protected Map<String, List<String>> reqDispAvms_map;
+	
+	/**
+	 * Entier pour donner des URIs dynamiques différents aux AVMS
+	 */
 	protected static int id_avm = 0;
+	
+	/**
+	 * Partie de l'URI d'une AVM
+	 */
 	protected static final String AVMURI = "avm_uri_";
+	
+	/**
+	 * Partie de l'URI de l'inbound port de management d'une AVM
+	 */
 	protected static final String AVMMANAGEMENTURI = "avm_muri_";
+	
+	/**
+	 * Partie de l'URI de l'inbound port de RequestSubmission d'une AVM
+	 */
 	protected static final String AVMREQUESTSUBMISSIONURI = "avm_rsuri_";
+	
+	/**
+	 * Partie de l'URI de l'inbound port de RequestNotification d'une AVM
+	 */
 	protected static final String AVMREQUESTNOTIFICATIONURI = "avm_rnuri_";
+	
+	/**
+	 * Partie de l'URI de l'inbound port de données statiques d'une AVM
+	 */
 	protected static final String AVM_DYNAMIC_STATE = "avm_dynamic_state";
+	
+	/**
+	 * Partie de l'URI de l'inbound port de données dynamiques  d'une AVM
+	 */
 	protected static final String AVM_STATIC_STATE = "avm_static_state";
 	
-	protected Map<Integer, List<Computer>> nbCoresMap ;
-
+	/**
+	 * Map des ProcessorCoordinatorManagementOutboundPort par ProcessorCoordinator
+	 */
 	protected Map<String, ProcessorCoordinatorManagementOutboundPort> proc_coord_map;
 
+	/**
+	 * Map qui contient les URI des ProcessorCoordinatorManagementInboundPortURI 
+	 * par ProcessorCoordinator
+	 */
 	protected Map<String, String> proc_coord_management_inport_map;
 	
+	/**
+	 * Map qui contient les ensembles de coeurs que possède les
+	 * dispatcher des AutomaticHandler sur chaque Processor
+	 */
 	protected Map<String, Map<String, Set<Integer>>> current_cores_handlers_map ;
 	
-	
+	/**
+	 * Contruction de AdmissionControler
+	 * @param uri	URI du AdmissionControler
+	 * @param nbComputers	nombre de Computer qu'il a en ressources
+	 * @param admissionControlerManagementInboundURI	URI de AdmissionControlerManagementInboundPort
+	 * @param dynamicComponentCreationInboundPortURI	URI de dynamicComponentCreationInboundPort
+	 * @param requestAdmissionSubmissionInboundPortURI	URI de requestAdmissionSubmissionInboundPort
+	 * @param requestAdmissionNotificationInboundPortURI	URI de requestAdmissionNotificationInboundPortU
+	 * @param processorCoordinatorManagementInboundPortURIS	URIS des processorCoordinatorManagementInboundPort
+	 * @param computers	Liste de Computers qu'il a en ressources
+	 * @param computeruris	Liste des URIS associés au Computer
+	 * @param computerMonitors	Liste des ComputerMonitor associés
+	 * @throws Exception
+	 */
 	public AdmissionControler(String uri, 
 			int nbComputers,
 			String admissionControlerManagementInboundURI,
@@ -107,19 +195,19 @@ AutomaticHandlerRequestI{
 		this.uri = uri;
 		
 		addOfferedInterface(AdmissionControlerManagementI.class);
-		admissionControlerManagementInboundPort = new AdmissionControlerManagementInboundPort(admissionControlerManagementInboundURI, this);
+		AdmissionControlerManagementInboundPort admissionControlerManagementInboundPort = new AdmissionControlerManagementInboundPort(admissionControlerManagementInboundURI, this);
 		addPort(admissionControlerManagementInboundPort);
 		admissionControlerManagementInboundPort.publishPort();
 		
 		
 		addOfferedInterface(RequestAdmissionSubmissionI.class);
-		requestAdmissionSubmissionInboundPort = new RequestAdmissionSubmissionInboundPort(requestAdmissionSubmissionInboundPortURI, this);
+		RequestAdmissionSubmissionInboundPort requestAdmissionSubmissionInboundPort = new RequestAdmissionSubmissionInboundPort(requestAdmissionSubmissionInboundPortURI, this);
 		addPort(requestAdmissionSubmissionInboundPort);
 		requestAdmissionSubmissionInboundPort.publishPort();
 		
 		
 		addOfferedInterface(RequestAdmissionNotificationI.class);
-		requestAdmissionNotificationInboundPort = new RequestAdmissionNotificationInboundPort(requestAdmissionNotificationInboundPortURI, this);
+		RequestAdmissionNotificationInboundPort requestAdmissionNotificationInboundPort = new RequestAdmissionNotificationInboundPort(requestAdmissionNotificationInboundPortURI, this);
 		addPort(requestAdmissionNotificationInboundPort);
 		requestAdmissionNotificationInboundPort.publishPort();
 		
@@ -133,9 +221,8 @@ AutomaticHandlerRequestI{
 		computerdata_map = new HashMap<>();
 		avm_management_port_map = new HashMap<>();
 		allocationVMCores_map = new HashMap<>();
-		nbCoresMap = new HashMap<>();
+		
 		reqDispAvms_map = new HashMap<>();
-		requestDispatcherHandlerInboundPortMap = new HashMap<>();
 		rd_notification_inport_map = new HashMap<>();
 	
 		
@@ -222,15 +309,8 @@ AutomaticHandlerRequestI{
 		// the allocated cores.
 	
 			try {
-				admissionControlerManagementInboundPort.unpublishPort();
-				requestAdmissionSubmissionInboundPort.unpublishPort();
-				requestAdmissionNotificationInboundPort.unpublishPort();
-				dynamicComponentCreationOutboundPort.unpublishPort() ;
-				
-				for(String uri : requestDispatcherHandlerInboundPortMap.keySet()) {
-					requestDispatcherHandlerInboundPortMap.get(uri).unpublishPort();
-				}
-				
+					
+				dynamicComponentCreationOutboundPort.doDisconnection();
 				
 			} catch (Exception e) {
 				throw new ComponentShutdownException("Error when shutdown admission controler");
@@ -249,13 +329,9 @@ AutomaticHandlerRequestI{
 		// the allocated cores.
 	
 			try {
-				admissionControlerManagementInboundPort.unpublishPort();
-				requestAdmissionSubmissionInboundPort.unpublishPort();
-				requestAdmissionNotificationInboundPort.unpublishPort();
+
 				dynamicComponentCreationOutboundPort.unpublishPort() ;
-				for(String uri : requestDispatcherHandlerInboundPortMap.keySet()) {
-					requestDispatcherHandlerInboundPortMap.get(uri).unpublishPort();
-				}
+
 			} catch (Exception e) {
 				throw new ComponentShutdownException("Error when shutdown admission controler");
 			}
@@ -263,20 +339,7 @@ AutomaticHandlerRequestI{
 
 		super.shutdownNow();
 	}
-	
-	
-	@Override
-	
-	public void			setCoreFrequency(String processor_uri, int coreNo, int frequency)
-			throws	UnavailableFrequencyException,
-					UnacceptableFrequencyException,
-					Exception
-			{
-			/*ProcessorManagementOutboundPort p = proc_management.get(processor_uri);
-			p.setCoreFrequency(coreNo, frequency);*/
-		 
-			}
-	
+		
 	
 	@Override
 	public List<String> removeCoreFromAvm(String handler_uri, String avm_uri) {
@@ -350,10 +413,6 @@ AutomaticHandlerRequestI{
 					
 			getProcessorCoordinatorFreqURIS(handler_uri, alloccores, proc_coord_manage_inport_map);
 			
-			for(String proc_uri : proc_coord_manage_inport_map.keySet()){
-				System.out.println(proc_uri+" "+proc_coord_manage_inport_map.get(proc_uri));
-			}
-			
 			avm_management_port_map.get(avm_uri).allocateCores(cores);
 			
 			
@@ -364,7 +423,13 @@ AutomaticHandlerRequestI{
 		return null;
 	}
 	
-	
+	/**
+	 * Alloue des coeurs des Computer pour des AVM
+	 * @param nbcores	nombre de coeurs à allouer par AVM
+	 * @param nbvm	nombre d'AVM 
+	 * @return la liste des AllocationCore correspondants
+	 * @throws Exception
+	 */
 	private List<AllocationCore> allocateCoreFromComputers(int nbcores, int nbvm) throws Exception {
 		List<AllocationCore> allocores = new ArrayList<>();
 		AllocatedCore[] cores;
@@ -530,10 +595,7 @@ AutomaticHandlerRequestI{
 			getProcessorCoordinatorFreqURIS(ah_uri,ac.getCores(), proc_uri_cores_list );
 		}
 		
-		for(String proc_uri : proc_uri_cores_list.keySet()){
-			System.out.println("proc_uri="+proc_uri+" proc_freq="+ proc_uri_cores_list.get(proc_uri));
-		}
-		
+
 		
 		Object[] argumentsAutomaticHandler = {ah_uri,
 				ah_management_inport_uri, 
@@ -551,7 +613,6 @@ AutomaticHandlerRequestI{
 		addPort(req_disp_hand_inport);
 		req_disp_hand_inport.publishPort();
 		
-		requestDispatcherHandlerInboundPortMap.put(requestDispatcherDynamicStateDataInboundPortURI, req_disp_hand_inport);
 		
 
 		dynamicComponentCreationOutboundPort.createComponent(AutomaticHandler.class.getCanonicalName(),
@@ -572,8 +633,15 @@ AutomaticHandlerRequestI{
 	}
 	
 	
-	
-	private void getProcessorCoordinatorFreqURIS(String handler_uri, AllocatedCore[] allocatedCores, Map<String, String> proc_coord_manage_inport_map) {
+	/**
+	 * Notifie le ProcessorCoordinator de l'acquisition de coeurs d'un RequestDispatcher.
+	 * Demande la création des ProcessorCoordinatorFreqInboundPort si nécessaire, et met
+	 * les URIS correspondantes dans proc_coord_freq_inport_map
+	 * @param handler_uri	URI de l'AutomaticHandler
+	 * @param allocatedCores	Coeurs fraichement alloués
+	 * @param proc_coord_freq_inport_map URIS des ProcessorCoordinatorFreqInboundPort
+	 */
+	private void getProcessorCoordinatorFreqURIS(String handler_uri, AllocatedCore[] allocatedCores, Map<String, String> proc_coord_freq_inport_map) {
 
 		Map<String, Set<Integer>> cores_map = current_cores_handlers_map.get(handler_uri);
 		
@@ -588,7 +656,6 @@ AutomaticHandlerRequestI{
 				e1.printStackTrace();
 			}
 			
-			System.out.println("allocatedCores "+handler_uri+" "+allocatedCores[i].coreNo+" "+allocatedCores[i].processorURI);
 			
 			if(cores_map!=null){
 				Set<Integer> cores ;
@@ -609,7 +676,7 @@ AutomaticHandlerRequestI{
 			
 		
 			try {
-				proc_coord_manage_inport_map.put(allocatedCores[i].processorURI, outport.addCoordInboundPort());
+				proc_coord_freq_inport_map.put(allocatedCores[i].processorURI, outport.addCoordInboundPort());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -719,15 +786,22 @@ AutomaticHandlerRequestI{
 		
 		cores.get(0).setVMUri(vmURI);
 		avmmop.allocateCores(cores.get(0).getCores());
-		Map<String, String> proc_coord_manage_inport_map = new HashMap<>();
-		getProcessorCoordinatorFreqURIS(handler_uri, cores.get(0).getCores(), proc_coord_manage_inport_map );
+		Map<String, String> proc_coord_freq_inport_map = new HashMap<>();
+		getProcessorCoordinatorFreqURIS(handler_uri, cores.get(0).getCores(), proc_coord_freq_inport_map );
 		allocationVMCores_map.put(vmURI, cores.get(0));
-		return proc_coord_manage_inport_map;
+		return proc_coord_freq_inport_map;
 	}
 
 
 
-	
+	/**
+	 * Notifie le ProcessorCoordinator qu'un coeur a été enlevé à un RequestDispatcher
+	 * Les URIS des ports ProcessorCoordinatorFreqOutport à oter par l'AutomaticHandler sont dans procURIS.
+	 * @param handler_uri	URI de l'AutomaticHandler
+	 * @param processorURI	URI du Processor
+	 * @param procURIS	Liste des URIS des ports ProcessorCoordinatorFreqOutport à oter par l'AutomaticHandler
+	 * @param coreNum numéro du coeur qui a été enlevé
+	 */
 	private void removeCoresMap(String handler_uri, String processorURI,
 			List<String> procURIS, int coreNum){
 
@@ -743,8 +817,7 @@ AutomaticHandlerRequestI{
 			try {
 				
 				outport.notifyCoreRestitution(handler_uri, coreNum);
-				//outport.removeOrderOutport(handler_uri);
-				System.out.println("removed order outport "+handler_uri+" "+processorURI);
+				outport.removeOrderOutport(handler_uri);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -753,7 +826,6 @@ AutomaticHandlerRequestI{
 		}
 		else{
 			try {
-				System.out.println("core restitution "+handler_uri+" coreNum"+coreNum);
 				outport.notifyCoreRestitution(handler_uri, coreNum);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block

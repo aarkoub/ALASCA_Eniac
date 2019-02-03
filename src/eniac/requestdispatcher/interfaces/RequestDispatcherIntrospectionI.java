@@ -5,7 +5,7 @@ import fr.sorbonne_u.components.interfaces.RequiredI;
 
 /**
  * L'interface RequestDispatcherIntrospectionI définit les services du composant pour introspecter le RequestDispatcher.
- * @author L-C
+ * 
  *
  */
 

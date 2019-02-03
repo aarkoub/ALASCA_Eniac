@@ -6,9 +6,6 @@ import java.util.Map;
 import eniac.automatichandler.interfaces.AutomaticHandlerRequestI;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
-import fr.sorbonne_u.datacenter.hardware.computers.Computer.AllocatedCore;
-import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
 
 public class AutomaticHandlerRequestOutboundPort
 extends AbstractOutboundPort
@@ -52,13 +49,6 @@ implements AutomaticHandlerRequestI{
 	@Override
 	public List<String> removeCoreFromAvm(String handler_uri, String avm_uri) throws Exception {
 		return ((AutomaticHandlerRequestI)this.connector).removeCoreFromAvm(handler_uri, avm_uri);
-	}
-
-	@Override
-	public void setCoreFrequency(String processor_uri, int coreNo, int frequency)
-			throws UnavailableFrequencyException,
-			UnacceptableFrequencyException, Exception {
-		((AutomaticHandlerRequestI)this.connector).setCoreFrequency(processor_uri, coreNo, frequency);		
 	}
 
 }

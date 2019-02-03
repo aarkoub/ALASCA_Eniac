@@ -6,7 +6,7 @@ import fr.sorbonne_u.datacenter.software.interfaces.RequestI;
 
 /**
  * Interface de soumission utilisé par le RequestGenerator (pour pouvoir utiliser Javassist)
- * @author L-C
+ * 
  *
  */
 

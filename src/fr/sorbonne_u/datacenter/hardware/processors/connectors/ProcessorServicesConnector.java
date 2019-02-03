@@ -35,11 +35,6 @@ package fr.sorbonne_u.datacenter.hardware.processors.connectors;
 //knowledge of the CeCILL-C license and that you accept its terms.
 
 import fr.sorbonne_u.components.connectors.AbstractConnector;
-import fr.sorbonne_u.components.cvm.AbstractCVM;
-import fr.sorbonne_u.components.helpers.CVMDebugModes;
-import fr.sorbonne_u.datacenter.hardware.processors.UnacceptableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.UnavailableFrequencyException;
-import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorManagementI;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.TaskI;
 
@@ -92,15 +87,6 @@ implements	ProcessorServicesI
 					executeTaskOnCoreAndNotify(t, coreNo, notificationPortURI) ;
 	}
 
-	@Override
-	public String getProcessorDynamicStateDataURI() throws Exception {
-		return ((ProcessorServicesI)this.offering).getProcessorDynamicStateDataURI();
-	}
-	
-	@Override
-	public String getProcessorStaticStateDataURI() throws Exception {
-		return ((ProcessorServicesI)this.offering).getProcessorStaticStateDataURI();
-	}
 	
 	@Override
 	public void createStateDataInboundPortAVM(String avmURI, String processorStaticStateDataInboundPortURIForAVM,

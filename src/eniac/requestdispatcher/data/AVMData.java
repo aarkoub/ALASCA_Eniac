@@ -5,7 +5,7 @@ package eniac.requestdispatcher.data;
  * afin d'y accéder plus facilement et en terme de structuration.
  * Etant données que c'est un simple conteneur il est inutile d'indiquer les le rôles de chaque méthodes, ce ne sont que des setters et getters.
  * Les attributs en revanches indiquent à quoi ils correspondent. 
- * @author L-C
+ * 
  *
  */
 

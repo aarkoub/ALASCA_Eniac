@@ -2,7 +2,7 @@ package eniac.admissioncontroler.interfaces;
 
 /**
  * L'interface RequestAdmissionSubmissionHandlerI définit le service du composant qui sera en genre pour traiter les demandes du RequestGenerator d'hébergement vers le Contrôleur d'admission.
- * @author L-C
+ * 
  *
  */
 

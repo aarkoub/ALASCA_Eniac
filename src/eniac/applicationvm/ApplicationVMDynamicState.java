@@ -11,7 +11,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMD
 /**
  * Cette classe correspond à l'implantation de ApplicationVMDynamicStateI, il s'agit d'un classe conteneur qui rassemble les données dynamiques 
  * d'une AVM et qui est transféré par la suite à requestDispatcher.
- * @author L-C
+ * 
  *
  */
 

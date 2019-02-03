@@ -10,7 +10,7 @@ import fr.sorbonne_u.components.exceptions.ComponentStartException;
  * Cette classe est un composant intégrateur permettant de démarrer le RequestGenerator.
  * Elle sert à faire la demande d'hébergement d'application et génère les requêtes.
  * Cette classe peut être modifier afin de changer les délais d'envois de requêtes.
- * @author L-C
+ * 
  *
  */
 

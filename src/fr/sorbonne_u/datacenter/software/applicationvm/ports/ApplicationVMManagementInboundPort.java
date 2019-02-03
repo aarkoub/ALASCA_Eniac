@@ -1,7 +1,5 @@
 package fr.sorbonne_u.datacenter.software.applicationvm.ports;
 
-import java.util.Map;
-
 //Copyright Jacques Malenfant, Sorbonne Universite.
 //
 //Jacques.Malenfant@lip6.fr
@@ -133,11 +131,7 @@ implements	ApplicationVMManagementI
 				}) ;
 	}
 
-	@Override
-	public void			connectWithRequestSubmissioner() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
+
 
 	@Override
 	public void removeProcDataStatePorts(String processorUri) throws Exception {

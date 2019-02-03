@@ -9,7 +9,7 @@ import fr.sorbonne_u.components.ports.AbstractInboundPort;
 /**
  * La classe RequestAdmissionNotificationInboundPort est un port d'entrée pour la demande de libération de ressources.
  * Cette classe a été créer pour préparer un éventuel besoin, cependant, nous n'en avons malheureusement pas eu le besoin d'où le fait qu'elle soit vide.
- * @author L-C
+ * 
  *
  */
 public class RequestAdmissionNotificationInboundPort extends AbstractInboundPort

@@ -257,7 +257,6 @@ ProcessorCoordinatorOrderI{
 					requestDispatcherManagementInboundPortURI, 
 					RequestDispatcherManagementConnector.class.getCanonicalName());
 			
-		System.out.println(this.autoHand_uri+" "+requestDispatcherURI);
 		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(500);
 		
 		
@@ -276,7 +275,6 @@ ProcessorCoordinatorOrderI{
 		admissibleFreqCores = new HashMap<>();
 		for(String avmUri : avmStaticStateMap.keySet()){
 			
-			//System.out.println(avmUri + " "+avmStaticStateMap.get(avmUri));
 			
 			ApplicationVMStaticStateI avmStaticState = avmStaticStateMap.get(avmUri);
 			
@@ -434,7 +432,6 @@ ProcessorCoordinatorOrderI{
 				//si la fréquence a pu etre augmentee
 				if(increaseSpeed(dynamicstate.getAVMDynamicStateMap())) {
 					//logMessage(entry.getKey()+" frequency increased");
-					System.out.println("speed increased "+autoHand_uri);
 				}
 				//sinon on ajoute 1 core aux avms
 				else{
@@ -455,7 +452,6 @@ ProcessorCoordinatorOrderI{
 								(autoHand_uri, avmToAddCore, nbCoreToAdd))!=null) {
 							
 							addNewPortCoord(proc_coord_freq_inport_uri_map);
-							System.out.println(autoHand_uri+" new cores = new ports added");
 							logMessage(avmToAddCore+" 1 core added");	
 							wait = 10;
 						}
@@ -468,7 +464,6 @@ ProcessorCoordinatorOrderI{
 					
 						if(!ok && getUnusedAVMs(dynamicstate).size() == 0 && (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(autoHand_uri, requestDispatcherURI))!=null){
 							addNewPortCoord(proc_coord_freq_inport_uri_map);
-							System.out.println(autoHand_uri+" new avm = new ports added");
 							logMessage("avm added");
 							wait = 10;
 					
@@ -492,7 +487,6 @@ ProcessorCoordinatorOrderI{
 				
 				}
 				else{
-					//System.out.println(dynamicstate.getScoresMap().toString());
 					logMessage("Response time too fast: "+avg+"ms (>"+ lower_bound +" ms wanted)");
 					if(removeUnusedAVM(dynamicstate)) {
 						wait = 15;
@@ -511,7 +505,6 @@ ProcessorCoordinatorOrderI{
 					if(!ok) {
 						if(decreaseSpeed(dynamicstate.getAVMDynamicStateMap())) {
 							//logMessage(avmUri+" speed decreased");
-							System.out.println("speed decreased");
 						}
 						wait = 10;
 					}
@@ -566,7 +559,6 @@ ProcessorCoordinatorOrderI{
 				doPortConnection(outport.getPortURI(),proc_coord_freq_inport_uri_map.get(proc_uri), 
 						ProcessorCoordinatorFreqConnector.class.getCanonicalName());
 				
-				System.out.println("PUT FREQ OUTPORT "+proc_uri);
 				proc_coord_freq_map.put(proc_uri, outport);
 				
 				String processorCoordinatorOrderInboundPortURI =
@@ -627,7 +619,6 @@ ProcessorCoordinatorOrderI{
 		List<String> avms = new ArrayList<>();
 		for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
 			if(entry.getValue() == 0) {
-				System.out.println(entry.getKey()+" has score 0");
 				avms.add(entry.getKey());
 			}
 		}
@@ -692,7 +683,6 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 	@Override
 	public void setCoreFreqNextTime(String procURI, int coreNo, int frequency) throws Exception {
 
-		System.out.println("GOT IT "+autoHand_uri+" "+procURI+" "+coreNo+" "+frequency);
 		
 		proc_coord_freq_map.get(procURI).setCoreFrequency(autoHand_uri, coreNo, frequency);
 
@@ -703,7 +693,6 @@ public int getNextFreq(int currentFreq, Set<Integer> freqs) {
 	@Override
 	public void removeFreq(String procURI) throws Exception {
 		
-		System.out.println("UNPUBLISH "+procURI);
 		
 		this.proc_coord_freq_map.remove(procURI).unpublishPort();
 		

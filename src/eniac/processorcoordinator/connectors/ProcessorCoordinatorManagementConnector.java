@@ -18,11 +18,6 @@ implements ProcessorCoordinatorManagementI{
 	}
 
 	@Override
-	public void notifyFreqChanged(String handler_uri) throws Exception {
-		((ProcessorCoordinatorManagementI)offering).notifyFreqChanged(handler_uri);
-	}
-
-	@Override
 	public void notifyCorePossession(String handler_uri, int coreNum) throws Exception {
 		((ProcessorCoordinatorManagementI)offering).notifyCorePossession(handler_uri, coreNum);
 		

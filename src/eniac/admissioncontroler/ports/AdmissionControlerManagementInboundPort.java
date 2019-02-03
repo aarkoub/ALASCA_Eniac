@@ -9,7 +9,7 @@ import fr.sorbonne_u.components.ports.AbstractInboundPort;
 /**
  * La classe AdmissionControlerManagementInboundPort est un port d'entrée pour des appels de contrôle sur le contrôleur d'admission.
  * Cette classe a été créer pour préparer un éventuel besoin, cependant, nous n'en avons malheureusement pas eu le besoin d'où le fait qu'elle soit vide.
- * @author L-C
+ * 
  *
  */
 public class AdmissionControlerManagementInboundPort extends 	AbstractInboundPort

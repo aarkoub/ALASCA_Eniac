@@ -75,11 +75,6 @@ implements	ApplicationVMManagementI
 		((ApplicationVMManagementI)this.offering).allocateCores(allocatedCores) ; 
 	}
 
-	@Override
-	public void connectWithRequestSubmissioner() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public void removeProcDataStatePorts(String processorUri) throws Exception {

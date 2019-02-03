@@ -6,7 +6,7 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 /**
  * La classe RequestAdmissionSubmissionOutboundPort est un port de sortie pour les demandes du RequestGenerator d'hébergement vers le Contrôleur d'admission.
- * @author L-C
+ * 
  *
  */
 public class RequestAdmissionSubmissionOutboundPort extends AbstractOutboundPort

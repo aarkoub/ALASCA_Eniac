@@ -104,9 +104,6 @@ extends		OfferedI,
 		final String notificationPortURI
 		) throws Exception ;
 
-	public String getProcessorDynamicStateDataURI() throws Exception;
-
-	public String getProcessorStaticStateDataURI() throws Exception;
 
 	public void createStateDataInboundPortAVM(
 			String avmURI,

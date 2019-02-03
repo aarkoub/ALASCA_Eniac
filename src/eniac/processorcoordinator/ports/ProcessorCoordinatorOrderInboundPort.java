@@ -1,8 +1,6 @@
 package eniac.processorcoordinator.ports;
 
 import eniac.automatichandler.AutomaticHandler;
-import eniac.automatichandler.interfaces.AutomaticHandlerManagementI;
-import eniac.processorcoordinator.ProcessorCoordinator;
 import eniac.processorcoordinator.interfaces.ProcessorCoordinatorOrderI;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.ComponentI;
@@ -50,12 +48,12 @@ implements ProcessorCoordinatorOrderI{
 		}
 
 		@Override
-		public void removeFreq(String procURI) throws Exception {
+		public void removeFreqPort(String procURI) throws Exception {
 			this.getOwner().handleRequestAsync(
 					new AbstractComponent.AbstractService<Void>() {
 						@Override
 						public Void call() throws Exception {
-							((AutomaticHandler)this.getOwner()).removeFreq(procURI);
+							((AutomaticHandler)this.getOwner()).removeFreqPort(procURI);
 							return null;
 						}
 					});		

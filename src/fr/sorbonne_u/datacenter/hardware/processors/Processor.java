@@ -43,6 +43,7 @@ import java.util.Map ;
 import java.util.Set ;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
 import fr.sorbonne_u.components.AbstractComponent ;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.interfaces.DataOfferedI;
@@ -55,13 +56,11 @@ import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServices
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorServicesNotificationI;
 import fr.sorbonne_u.datacenter.hardware.processors.interfaces.ProcessorStaticStateI;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorDynamicStateDataInboundPort;
-import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorDynamicStateDataOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorIntrospectionInboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorManagementInboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorServicesInboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorServicesNotificationOutboundPort;
 import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorStaticStateDataInboundPort;
-import fr.sorbonne_u.datacenter.hardware.processors.ports.ProcessorStaticStateDataOutboundPort;
 import fr.sorbonne_u.datacenter.interfaces.ControlledDataOfferedI;
 import fr.sorbonne_u.datacenter.interfaces.PushModeControllingI;
 import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.TaskI;
@@ -179,8 +178,6 @@ implements	PushModeControllingI
 	 *  tasks.															*/
 	protected Map<TaskI,String>			notificationInboundPortURIs ;
 	
-	protected String processorDynamicStateDataInboundPortURIForAVM;
-	protected String processorStaticStateDataInboundPortURIForAVM;
 	protected String processorManagementInboundPortURI;
 	
 	protected ProcessorDynamicStateDataInboundPort coord_dynamic_inport ;
@@ -327,7 +324,14 @@ implements	PushModeControllingI
 	
 	}
 	
-	
+	/**
+	 * Création de inbound port pour les données dynamiques
+	 * et statiques
+	 * @param avmURI	URI de l'ApplicationVM
+	 * @param processorStaticStateDataInboundPortURIForAVM
+	 * @param processorDynamicStateDataInboundPortURIForAVM
+	 * @throws Exception
+	 */
 	public void createStateDataInboundPortAVM(
 			String avmURI,
 			String processorStaticStateDataInboundPortURIForAVM,
@@ -357,7 +361,6 @@ implements	PushModeControllingI
 			
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -1030,14 +1033,7 @@ implements	PushModeControllingI
 		
 	}
 	
-	public String getProcessorDynamicStateDataURI() throws Exception{
-		return processorDynamicStateDataInboundPortURIForAVM;
-	}
-	
-	public String getProcessorStaticStateDataURI() throws Exception{
-		return processorStaticStateDataInboundPortURIForAVM;
-	}
-	
+		
 	public String getProcessorManagementInboundPortURI() throws Exception{
 		return processorManagementInboundPortURI;
 	}

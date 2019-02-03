@@ -6,7 +6,7 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 /**
  * La classe RequestDispatcherManagementOutboundPort est un port de sortie pour contrôler l'ajout et le retranchement d'AVM du RequestDispatcher.
- * @author L-C
+ * 
  *
  */
 public class RequestDispatcherManagementOutboundPort extends AbstractOutboundPort

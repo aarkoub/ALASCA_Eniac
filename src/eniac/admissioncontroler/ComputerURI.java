@@ -3,7 +3,7 @@ package eniac.admissioncontroler;
 /**
  * La classe ComputerURI regroupe toutes les URIs qui sont utilisés par une instance de Computer, on y retrouve notamment son URI et
  * les URIs des ports utilisés.
- * @author L-C
+ * 
  *
  */
 

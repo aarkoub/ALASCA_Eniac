@@ -11,7 +11,7 @@ import fr.sorbonne_u.datacenter.software.applicationvm.interfaces.ApplicationVMS
 /**
  * Cette classe correspond à l'implantation de ApplicationVMStaticStateI, il s'agit d'un classe conteneur qui rassemble les données statiques 
  * d'une AVM et qui est transféré par la suite à requestDispatcher.
- * @author L-C
+ * 
  *
  */
 

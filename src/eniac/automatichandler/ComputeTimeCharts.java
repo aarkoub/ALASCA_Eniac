@@ -18,7 +18,7 @@ import org.jfree.ui.ApplicationFrame;
  * Nous utilisons la librairie JFreeChart afin de pouvoir afficher et mettre à jours simplement les données.
  * La barre horizontale bleu correspond à la moyenne qu'on cherche à obtenir et les barres vertes
  * correpondent à la tolérance d'écart accepté avant de faire une action.
- * @author L-C
+ * 
  *
  */
 
