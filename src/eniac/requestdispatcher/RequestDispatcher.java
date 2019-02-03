@@ -273,14 +273,9 @@ PushModeControllingI{
 	
 	public void stopSendingRequestToOneAVM(){
 
-		if(notToChoose!=null) {
-		
-			if(avms.size() > 1){
-			
+		if(avms.size() != 1){
+			if(notToChoose!=null){
 				for(String avmURI : avms.keySet()){
-					
-					
-					
 					notToChoose = avmURI;
 					break;
 				}
@@ -360,8 +355,6 @@ PushModeControllingI{
 	public boolean removeAVM(String uri) {
 		
 		notToChoose = null;
-		
-		if(avms.size()<=1) return false;
 		
 		AVMData data = null;
 		for(AVMData tmp: avms.values()) {
@@ -684,7 +677,7 @@ PushModeControllingI{
 				doPortConnection(data.getAvmports().getAvmStaticStateDataOutboundPort().getPortURI(), data.getAvmuris().getApplicationVMStaticStateDataInboundPortURI(), DataConnector.class.getCanonicalName());
 				doPortConnection(data.getAvmports().getAvmDynamicStateDataOutboundPort().getPortURI(),data.getAvmuris().getApplicationVMDynamicStateDataInboundPortURI(), ControlledDataConnector.class.getCanonicalName());
 				
-				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(100);
+				data.getAvmports().getAvmDynamicStateDataOutboundPort().startUnlimitedPushing(500);
 			
 			}
 		} catch (Exception e) {

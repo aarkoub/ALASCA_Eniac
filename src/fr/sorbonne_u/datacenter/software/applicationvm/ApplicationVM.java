@@ -880,7 +880,6 @@ implements	ProcessorServicesNotificationConsumerI,
 							processorStaticStateDataInboundPortURIForAVM,
 							DataConnector.class.getCanonicalName()
 							);
-					dynamic_outport.startUnlimitedPushing(100);
 					}
 					catch(Exception e){
 						e.printStackTrace();
@@ -897,7 +896,7 @@ implements	ProcessorServicesNotificationConsumerI,
 					}
 					
 					
-					
+					dynamic_outport.startUnlimitedPushing(500);
 			
 				}
 				
@@ -947,14 +946,10 @@ implements	ProcessorServicesNotificationConsumerI,
 	public void removeProcDataStatePorts(String processorUri) throws Exception {
 		int number = numberOfCoresPerProc.get(processorUri);
 		if(number==1) {
-			
-			if(processor_dynamic_outport_map.get(processorUri)!=null){
-				processor_dynamic_outport_map.remove(processorUri).doDisconnection();
-			}
-			
-			if(processor_static_outport_map.get(processorUri)!=null){
-				processor_static_outport_map.remove(processorUri).doDisconnection();
-			}
+			processor_dynamic_outport_map.get(processorUri).doDisconnection();
+			processor_static_outport_map.get(processorUri).doDisconnection();
+			processor_dynamic_outport_map.remove(processorUri);
+			processor_static_outport_map.remove(processorUri);
 			
 		}
 		

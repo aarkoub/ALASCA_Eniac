@@ -255,9 +255,23 @@ public class CVM extends AbstractCVM {
 		}
 		
 		
+		/*
+		 * Création du controleur d'admission
+		 */
+		admissionControler = new AdmissionControler(admissionControlerURI,
+				max_ressources, 
+				admissionControlerManagementInboundURI, 
+				dynamicComponentCreationInboundPortURI,
+				requestAdmissionSubmissionInboundPortURI,
+				requestAdmissionNotificationInboundPortURI,
+				proc_coord_management_map,
+				computers,
+				computeruris,
+				computerMonitors);
 		
-		ArrayList<String> req_admission_sub = new ArrayList<>();
-		ArrayList<String> req_admission_not = new ArrayList<>();
+		admissionControler.toggleLogging();
+		admissionControler.toggleTracing();
+		
 		
 		for(int i=0; i<2; i++){
 			
@@ -268,12 +282,9 @@ public class CVM extends AbstractCVM {
 		
 			requestGenerator = new RequestGenerator(URI_RequestGenerator+i, 100, 2000000000L, 
 					RequestGeneratorManagementInboundPortURI+i, requestSubmissionInboundPortURI+i,
-					requestNotificationInboundPortURI+i, requestAdmissionSubmissionInboundPortURI+i,
-					requestAdmissionNotificationInboundPortURI+i,
+					requestNotificationInboundPortURI+i, requestAdmissionSubmissionInboundPortURI,
+					requestAdmissionNotificationInboundPortURI,
 					3000);
-			
-			req_admission_sub.add(requestAdmissionSubmissionInboundPortURI+i);
-			req_admission_not.add(requestAdmissionNotificationInboundPortURI+i);
 			
 			
 				
@@ -289,23 +300,6 @@ public class CVM extends AbstractCVM {
 			
 			integrators.add(integrator);
 		}
-		
-		/*
-		 * Création du controleur d'admission
-		 */
-		admissionControler = new AdmissionControler(admissionControlerURI,
-				max_ressources, 
-				admissionControlerManagementInboundURI, 
-				dynamicComponentCreationInboundPortURI,
-				req_admission_sub,
-				req_admission_not,
-				proc_coord_management_map,
-				computers,
-				computeruris,
-				computerMonitors);
-		
-		admissionControler.toggleLogging();
-		admissionControler.toggleTracing();
 				
 		
 		/*

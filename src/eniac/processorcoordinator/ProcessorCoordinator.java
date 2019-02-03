@@ -183,7 +183,7 @@ ProcessorStateDataConsumerI{
 				}
 				else{
 					t2 = new Date();
-					if(t1!=null && t2.getTime()-t1.getTime()<500){
+					if(t1!=null && t2.getTime()-t1.getTime()<1000){
 						return false;
 					}
 					else

@@ -258,7 +258,7 @@ ProcessorCoordinatorOrderI{
 					RequestDispatcherManagementConnector.class.getCanonicalName());
 			
 		System.out.println(this.autoHand_uri+" "+requestDispatcherURI);
-		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(100);
+		requestDispatcherDynamicStateDataOutboundPort.startUnlimitedPushing(500);
 		
 		
 		} catch (Exception e) {
@@ -291,107 +291,74 @@ ProcessorCoordinatorOrderI{
 		
 	}
 	
-	private boolean increaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate) {
+	private boolean increaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
 		
-		List<Boolean> rets = new ArrayList<>();
-		Map<String, Integer> proc_map = new HashMap<>();
-		Map<String, Map<Integer, Integer>> currentFreqMap = new HashMap<>();
-		Map<String, Set<Integer>> admissibleFreqs = new HashMap<>();
- 		ApplicationVMDynamicStateI avmDynamicState;
 		try {
 			
-			for(String avmURI : avmdynamicstate.keySet()){
-	
-				avmDynamicState = avmdynamicstate.get(avmURI);
+			ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);	
+			Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
 			
-				for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
+			for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
+				
+				//System.out.println(avm+" "+admissibleFreqCoresAVM);
+				Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
+				
+				
+				
+				for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
 					
-					for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
-						
-						admissibleFreqs.put(proc_uri, admissibleFreqCores.get(avmURI).get(proc_uri));
-						proc_map.put(proc_uri, core);
-						currentFreqMap.put(proc_uri, avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri));
-						break;
+					int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
+					int freq = getNextFreq(currentFreq, admissibleFreq);
+
+					if(currentFreq == freq) return false;
+
+					if(proc_coord_freq_map.get(proc_uri)==null)System.out.println(proc_coord_freq_map.get(proc_uri));
+						return proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
+
 					}
 				}
-			}
-			
-			for(String proc_uri : proc_map.keySet()){
-				Integer core = proc_map.get(proc_uri);
-				int currentFreq  = currentFreqMap.get(proc_uri).get(core);
-				Set<Integer> admissibleFreq = admissibleFreqs.get(proc_uri);
-				int freq = getNextFreq(currentFreq, admissibleFreq);
-				
-				if(currentFreq == freq) continue;
-
-					if(proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq)){
-						rets.add(true);
-					}
-						
-					
-			
-			}
-
-						
-			
-			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-		if(rets.size()!=proc_map.keySet().size())
-			return false;
-		return true;
+		
+		return false;
 	}
 	
-	private boolean decreaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate) {
-		List<Boolean> rets = new ArrayList<>();
-		Map<String, Integer> proc_map = new HashMap<>();
-		Map<String, Map<Integer, Integer>> currentFreqMap = new HashMap<>();
-		Map<String, Set<Integer>> admissibleFreqs = new HashMap<>();
- 		ApplicationVMDynamicStateI avmDynamicState;
-		try {
+	private boolean decreaseSpeed(Map<String, ApplicationVMDynamicStateI > avmdynamicstate, String avm) {
+		
+		ApplicationVMDynamicStateI avmDynamicState = avmdynamicstate.get(avm);
+		Map<String, Set<Integer>> admissibleFreqCoresAVM = admissibleFreqCores.get(avm);
+		
+		for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
 			
-			for(String avmURI : avmdynamicstate.keySet()){
-	
-				avmDynamicState = avmdynamicstate.get(avmURI);
+			Set<Integer> admissibleFreq = admissibleFreqCoresAVM.get(proc_uri);
 			
-				for(String proc_uri : avmDynamicState.getProcCurrentFreqCoresMap().keySet()){
-					
-					for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
-						
-						admissibleFreqs.put(proc_uri, admissibleFreqCores.get(avmURI).get(proc_uri));
-						proc_map.put(proc_uri, core);
-						currentFreqMap.put(proc_uri, avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri));
-						break;
-					}
-				}
-			}
-			
-			for(String proc_uri : proc_map.keySet()){
-				Integer core = proc_map.get(proc_uri);
-				int currentFreq  = currentFreqMap.get(proc_uri).get(core);
-				Set<Integer> admissibleFreq = admissibleFreqs.get(proc_uri);
+			for(int core : avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).keySet()){
+				
+				int currentFreq = avmDynamicState.getProcCurrentFreqCoresMap().get(proc_uri).get(core);
 				int freq = getPreviousFreq(currentFreq, admissibleFreq);
 				
-				if(currentFreq == freq) continue;
-
-					if(proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq)){
-						rets.add(true);
-					}
-						
-					
-			
+				if(currentFreq == freq) return false;
+				
+				try {
+					System.out.println("Decreasing "+proc_uri+" "+autoHand_uri);
+					return this.proc_coord_freq_map.get(proc_uri).setCoreFrequency(autoHand_uri, core, freq);
+				
+				} catch (UnavailableFrequencyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				
+				} catch (UnacceptableFrequencyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-
-						
-			
-			
-		}catch(Exception e) {
-			e.printStackTrace();
 		}
-		if(rets.size()!=proc_map.keySet().size())
-			return false;
-		return true;
+		return false;
 	}
 	
 	private int wait = 15;
@@ -405,7 +372,8 @@ ProcessorCoordinatorOrderI{
 			RequestDispatcherDynamicStateI dynamicState) throws Exception {
 		lavg = dynamicState.getAverageRequestTime();
 		chart.addData(lavg);
-
+		
+		
 		currentDynamicState = dynamicState;
 
 		if(wait%modWait == 0) {
@@ -422,69 +390,82 @@ ProcessorCoordinatorOrderI{
 	public void modulateAVM(RequestDispatcherDynamicStateI dynamicstate, double avg) throws Exception {
 		Map<String, String> proc_coord_freq_inport_uri_map;
 		if(avg > upper_bound) {
-			
+			if(last > avg) {
+				last = avg;
+				
+			}
+			else{
+				
 				logMessage("Response time too long: "+avg+"ms (<"+ upper_bound +" ms wanted)");
-							
-				//si la fréquence a pu etre augmentee
-				if(increaseSpeed(dynamicstate.getAVMDynamicStateMap())) {
-					//logMessage(entry.getKey()+" frequency increased");
-					System.out.println("speed increased "+autoHand_uri);
-				}
-				//sinon on ajoute 1 core aux avms
-				else{
-			
-					int nbCoreToAdd ;
+				
+				for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
 					
-					if(lavg>2*averageResponseTime) {
-						nbCoreToAdd = 2;
-					}
-					else{
-						nbCoreToAdd = 1;
-					}
+					if(entry.getValue() > MAX_QUEUE) {
 					
-					boolean ok = true;
-					for(String avmToAddCore : dynamicstate.getAVMDynamicStateMap().keySet()){
-						if( (proc_coord_freq_inport_uri_map=
-								requestDispatcherHandlerOutboundPort.addCoreToAvm
-								(autoHand_uri, avmToAddCore, nbCoreToAdd))!=null) {
+						//si la fréquence a pu etre augmentee
+						if(increaseSpeed(dynamicstate.getAVMDynamicStateMap(), entry.getKey())) {
+							logMessage(entry.getKey()+" frequency increased");
 							
-							addNewPortCoord(proc_coord_freq_inport_uri_map);
-							System.out.println(autoHand_uri+" new cores = new ports added");
-							logMessage(avmToAddCore+" 1 core added");	
-
+						}
+						//sinon on ajoute 1 core aux avms
+						else{
+							
+							int nbCoreToAdd ;
+							
+							if(lavg>2*averageResponseTime) {
+								nbCoreToAdd = 2;
+							}
+							else
+								nbCoreToAdd = 1;
+							
+							if( (proc_coord_freq_inport_uri_map=
+									requestDispatcherHandlerOutboundPort.addCoreToAvm
+									(autoHand_uri, entry.getKey(), nbCoreToAdd))!=null) {
+								
+								addNewPortCoord(proc_coord_freq_inport_uri_map);
+								System.out.println(autoHand_uri+" new cores = new ports added");
+								logMessage(entry.getKey()+" 1 core added");	
+								wait = 10;
+								
+							}
+							//sinon on ajoute une avm 
+							else{
+								if(getUnusedAVMs(dynamicstate).size() == 0 && (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(autoHand_uri, requestDispatcherURI))!=null){
+									addNewPortCoord(proc_coord_freq_inport_uri_map);
+									System.out.println(autoHand_uri+" new avm = new ports added");
+									logMessage("avm added");
+									wait = 10;
+							
+								}
+							}
 
 						}
-						
-						else
-							ok = false;
-					}
-					//sinon on ajoute une avm 
-
-					
-						if(!ok && getUnusedAVMs(dynamicstate).size() == 0 && (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(autoHand_uri, requestDispatcherURI))!=null){
+					//on ajoute directement une avm
+					}else {
+						if(getUnusedAVMs(dynamicstate).size() == 0 && (proc_coord_freq_inport_uri_map=requestDispatcherHandlerOutboundPort.addAVMToRequestDispatcher(autoHand_uri, requestDispatcherURI))!=null){
 							addNewPortCoord(proc_coord_freq_inport_uri_map);
 							System.out.println(autoHand_uri+" new avm = new ports added");
 							logMessage("avm added");
-					
+							
+							wait = 10;
 						}
-					
-				
-					
-				
+						
 					}
-
-			
-
-
-			
+				}
+			}
 		}
 		else{
 		
 			if(avg < lower_bound) {
-
+				if(last < avg) {
+					last = avg;
+				
+				}
+				else{
 					//System.out.println(dynamicstate.getScoresMap().toString());
 					logMessage("Response time too fast: "+avg+"ms (>"+ lower_bound +" ms wanted)");
 					if(removeUnusedAVM(dynamicstate)) {
+						wait = 15;
 						return;
 					}
 					
@@ -493,52 +474,32 @@ ProcessorCoordinatorOrderI{
 					for(String avm : dynamicstate.getAVMDynamicStateMap().keySet())
 						if(requestDispatcherHandlerOutboundPort.removeCoreFromAvm(autoHand_uri, avm)!=null) {	
 								logMessage(avm+" removed 1 core");
+								wait = 15;
 								ok = true;
 						}
 					
 					if(!ok) {
-						if(decreaseSpeed(dynamicstate.getAVMDynamicStateMap())) {
-							//logMessage(avmUri+" speed decreased");
-							System.out.println("speed decreased");
-						}
+						
+						for(String avmUri : dynamicstate.getAVMDynamicStateMap().keySet())
+							if(decreaseSpeed(dynamicstate.getAVMDynamicStateMap(), avmUri)) {
+								logMessage(avmUri+" speed decreased");
+							}
+						wait = 18;
 					}
 					
 				}
 				
-			
+			}
 			else{
 				last = avg;
 				logMessage("Response time correct");
+				wait = 19;
 				
 			}
 		}
 	
 	}
 	
-	private String chooseAVM(Map<String, ApplicationVMDynamicStateI> avmDynamicStateMap) {
-		
-		Integer nbCores = null;
-		String uri=null;
-		
-		for(String avmURI : avmDynamicStateMap.keySet()){
-			
-			if(nbCores==null){
-				uri = avmURI;
-				nbCores = avmDynamicStateMap.get(avmURI).getTotalNumberOfCores();
-			}
-			else{
-				if(nbCores > avmDynamicStateMap.get(avmURI).getTotalNumberOfCores() ){
-					uri = avmURI;
-					nbCores = avmDynamicStateMap.get(avmURI).getTotalNumberOfCores();
-				}
-			}
-			
-			
-		}
-		return uri;
-	}
-
-
 	private void addNewPortCoord(Map<String, String> proc_coord_freq_inport_uri_map) {
 		for(String proc_uri : proc_coord_freq_inport_uri_map.keySet()){
 			
@@ -591,7 +552,7 @@ ProcessorCoordinatorOrderI{
 	
 	private boolean removeUnusedAVM(RequestDispatcherDynamicStateI dynamicstate) {
 		List<String> unusedavms = getUnusedAVMs(dynamicstate);
-		
+		if(unusedavms.size() <= 1) return false;
 		for(String avm: unusedavms) {
 			
 			try {
@@ -600,7 +561,6 @@ ProcessorCoordinatorOrderI{
 					avmWaitingToRemove = false;
 					return true;
 				}
-				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -613,7 +573,6 @@ ProcessorCoordinatorOrderI{
 		List<String> avms = new ArrayList<>();
 		for(Map.Entry<String, Double> entry: dynamicstate.getScoresMap().entrySet()) {
 			if(entry.getValue() == 0) {
-				System.out.println(entry.getKey()+" has score 0");
 				avms.add(entry.getKey());
 			}
 		}
